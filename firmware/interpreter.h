@@ -100,7 +100,7 @@ uint8_t run_program_line() {
             case 2: // mov R/I R
                 u16_1 = GET16;
                 u8 = GET8;
-                if (u8) {
+                if (u16_1) {
                     PA |= (1 << LED_PIN);
                 } else {
                     PA &= ~(1 << LED_PIN);

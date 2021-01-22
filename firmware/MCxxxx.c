@@ -5,7 +5,7 @@
 #include "serial.h"
 #include "interpreter.h"
 
-#define TEST
+#define NO_TEST
 
 // Insert serial number
 EASY_PDK_SERIAL(serial_number);
