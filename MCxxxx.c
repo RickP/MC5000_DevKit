@@ -5,10 +5,10 @@
 #include "serial.h"
 #include "interpreter.h"
 
+#define TEST
+
 // Insert serial number
 EASY_PDK_SERIAL(serial_number);
-
-#define LED_PIN 4
 
 #define PROGSIZE 100
 
@@ -35,11 +35,11 @@ void interrupt(void) __interrupt(0) {
         }
         if (INTRQ & INTRQ_TM3) {  // TM3 interrupt request?
                 serial_rx_irq_handler();     // Assemble RXed byte
+                INTERPRETER_CLOCK_TICK;
                 INTRQ &= ~INTRQ_TM3;
         }
         if (INTRQ & INTRQ_TM2) {  // TM2 interrupt request?
                 serial_tx_irq_handler();     // Process next Serial Bit
-                TICK_INTERPRETER_CLOCK;
                 INTRQ &= ~INTRQ_TM2;
         }
 }
@@ -52,7 +52,6 @@ void reset_prog() {
 void handle_rx() {
         uint8_t rx_char;
         if (process_serial_rx_byte(&rx_char)) {
-                putchar(rx_char);
                 // Start char received
                 if (rx_char == START_CHAR) {
                         state = transmission_start;
@@ -60,7 +59,6 @@ void handle_rx() {
                 } else if (state == transmission_start) {
                         if (rx_char == *serial_number) {
                                 state = line_prog;
-                                PA |= (1 << LED_PIN);
                         } else {
                                 reset_prog();
                         }
@@ -86,10 +84,34 @@ void handle_rx() {
 void main(void) {
         // Initialize hardware
         serial_setup();
-        PAC |= (1 << LED_PIN);     // Enable LED Pin as output
+        setup_interpreter_hardware();
 
         INTRQ = 0;
         __engint();                 // Enable global interrupts
+
+#ifdef TEST
+        program_buf[0] = 0x08;
+        program_buf[1] = 0x08;
+        program_buf[2] = 0x08;
+        program_buf[3] = 0x01;
+
+        program_buf[4] = 0x10;
+        program_buf[5] = 0x00;
+        program_buf[6] = 0x01;
+
+        program_buf[7] = 0x08;
+        program_buf[8] = 0x08;
+        program_buf[9] = 0x08;
+        program_buf[10] = 0x00;
+
+        program_buf[11] = 0x10;
+        program_buf[12] = 0x00;
+        program_buf[13] = 0x0A;
+
+        program_buf_pos = 14;
+        set_program(program_buf, program_buf_pos);
+        state = prog_ready;
+#endif
 
         // Main processing loop
         while (1) {

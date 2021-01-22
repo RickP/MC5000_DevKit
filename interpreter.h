@@ -1,9 +1,11 @@
 #ifndef __INTERPRETER_H__
 #define __INTERPRETER_H__
 
-#define TICK_INTERPRETER_CLOCK clock_tick++
+#define INTERPRETER_CLOCK_TICK clock_tick++
 #define GET16 (program[current_pos++] << 8) + program[current_pos++]
 #define GET8 program[current_pos++]
+
+#define SLEEP_TICKS 100
 
 uint8_t *program;
 uint8_t program_size = 0;
@@ -11,7 +13,8 @@ uint8_t current_pos = 0;
 uint16_t u16_1;
 uint16_t u16_2;
 uint8_t u8;
-volatile uint16_t clock_tick;
+uint16_t sleep_until = 0;
+volatile uint16_t clock_tick = 0;
 
 typedef enum {
         none=0,
@@ -44,25 +47,38 @@ const uint8_t commands[NUM_COMMANDS] = {
         0x12 << 2,   // end
 };
 
+#define LED_PIN 4
+
+void setup_interpreter_hardware() {
+    PAC |= (1 << LED_PIN);     // Enable LED Pin as output
+}
+
 void set_program(uint8_t *new_program, uint8_t new_program_size) {
         program = new_program;
         program_size = new_program_size;
         current_pos = 0;
+        sleep_until = 0;
 }
 
 uint8_t run_program_line() {
+        // Sleep if we need to
+        if (sleep_until && clock_tick < sleep_until) {
+            return 0;
+        }
+        sleep_until = 0;
+
         // Handle end of program buffer
         if (current_pos >= program_size-1) current_pos = 0;
 
         // get current command including condition
         uint8_t command = program[current_pos];
         // Get condition for command
-        if (program[current_pos] && 0x01) condition = true;
-        else if (program[current_pos] && 0x02) condition = false;
+        if (command && 0x01) condition = true;
+        else if (command && 0x02) condition = false;
         else condition = none;
 
         // Remove condition bits
-        command &= 0x03;
+        command &= 0xFC;
 
         // Get command number from static list
         uint8_t command_num = 0;
@@ -84,12 +100,19 @@ uint8_t run_program_line() {
             case 2: // mov R/I R
                 u16_1 = GET16;
                 u8 = GET8;
+                if (u8) {
+                    PA |= (1 << LED_PIN);
+                } else {
+                    PA &= ~(1 << LED_PIN);
+                }
                 break;
             case 3: // jmp L
                 u8 = GET8;
                 break;
             case 4: // slp R/I
                 u16_1 = GET16;
+                sleep_until = u16_1 * SLEEP_TICKS;
+                clock_tick = 0;
                 break;
             case 5: // slx P
                 u8 = GET8;

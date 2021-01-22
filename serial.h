@@ -26,13 +26,13 @@ void serial_setup() {
         INTEN |= INTEN_PA0;      //Enable PA0 interrupt
 
         // Setup timer2 (TM2) interrupt for 19200 baud tx
-        TM2C = TM2C_CLK_IHRC;                   // Use IHRC -> 16 Mhz
-        TM2S = TM2S_PRESCALE_NONE | TM2S_SCALE_DIV8; // No prescale, scale 8 ~> 2MHz
+        TM2C = TM2C_CLK_IHRC;                   // Use IHRC -> 8 Mhz
+        TM2S = TM2S_PRESCALE_NONE | TM2S_SCALE_DIV8; // No prescale, scale 8 ~> 1MHz
         TM2B = TX_BYTE_CLK_COUNTS;                             // Divide by 138 - serial triggered every 5 clock interrupts ~> 19417 Hz (apx. 19200 baud)
 
         // Setup timer3 (TM3) interrupt for 19200 baud rx
-        TM3C = TM2C_CLK_IHRC;                   // Use IHRC -> 16 Mhz
-        TM3S = TM3S_PRESCALE_DIV16 | TM3S_SCALE_DIV8; // No prescale, scale 8 ~> 2MHz
+        TM3C = TM2C_CLK_IHRC;                   // Use IHRC -> 8 Mhz
+        TM3S = TM3S_PRESCALE_DIV16 | TM3S_SCALE_DIV8; // No prescale, scale 8 ~> 1MHz
         TM3B = RX_BYTE_CLK_COUNTS;                             // Divide by 138 - serial triggered every 5 clock interrupts ~> 19417 Hz (apx. 19200 baud)
 
         PAC |= (1 << SERIAL_TX_PIN);            // Enable TX Pin as output
@@ -87,22 +87,14 @@ uint8_t process_serial_rx_byte(uint8_t *c) {
         if (byte_needs_processing && rxdata) {
                 *c = 0;
 
-                // serial_println("----");
-
                 for (uint8_t i = 2; i < CNT_BUF_MAX; ++i) {
                         uint8_t bit = (rxdata & (1 << i)) !=0;
-
-                        // char s[4];
-                        // itoa(cnt_buf[i], s);
-                        // serial_println(s);
 
                         for (uint8_t j = 0; j < cnt_buf[i]/RX_INTERVAL; ++j) {
                                 *c = (*c >> 1);
                                 if (bit == 0) *c |= 0x80;
                         }
                 }
-
-                // serial_println("----");
 
                 rxdata = 0;
                 for (uint8_t i = 0; i < CNT_BUF_MAX; ++i) cnt_buf[i] = 0;
