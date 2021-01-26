@@ -3,12 +3,13 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include "easypdk/pdk.h"
 
 // Serial TX is on PA7
 #define SERIAL_TX_PIN       7
 #define SERIAL_RX_BIT       0
 
-#define TX_BYTE_CLK_COUNTS 206
+#define TX_BYTE_CLK_COUNTS 207
 #define RX_BYTE_CLK_COUNTS 142
 #define RX_INTERVAL 12
 #define CNT_BUF_MAX 11
@@ -18,6 +19,8 @@ volatile uint16_t rxdata = 0;  // Serial data bit array
 volatile uint16_t txdata; // Serial data shift register
 volatile uint8_t bit_counter = 0;  // bit counter
 volatile uint8_t byte_needs_processing = 0;
+
+const uint8_t hex_lookup[] = "0123456789ABCDEF";
 
 void serial_setup() {
 
@@ -72,6 +75,14 @@ void serial_rx_pin_irq_handler() {
 
 void serial_println(char *str) {
         puts(str);
+}
+
+void serial_printhex(uint8_t i) {
+    char s[5] = "0x";
+    s[2] = hex_lookup[i >> 4];
+    s[3] = hex_lookup[i & 0x0f];
+    s[4] = '\0';
+    puts(s);
 }
 
 int putchar(int c) {

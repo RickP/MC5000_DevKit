@@ -12,8 +12,32 @@ class MainWindow(wx.Frame):
 
         # A "-1" in the size parameter instructs wxWidgets to use the default size.
         # In this case, we select 200px width and the default height.
-        wx.Frame.__init__(self, parent, title=title, size=(600,-1))
+        wx.Frame.__init__(self, parent, title=title, size=(600, 300))
+
         self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+
+        self.sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.sizer3 = wx.BoxSizer(wx.VERTICAL)
+
+        self.add_register = wx.StaticText(self, 0, label="-")
+        self.program_status = wx.StaticText(self, 0, label="-")
+        self.sizer3.AddSpacer(10)
+        self.sizer3.Add(wx.StaticText(self, 0, label="ADD"), 0)
+        self.sizer3.Add(self.add_register, 0)
+        self.sizer3.AddSpacer(5)
+        self.sizer3.Add(wx.StaticLine(self, 0, style = wx.LI_HORIZONTAL), 0, wx.EXPAND)
+        self.sizer3.AddSpacer(5)
+        self.sizer3.Add(wx.StaticText(self, 0, label="Status"), 0)
+        self.sizer3.Add(self.program_status, 0)
+        self.sizer3.AddSpacer(5)
+        self.sizer3.Add(wx.StaticLine(self, 0, style = wx.LI_HORIZONTAL), 0, wx.EXPAND)
+
+        self.sizer2.Add(self.control, 1, wx.EXPAND)
+        self.sizer2.AddSpacer(5)
+        self.sizer2.Add(self.sizer3, 0, wx.EXPAND)
+        self.sizer2.AddSpacer(5)
+
         self.CreateStatusBar() # A Statusbar in the bottom of the window
 
         # Setting up the menu.
@@ -32,7 +56,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
 
-        self.sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer4 = wx.BoxSizer(wx.HORIZONTAL)
         self.buttons = []
 
         self.upload_button = wx.Button(self, -1, "Upload")
@@ -42,21 +66,20 @@ class MainWindow(wx.Frame):
 
         self.mcu_selector = wx.Choice(self, -1, choices=["0","1","2"])
 
-        self.sizer2.AddSpacer(5);
-        self.sizer2.Add(wx.StaticText(self, -1, label="Serialport: "), 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL)
-        self.sizer2.Add(self.serial_selector, 2, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, 2)
-        self.sizer2.AddSpacer(5);
-        self.sizer2.Add(wx.StaticText(self, -1, label="MCU ID: "), 3, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL)
-        self.sizer2.Add(self.mcu_selector, 4, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, 2)
-        self.sizer2.AddSpacer(5);
-        self.sizer2.Add(self.upload_button, 5)
-        self.sizer2.AddSpacer(5);
-
+        self.sizer4.AddSpacer(5)
+        self.sizer4.Add(wx.StaticText(self, 0, label="Serialport: "), -1)
+        self.sizer4.Add(self.serial_selector, 1)
+        self.sizer4.AddSpacer(5)
+        self.sizer4.Add(wx.StaticText(self, 0, label="MCU ID: "), -1)
+        self.sizer4.Add(self.mcu_selector, 1)
+        self.sizer4.AddSpacer(5)
+        self.sizer4.Add(self.upload_button, 1)
+        self.sizer4.AddSpacer(5)
 
         # Use some sizers to see layout options
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.control, 1, wx.EXPAND)
-        self.sizer.Add(self.sizer2, 0, wx.EXPAND)
+        self.sizer.Add(self.sizer2, 1, wx.EXPAND)
+        self.sizer.Add(self.sizer4, 0, wx.EXPAND)
 
         #Layout sizers
         self.SetSizer(self.sizer)
@@ -103,5 +126,5 @@ class MainWindow(wx.Frame):
 
 
 app = wx.App(False)
-frame = MainWindow(None, "MCxxxx IDE V0.1 pre-alpha")
+frame = MainWindow(None, "MCxxxx IDE V0.2 alpha")
 app.MainLoop()
