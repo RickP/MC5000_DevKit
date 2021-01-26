@@ -1,12 +1,18 @@
-//adopted from: https://github.com/joshgerdes/arduino-led-matrix
 #include <stdint.h>
-#include "easypdk/pdk.h"
+#include "easypdk/pfs173.h"
 #include "easypdk/pdkcommon.h"
 #include "serial.h"
 #include "interpreter.h"
 #include "delay.h"
 
 #define TEST
+#if __INTELLISENSE__
+#pragma diag_suppress 40
+#pragma diag_suppress 79
+#pragma diag_suppress 144
+#pragma diag_suppress 169
+#pragma diag_suppress 411
+#endif
 
 // Insert serial number
 EASY_PDK_SERIAL(serial_number);
@@ -30,7 +36,7 @@ typedef enum {
 
 prog_state state = empty_prog;
 
-void interrupt(void) __interrupt(0) {
+void interrupt_routine() __interrupt(0) {
         if (INTRQ & INTRQ_TM2) {  // TM2 interrupt request?
                 serial_tx_irq_handler();     // Process next Serial Bit
                 INTRQ &= ~INTRQ_TM2;
@@ -112,8 +118,8 @@ void main(void) {
         __engint();                 // Enable global interrupts
 
 #ifdef TEST
-        program_buf[0] = 0x08;
-        program_buf[1] = 0x00;
+        program_buf[0] = (uint8_t) 0x08;
+        program_buf[1] = (uint8_t) 0x00;
         program_buf[2] = 0x3F;
         program_buf[3] = 0xC0;
 
