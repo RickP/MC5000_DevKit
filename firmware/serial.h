@@ -78,10 +78,10 @@ void serial_println(char *str) {
 }
 
 void serial_printhex(uint8_t i) {
-    char s[5] = "0x";
-    s[2] = hex_lookup[i >> 4];
-    s[3] = hex_lookup[i & 0x0f];
-    s[4] = '\0';
+    char s[3] = "";
+    s[0] = hex_lookup[i >> 4];
+    s[1] = hex_lookup[i & 0x0f];
+    s[2] = '\0';
     puts(s);
 }
 

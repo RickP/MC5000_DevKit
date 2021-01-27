@@ -6,13 +6,17 @@ from lib.mcu_control import MCUControl
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
 
-        self.mcu = MCUControl()
+        self.mcu = None
 
         self.dirname=''
 
         # A "-1" in the size parameter instructs wxWidgets to use the default size.
         # In this case, we select 200px width and the default height.
         wx.Frame.__init__(self, parent, title=title, size=(600, 300))
+
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.update, self.timer)
+        self.timer.Start(milliseconds=300)
 
         self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
 
@@ -21,15 +25,15 @@ class MainWindow(wx.Frame):
         self.sizer3 = wx.BoxSizer(wx.VERTICAL)
 
         self.add_register = wx.StaticText(self, 0, label="-")
-        self.program_status = wx.StaticText(self, 0, label="-")
+        self.dat_register = wx.StaticText(self, 0, label="-")
         self.sizer3.AddSpacer(10)
         self.sizer3.Add(wx.StaticText(self, 0, label="ADD"), 0)
         self.sizer3.Add(self.add_register, 0)
         self.sizer3.AddSpacer(5)
         self.sizer3.Add(wx.StaticLine(self, 0, style = wx.LI_HORIZONTAL), 0, wx.EXPAND)
         self.sizer3.AddSpacer(5)
-        self.sizer3.Add(wx.StaticText(self, 0, label="Status"), 0)
-        self.sizer3.Add(self.program_status, 0)
+        self.sizer3.Add(wx.StaticText(self, 0, label="DAT"), 0)
+        self.sizer3.Add(self.dat_register, 0)
         self.sizer3.AddSpacer(5)
         self.sizer3.Add(wx.StaticLine(self, 0, style = wx.LI_HORIZONTAL), 0, wx.EXPAND)
 
@@ -87,6 +91,15 @@ class MainWindow(wx.Frame):
         #self.sizer.Fit(self)
         self.Show()
 
+    def update(self,e):
+        if self.mcu:
+            registers = self.mcu.GetStatus()
+            if registers and len(registers) == 2:
+                self.add_register.SetLabel(str(registers[0]))
+                self.dat_register.SetLabel(str(registers[1]))
+
+
+
     def OnAbout(self,e):
         # Create a message dialog box
         dlg = wx.MessageDialog(self, " An IDE for the MCxxxx series of processors", "", wx.OK)
@@ -119,10 +132,19 @@ class MainWindow(wx.Frame):
         return widget
 
     def OnUpload(self,e):
-        code = self.control.GetValue()
+        if self.mcu:
+            del(self.mcu)
+
+        self.timer.Stop()
+
         serial_port = self.serial_selector.GetString(self.serial_selector.GetSelection())
+
+        self.mcu = MCUControl(serial_port)
+
+        code = self.control.GetValue()
         mcu_id = self.mcu_selector.GetString(self.mcu_selector.GetSelection())
-        self.mcu.UploadCode(code, mcu_id, serial_port)
+        self.mcu.UploadCode(code, mcu_id)
+        self.timer.Start()
 
 
 app = wx.App(False)

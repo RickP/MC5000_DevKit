@@ -5,7 +5,8 @@
 #include "interpreter.h"
 #include "delay.h"
 
-#define TEST
+#define TEST_PROGRAM
+#define TEST_OUTPUT_
 #if __INTELLISENSE__
 #pragma diag_suppress 40
 #pragma diag_suppress 79
@@ -22,9 +23,10 @@ EASY_PDK_SERIAL(serial_number);
 #define START_CHAR '$'
 #define STOP_CHAR '&'
 
+int8_t ret[4] = {0x00, 0x00, 0x00, 0x00};
+
 uint8_t program_buf[PROGSIZE] = {0};
 uint8_t program_buf_pos = 0;
-int8_t ret[4];
 
 typedef enum {
         faulty_prog,
@@ -62,22 +64,17 @@ void handle_rx() {
         if (process_serial_rx_byte(&rx_char)) {
                 // Start char received
                 if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) {
-                        for (int i=0; i < 4; i++) {
-                            ret[i] = 0x80;
-                        }
                         if (prog_ready) handle_interpreter_status_request(ret);
-                        #ifdef TEST
-                            for (int i=0; i<4; i++) {
-                                if (i == 0) {
-                                    serial_println("--ACC--");
-                                } else if (i == 2) {
-                                    serial_println("--DAT--");
-                                }
-                                serial_printhex(ret[i]);
+                        for (int i=0; i<4; i++) {
+                            #ifdef TEST_OUTPUT
+                            if (i == 0) {
+                                serial_println("--ACC--");
+                            } else if (i == 2) {
+                                serial_println("--DAT--");
                             }
-                        #else
-                            serial_println(ret);
-                        #endif
+                            #endif
+                            serial_printhex(ret[i]);
+                        }
                 } else if (rx_char == START_CHAR) {
                         state = transmission_start;
                         program_buf_pos = 0;
@@ -117,7 +114,7 @@ void main(void) {
         INTRQ = 0;
         __engint();                 // Enable global interrupts
 
-#ifdef TEST
+#ifdef TEST_PROGRAM
         program_buf[0] = (uint8_t) 0x08;
         program_buf[1] = (uint8_t) 0x00;
         program_buf[2] = 0x3F;
