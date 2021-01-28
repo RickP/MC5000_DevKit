@@ -10,7 +10,7 @@
 #define INTERPRETER_CLOCK_TICK clock_tick++
 #define GET_RI get_val(program[current_pos++], program[current_pos++])
 #define GET_R program[current_pos++]
-#define CHECK_CONDITION(x) if (condition != none && condition != current_condition) {current_pos += (uint8_t) x; break;}
+#define CHECK_CONDITION(x) if (command_condition != none && current_condition != command_condition) {current_pos += (uint8_t) x; break;}
 
 
 #define SLEEP_TICKS 100
@@ -37,7 +37,7 @@ typedef enum {
         false=2
 } true_or_false;
 
-true_or_false condition;
+true_or_false current_condition;
 
 #define NUM_COMMANDS 19 // MAX 31!
 const uint8_t commands[NUM_COMMANDS] = {
@@ -58,8 +58,6 @@ const uint8_t commands[NUM_COMMANDS] = {
         0x0E << 2,   // dgt R/I
         0x0F << 2,   // dst R/I R/I
         0x10 << 2,   // label L
-        0x11 << 2,   // loop
-        0x12 << 2,   // end
 };
 
 #define P0_PIN 3
@@ -192,7 +190,7 @@ void reset_program() {
         clock_tick = 0;
         acc_register = 0;
         dat_register = 0;
-        condition = none;
+        current_condition = none;
         xbus0_data = 0;
         xbus1_data = 0;
         xbus_state = 0;
@@ -321,22 +319,22 @@ uint8_t run_program_line() {
             // @ToDo receive xbus transmission
         }
 
-        true_or_false current_condition = none;
-
         // Handle end of program buffer
         if (current_pos >= program_size-1) current_pos = 0;
 
-        // get current command including condition
+        // get current command including current_condition
         uint8_t command = program[current_pos];
-        // Get condition for command
+
+        // Get current_condition for command
+        true_or_false command_condition = none;
         if (command & 0x01) {
-            current_condition = true;
+            command_condition = true;
         }
         else if (command & 0x02) {
-            current_condition = false;
+            command_condition = false;
         }
 
-        // Remove condition bits
+        // Remove current_condition bits
         command &= 0xFC;
 
         // Get command number from static list
@@ -379,7 +377,7 @@ uint8_t run_program_line() {
                 CHECK_CONDITION(1);
                 reg = GET_R;
                 // fist two bits of argument encode the XBus port to use
-                if (reg & 0x40) {
+                if (reg) {
                     get_x1_value();
                 } else {
                     get_x0_value();
@@ -390,9 +388,9 @@ uint8_t run_program_line() {
                 ri_1 = GET_RI;
                 ri_2 = GET_RI;
                 if (ri_1 == ri_2) {
-                    condition = true;
+                    current_condition = true;
                 } else {
-                    condition = false;
+                    current_condition = false;
                 }
                 break;
             case 7: // tgt R/I R/I
@@ -400,9 +398,9 @@ uint8_t run_program_line() {
                 ri_1 = GET_RI;
                 ri_2 = GET_RI;
                 if (ri_1 > ri_2) {
-                    condition = true;
+                    current_condition = true;
                 } else {
-                    condition = false;
+                    current_condition = false;
                 }
                 break;
             case 8: // tlt R/I R/I
@@ -410,9 +408,9 @@ uint8_t run_program_line() {
                 ri_1 = GET_RI;
                 ri_2 = GET_RI;
                 if (ri_1 < ri_2) {
-                    condition = true;
+                    current_condition = true;
                 } else {
-                    condition = false;
+                    current_condition = false;
                 }
                 break;
             case 9: // tcp R/I R/I
@@ -420,11 +418,11 @@ uint8_t run_program_line() {
                 ri_1 = GET_RI;
                 ri_2 = GET_RI;
                 if (ri_1 > ri_2) {
-                    condition = true;
+                    current_condition = true;
                 } else if (ri_1 < ri_2) {
-                    condition = false;
+                    current_condition = false;
                 } else {
-                    condition = none;
+                    current_condition = none;
                 }
                 break;
             case 10: // add R/I
@@ -473,12 +471,6 @@ uint8_t run_program_line() {
                 break;
             case 16: // label L
                 current_pos++; // Label, jump to next command
-                break;
-            case 17: // loop
-                // Loop, jump to next command
-                break;
-            case 18: // end
-                // End, jump to start of loop
                 break;
         }
         return 0;

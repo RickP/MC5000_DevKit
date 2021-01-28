@@ -27,6 +27,8 @@ int8_t ret[4] = {0, 0, 0, 0};
 uint8_t program_buf[PROGSIZE] = {0};
 uint8_t program_buf_pos = 0;
 
+uint8_t mainloop_counter = 0;
+
 typedef enum {
         faulty_prog,
         empty_prog,
@@ -152,10 +154,12 @@ void main(void) {
         // Main processing loop
         while (1) {
                 handle_rx();
-                if (state == prog_ready) {
-                    if (run_program_line()) {
-                        reset_prog(); // Program failed in interpreter - reset it
-                    }
+                if (mainloop_counter++ == 0) {
+                        if (state == prog_ready) {
+                                if (run_program_line()) {
+                                        reset_prog(); // Program failed in interpreter - reset it
+                                }
+                        }
                 }
         }
 }

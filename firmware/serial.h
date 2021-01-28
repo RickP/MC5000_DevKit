@@ -30,16 +30,16 @@ void serial_setup() {
 
         // Setup timer2 (TM2) interrupt for 19200 baud tx
         TM2C = TM2C_CLK_IHRC;                   // Use IHRC -> 8 Mhz
-        TM2S = TM3S_PRESCALE_NONE | TM2S_SCALE_DIV32; // No prescale, scale 8 ~> 1MHz
+        TM2S = TM3S_PRESCALE_NONE | TM2S_SCALE_DIV8; // No prescale, scale 8 ~> 1MHz
         TM2B = TX_BYTE_CLK_COUNTS;                             // Divide by 138 - serial triggered every 5 clock interrupts ~> 19417 Hz (apx. 19200 baud)
 
         // Setup timer3 (TM3) interrupt for 19200 baud rx
         TM3C = TM2C_CLK_IHRC;                   // Use IHRC -> 8 Mhz
-        TM3S = TM3S_PRESCALE_DIV16 | TM2S_SCALE_DIV32; // No prescale, scale 8 ~> 1MHz
+        TM3S = TM3S_PRESCALE_DIV16 | TM2S_SCALE_DIV8; // No prescale, scale 8 ~> 1MHz
         TM3B = RX_BYTE_CLK_COUNTS;                             // Divide by 138 - serial triggered every 5 clock interrupts ~> 19417 Hz (apx. 19200 baud)
 
         PAC |= (1 << SERIAL_TX_PIN);            // Enable TX Pin as output
-        txdata = 0xD55F;                        // Setup 2 stop bits, 0x55 char for autobaud, 1 start bit, 5 stop bits
+        //txdata = 0xD55F;                        // Setup 2 stop bits, 0x55 char for autobaud, 1 start bit, 5 stop bits
         INTEN |= INTEN_TM2;                     // Enable TM2 interrupt, send out initial stop bits and autobaud char
         INTEN |= INTEN_TM3;                     // Enable TM3 interrupt
 

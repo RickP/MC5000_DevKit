@@ -16,7 +16,7 @@ class MainWindow(wx.Frame):
 
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
-        self.timer.Start(milliseconds=900)
+        self.timer.Start(milliseconds=400)
 
         self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
 
@@ -91,7 +91,7 @@ class MainWindow(wx.Frame):
         #self.sizer.Fit(self)
         self.Show()
 
-    def update(self,e):
+    def update(self, e):
         if self.mcu:
             registers = self.mcu.GetStatus()
             if registers and len(registers) == 2:
@@ -100,7 +100,7 @@ class MainWindow(wx.Frame):
 
 
 
-    def OnAbout(self,e):
+    def OnAbout(self, e):
         # Create a message dialog box
         dlg = wx.MessageDialog(self, " An IDE for the MCxxxx series of processors", "", wx.OK)
         dlg.ShowModal() # Shows it
