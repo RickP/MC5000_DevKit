@@ -1,8 +1,6 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
-#include <stdint.h>
-#include <stdio.h>
 #include "easypdk/pdk.h"
 
 // Serial TX is on PA7
@@ -73,24 +71,23 @@ void serial_rx_pin_irq_handler() {
                 rxdata |= 1 << bit_counter;
 }
 
-void serial_println(char *str) {
-        puts(str);
+inline uint8_t putchar(uint8_t c)
+{
+        while (txdata)
+                ;                  // Wait for completion of previous transmission
+        INTEN &= ~INTEN_TM2;       // Disable TM2 (setup of 16 bit value txdata is non atomic)
+        txdata = (c << 1) | 0x200; // Setup txdata with start and stop bit
+        INTEN |= INTEN_TM2;        // Enable TM2
+        return (c);
 }
 
 void serial_printhex(uint8_t i) {
-    char s[3] = "";
+    char s[2];
     s[0] = hex_lookup[i >> 4];
     s[1] = hex_lookup[i & 0x0f];
-    s[2] = '\0';
-    puts(s);
-}
-
-int putchar(int c) {
-        while (txdata);                         // Wait for completion of previous transmission
-        INTEN &= ~INTEN_TM2;                    // Disable TM2 (setup of 16 bit value txdata is non atomic)
-        txdata = (c << 1) | 0x200;              // Setup txdata with start and stop bit
-        INTEN |= INTEN_TM2;                     // Enable TM2
-        return (c);
+    putchar(s[0]);
+    putchar(s[1]);
+    putchar('\n');
 }
 
 uint8_t process_serial_rx_byte(uint8_t *c) {

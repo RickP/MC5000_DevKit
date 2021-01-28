@@ -1,7 +1,6 @@
 #ifndef __INTERPRETER_H__
 #define __INTERPRETER_H__
 
-#include <stdint.h>
 #include "easypdk/pdk.h"
 #include "delay.h"
 #include "serial.h"
