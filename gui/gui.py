@@ -16,7 +16,7 @@ class MainWindow(wx.Frame):
 
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
-        self.timer.Start(milliseconds=300)
+        self.timer.Start(milliseconds=900)
 
         self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
 
@@ -24,11 +24,11 @@ class MainWindow(wx.Frame):
 
         self.sizer3 = wx.BoxSizer(wx.VERTICAL)
 
-        self.add_register = wx.StaticText(self, 0, label="-")
+        self.acc_register = wx.StaticText(self, 0, label="-")
         self.dat_register = wx.StaticText(self, 0, label="-")
         self.sizer3.AddSpacer(10)
-        self.sizer3.Add(wx.StaticText(self, 0, label="ADD"), 0)
-        self.sizer3.Add(self.add_register, 0)
+        self.sizer3.Add(wx.StaticText(self, 0, label="ACC"), 0)
+        self.sizer3.Add(self.acc_register, 0)
         self.sizer3.AddSpacer(5)
         self.sizer3.Add(wx.StaticLine(self, 0, style = wx.LI_HORIZONTAL), 0, wx.EXPAND)
         self.sizer3.AddSpacer(5)
@@ -68,7 +68,7 @@ class MainWindow(wx.Frame):
 
         self.serial_selector = self.getSerialChoiceWidget()
 
-        self.mcu_selector = wx.Choice(self, -1, choices=["0","1","2"])
+        self.mcu_selector = wx.Choice(self, -1, choices=["1", "2", "3"])
 
         self.sizer4.AddSpacer(5)
         self.sizer4.Add(wx.StaticText(self, 0, label="Serialport: "), -1)
@@ -95,7 +95,7 @@ class MainWindow(wx.Frame):
         if self.mcu:
             registers = self.mcu.GetStatus()
             if registers and len(registers) == 2:
-                self.add_register.SetLabel(str(registers[0]))
+                self.acc_register.SetLabel(str(registers[0]))
                 self.dat_register.SetLabel(str(registers[1]))
 
 

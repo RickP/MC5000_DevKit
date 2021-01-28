@@ -8,8 +8,8 @@
 #include "manchester.h"
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
-#define GET16 get_val(program[current_pos++], program[current_pos++])
-#define GET8 program[current_pos++]
+#define GET_RI get_val(program[current_pos++], program[current_pos++])
+#define GET_R program[current_pos++]
 #define CHECK_CONDITION(x) if (condition != none && condition != current_condition) {current_pos += (uint8_t) x; break;}
 
 
@@ -18,16 +18,16 @@
 uint8_t *program;
 uint8_t program_size = 0;
 uint8_t current_pos = 0;
-uint16_t u16_1;
-uint16_t u16_2;
-uint8_t u8;
-uint16_t xbus0_data = 0;
+uint16_t ri_1;
+uint16_t ri_2;
+uint8_t reg;
+int16_t xbus0_data = 0;
 uint8_t xbus0_ticks = 0;
-uint16_t xbus1_data = 0;
+int16_t xbus1_data = 0;
 uint8_t xbus1_ticks = 0;
 uint8_t xbus_state = 0;
-uint16_t acc_register = 0;
-uint16_t dat_register = 0;
+int16_t acc_register = 0;
+int16_t dat_register = 0;
 volatile uint16_t clock_tick = 0;
 uint16_t sleep_until = 0;
 
@@ -39,7 +39,7 @@ typedef enum {
 
 true_or_false condition;
 
-#define NUM_COMMANDS 19
+#define NUM_COMMANDS 19 // MAX 31!
 const uint8_t commands[NUM_COMMANDS] = {
         0x0,   // failure
         0x01 << 2,   // nop
@@ -180,27 +180,30 @@ void setup_interpreter_hardware() {
 }
 
 void handle_interpreter_status_request(uint8_t * ret) {
-        ret[0] = acc_register >> 8;
-        ret[1] = acc_register & 0xFF;
-        ret[2] = dat_register >> 8;
-        ret[3] = dat_register & 0xFF;
+        ret[0] = acc_register+1000 >> 8;
+        ret[1] = acc_register+1000 & 0xFF;
+        ret[2] = dat_register+1000 >> 8;
+        ret[3] = dat_register+1000 & 0xFF;
 }
 
-void set_program(uint8_t *new_program, uint8_t new_program_size) {
-        program = new_program;
-        program_size = new_program_size;
+void reset_program() {
         // Reset registers and outputs
         current_pos = 0;
         clock_tick = 0;
         acc_register = 0;
         dat_register = 0;
         condition = none;
-        set_p0_value(0);
-        set_p1_value(0);
         xbus0_data = 0;
         xbus1_data = 0;
         xbus_state = 0;
         sleep_until = 0;
+        set_p0_value(0);
+        set_p1_value(0);
+}
+
+void set_program(uint8_t *new_program, uint8_t new_program_size) {
+        program = new_program;
+        program_size = new_program_size;
 }
 
 uint8_t find_label(uint8_t label) {
@@ -213,34 +216,32 @@ uint8_t find_label(uint8_t label) {
     return 0;
 }
 
-uint16_t get_val(uint8_t argh, uint8_t argl) {
+// Get value for an R/I type parameter
+int16_t get_val(uint8_t argh, uint8_t argl) {
 
-    uint16_t arg = argh;
-    arg <<= 8;
-    arg |= argl;
-
-    // If last 11 bits are 1 this is a register.
-    if ((arg & 0x07FF) == 0x07FF) {
-        // Bit 0 defines memory (1) or pin (0)
-        if (arg & 0x8000) {
-            // memory -> bit 1 defines acc (1) or dat(0)
-            if (arg & 0x4000) {
+    // analyze first byte
+    // Bit 1 of argh defines register (1) or scalar (0)
+    if (argh & 0x40) {
+        // Bit 2 defines memory (1) or pin (0)
+        if (argh & 0x20) {
+            // memory -> bit 3 defines acc (1) or dat(0)
+            if (argh & 0x10) {
                 return acc_register;
             } else {
                 return dat_register;
             }
         } else {
-            // pin -> bit 1 defines p(1) or x(0)
-            if (arg & 0x4000) {
-                // p pin -> bits 2+3 define port num
-                if (arg & 0x1000) {
+            // pin -> bit 3 defines p(1) or x(0)
+            if (argh & 0x10) {
+                // p pin -> bit 4 defines port num
+                if (argh & 0x08) {
                     return get_p1_value();
                 } else {
                     return get_p0_value();
                 }
             } else {
-                // x pin -> bits 2+3 define port num
-                if (arg & 0x1000) {
+                // x pin -> bit 4 defines port num
+                if (argh & 0x08) {
                     return xbus1_data;
                 } else {
                     return xbus0_data;
@@ -249,31 +250,45 @@ uint16_t get_val(uint8_t argh, uint8_t argl) {
         }
     }
 
-    // Else this is a scalar value
+    // Else this is a scalar value -> assemble the 11bit value
+    int16_t arg = argh & 0x1F; // Use the last 5 bits of argh
+    arg <<= 6; // shift them 6 positions to the left
+    arg |= argl & 0x3F; // add the last 6 bits of argl
+    arg -= 1000; // create signed integer
+
+    // Limit arg to -999 to 999
+    if (arg < -999) arg = -999;
+    else if (arg > 999) arg = 999;
+
     return arg;
 }
 
-void set_val(uint8_t reg, uint16_t arg) {
-    // Bit 0 defines memory (1) or pin (0)
+void set_val(int16_t arg, uint8_t reg) {
 
-    if (reg & 0x80) {
-        // memory -> bit 1 defines acc (1) or dat(0)
-        if (reg & 0x40) {
+    // Bit 1 of reg defines memory (1) or pin (0)
+    if (reg & 0x40) {
+        // memory -> bit 2 defines acc (1) or dat(0)
+        if (reg & 0x20) {
             acc_register = arg;
         } else {
             dat_register = arg;
         }
     } else {
-        // pin -> bit 1 defines p(1) or x(0)
-        if (reg & 0x40) {
-            // p pin -> bits 2+3 define port num
+        // pin -> bit 2 defines p(1) or x(0)
+        if (reg & 0x20) {
+            // p pin -> bit 3 defines port num
+
+            // Limit arg
+            if (arg < 0) arg = 0;
+            else if (arg > 100) arg = 100;
+
             if (reg & 0x10) {
                 set_p1_value(arg & 0xFF);
             } else {
                 set_p0_value(arg & 0xFF);
             }
         } else {
-            // x pin -> bits 2+3 define port num
+            // x pin -> bit 3 defines port num
             if (reg & 0x10) {
                 set_x1_value(arg);
             } else {
@@ -293,12 +308,7 @@ uint8_t run_program_line() {
         sleep_until = 0;
 
         if (xbus0_data & 0x8000) {
-            // send xbus transmission
-            // current state is in first nibble of xbus_last_state
-            if (xbus1_ticks-- == 0) {
-                uint16_t firstbyte = me_encode(xbus0_data & 0x7FF);
-                PA |= (1 << X1_PIN);
-            }
+            // @ToDo send xbus transmission
         }
         if (xbus0_data & 0x4000) {
             // @ToDo receive xbus transmission
@@ -349,27 +359,27 @@ uint8_t run_program_line() {
             case 2: // mov R/I R
                 // serial_println("M");
                 CHECK_CONDITION(3);
-                u16_1 = GET16;
-                u8 = GET8;
-                set_val(u8, u16_1); // set value to register/pin
+                ri_1 = GET_RI;
+                reg = GET_R;
+                set_val(ri_1, reg); // set value to register/pin
                 break;
             case 3: // jmp L
                 CHECK_CONDITION(1);
-                u8 = GET8;
-                current_pos = find_label(u8); // Set position to after label pos
+                reg = GET_R;
+                current_pos = find_label(reg); // Set position to after label pos
                 break;
             case 4: // slp R/I
                 // serial_println("S");
                 CHECK_CONDITION(2);
-                u16_1 = GET16;
+                ri_1 = GET_RI;
                 clock_tick = 0;
-                sleep_until = u16_1 * SLEEP_TICKS;
+                sleep_until = ri_1 * SLEEP_TICKS;
                 break;
             case 5: // slx P
                 CHECK_CONDITION(1);
-                u8 = GET8;
+                reg = GET_R;
                 // fist two bits of argument encode the XBus port to use
-                if (u8 & 0x40) {
+                if (reg & 0x40) {
                     get_x1_value();
                 } else {
                     get_x0_value();
@@ -377,9 +387,9 @@ uint8_t run_program_line() {
                 break;
             case 6: // teq R/I R/I
                 CHECK_CONDITION(4);
-                u16_1 = GET16;
-                u16_2 = GET16;
-                if (u16_1 == u16_2) {
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
+                if (ri_1 == ri_2) {
                     condition = true;
                 } else {
                     condition = false;
@@ -387,9 +397,9 @@ uint8_t run_program_line() {
                 break;
             case 7: // tgt R/I R/I
                 CHECK_CONDITION(4);
-                u16_1 = GET16;
-                u16_2 = GET16;
-                if (u16_1 > u16_2) {
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
+                if (ri_1 > ri_2) {
                     condition = true;
                 } else {
                     condition = false;
@@ -397,9 +407,9 @@ uint8_t run_program_line() {
                 break;
             case 8: // tlt R/I R/I
                 CHECK_CONDITION(4);
-                u16_1 = GET16;
-                u16_2 = GET16;
-                if (u16_1 < u16_2) {
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
+                if (ri_1 < ri_2) {
                     condition = true;
                 } else {
                     condition = false;
@@ -407,11 +417,11 @@ uint8_t run_program_line() {
                 break;
             case 9: // tcp R/I R/I
                 CHECK_CONDITION(4);
-                u16_1 = GET16;
-                u16_2 = GET16;
-                if (u16_1 > u16_2) {
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
+                if (ri_1 > ri_2) {
                     condition = true;
-                } else if (u16_1 < u16_2) {
+                } else if (ri_1 < ri_2) {
                     condition = false;
                 } else {
                     condition = none;
@@ -419,25 +429,25 @@ uint8_t run_program_line() {
                 break;
             case 10: // add R/I
                 CHECK_CONDITION(2);
-                u16_1 = GET16;
-                acc_register += u16_1;
+                ri_1 = GET_RI;
+                acc_register += ri_1;
                 if (acc_register > 1998) {
                     acc_register = 1998;
                 }
                 break;
             case 11: // sub R/I
                 CHECK_CONDITION(2);
-                u16_1 = GET16;
-                if (acc_register < u16_1) {
+                ri_1 = GET_RI;
+                if (acc_register < ri_1) {
                     acc_register = 0;
                 } else {
-                    acc_register -= u16_1;
+                    acc_register -= ri_1;
                 }
                 break;
             case 12: // mul R/I
                 CHECK_CONDITION(2);
-                u16_1 = GET16;
-                acc_register *= u16_1;
+                ri_1 = GET_RI;
+                acc_register *= ri_1;
                 if (acc_register > 1998) {
                     acc_register = 1998;
                 }
@@ -452,13 +462,13 @@ uint8_t run_program_line() {
                 break;
             case 14: // dgt R/I
                 CHECK_CONDITION(2);
-                u16_1 = GET16;
+                ri_1 = GET_RI;
                 // @ToDo: isolate a digit from acc and store it in acc
                 break;
             case 15: // dst R/I R/I
                 CHECK_CONDITION(4);
-                u16_1 = GET16;
-                u16_2 = GET16;
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
                 // @ToDo: set the digit from the first operant in acc to the scond opernat
                 break;
             case 16: // label L

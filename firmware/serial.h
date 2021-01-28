@@ -7,9 +7,9 @@
 
 // Serial TX is on PA7
 #define SERIAL_TX_PIN       7
-#define SERIAL_RX_BIT       0
+#define SERIAL_RX_PIN       0
 
-#define TX_BYTE_CLK_COUNTS 207
+#define TX_BYTE_CLK_COUNTS 206
 #define RX_BYTE_CLK_COUNTS 142
 #define RX_INTERVAL 12
 #define CNT_BUF_MAX 11
@@ -17,25 +17,25 @@
 volatile uint16_t cnt_buf[CNT_BUF_MAX];
 volatile uint16_t rxdata = 0;  // Serial data bit array
 volatile uint16_t txdata; // Serial data shift register
-volatile uint8_t bit_counter = 0;  // bit counter
+volatile uint16_t bit_counter = 0;  // bit counter
 volatile uint8_t byte_needs_processing = 0;
 
 const uint8_t hex_lookup[] = "0123456789ABCDEF";
 
 void serial_setup() {
 
-        PADIER |= (1 << SERIAL_RX_BIT);   // Enable RX as digital input
+        PADIER |= (1 << SERIAL_RX_PIN);   // Enable RX as digital input
         INTEGS = INTEGS_PA0_BOTH; //Trigger PA0 interrupt on both edges
         INTEN |= INTEN_PA0;      //Enable PA0 interrupt
 
         // Setup timer2 (TM2) interrupt for 19200 baud tx
         TM2C = TM2C_CLK_IHRC;                   // Use IHRC -> 8 Mhz
-        TM2S = TM2S_PRESCALE_NONE | TM2S_SCALE_DIV8; // No prescale, scale 8 ~> 1MHz
+        TM2S = TM3S_PRESCALE_NONE | TM2S_SCALE_DIV32; // No prescale, scale 8 ~> 1MHz
         TM2B = TX_BYTE_CLK_COUNTS;                             // Divide by 138 - serial triggered every 5 clock interrupts ~> 19417 Hz (apx. 19200 baud)
 
         // Setup timer3 (TM3) interrupt for 19200 baud rx
         TM3C = TM2C_CLK_IHRC;                   // Use IHRC -> 8 Mhz
-        TM3S = TM3S_PRESCALE_DIV16 | TM3S_SCALE_DIV8; // No prescale, scale 8 ~> 1MHz
+        TM3S = TM3S_PRESCALE_DIV16 | TM2S_SCALE_DIV32; // No prescale, scale 8 ~> 1MHz
         TM3B = RX_BYTE_CLK_COUNTS;                             // Divide by 138 - serial triggered every 5 clock interrupts ~> 19417 Hz (apx. 19200 baud)
 
         PAC |= (1 << SERIAL_TX_PIN);            // Enable TX Pin as output
@@ -69,7 +69,7 @@ void serial_rx_pin_irq_handler() {
         }
         cnt_buf[bit_counter] = TM3CT;
         TM3CT = 0;
-        if(PA & (1 << SERIAL_RX_BIT))
+        if(PA & (1 << SERIAL_RX_PIN))
                 rxdata |= 1 << bit_counter;
 }
 

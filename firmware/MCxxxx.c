@@ -5,7 +5,7 @@
 #include "interpreter.h"
 #include "delay.h"
 
-#define TEST_PROGRAM
+#define TEST_PROGRAM_
 #define TEST_OUTPUT_
 #if __INTELLISENSE__
 #pragma diag_suppress 40
@@ -18,12 +18,11 @@
 // Insert serial number
 EASY_PDK_SERIAL(serial_number);
 
-#define PROGSIZE 70
+#define PROGSIZE 60
 
-#define START_CHAR '$'
-#define STOP_CHAR '&'
+#define SIGNAL_CHAR 0x7F
 
-int8_t ret[4] = {0x00, 0x00, 0x00, 0x00};
+int8_t ret[4] = {0, 0, 0, 0};
 
 uint8_t program_buf[PROGSIZE] = {0};
 uint8_t program_buf_pos = 0;
@@ -57,6 +56,7 @@ void interrupt_routine() __interrupt(0) {
 void reset_prog() {
     state = empty_prog;
     program_buf_pos = 0;
+    reset_program();
 }
 
 void handle_rx() {
@@ -66,18 +66,8 @@ void handle_rx() {
                 if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) {
                         if (prog_ready) handle_interpreter_status_request(ret);
                         for (int i=0; i<4; i++) {
-                            #ifdef TEST_OUTPUT
-                            if (i == 0) {
-                                serial_println("--ACC--");
-                            } else if (i == 2) {
-                                serial_println("--DAT--");
-                            }
-                            #endif
                             serial_printhex(ret[i]);
                         }
-                } else if (rx_char == START_CHAR) {
-                        state = transmission_start;
-                        program_buf_pos = 0;
                 } else if (state == transmission_start) {
                         if (rx_char == *serial_number) {
                                 state = line_prog;
@@ -85,7 +75,7 @@ void handle_rx() {
                                 reset_prog();
                         }
                 } else if (state == line_prog) {
-                        if (rx_char == STOP_CHAR) {
+                        if (rx_char == SIGNAL_CHAR) {
                                 if (program_buf_pos > 2) {
                                         state = prog_ready;
                                         set_program(program_buf, program_buf_pos);
@@ -99,6 +89,9 @@ void handle_rx() {
                                         program_buf[program_buf_pos++] = rx_char;
                                 }
                         }
+                } else if (rx_char == SIGNAL_CHAR) {
+                    reset_prog();
+                    state = transmission_start;
                 }
         }
 }
@@ -115,10 +108,11 @@ void main(void) {
         __engint();                 // Enable global interrupts
 
 #ifdef TEST_PROGRAM
-        program_buf[0] = (uint8_t) 0x08;
-        program_buf[1] = (uint8_t) 0x00;
-        program_buf[2] = 0x3F;
-        program_buf[3] = 0xC0;
+
+        program_buf[0] = 0x08;
+        program_buf[1] = 0x00;
+        program_buf[2] = 0x1F;
+        program_buf[3] = 0x40;
 
         program_buf[4] = 0x08;
         program_buf[5] = 0xC7;
@@ -143,7 +137,12 @@ void main(void) {
         program_buf[20] = 0x00;
         program_buf[21] = 0x09;
 
-        program_buf_pos = 22;
+        program_buf[22] = 0x08;
+        program_buf[23] = 0x00;
+        program_buf[24] = 0x3F;
+        program_buf[25] = 0xC0;
+
+        program_buf_pos = 26;
         set_program(program_buf, program_buf_pos);
         state = prog_ready;
 #endif

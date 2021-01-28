@@ -18,7 +18,7 @@ OBJS = $(addprefix $(OUTDIR)/, $(SRCS:.c=.$(ICNAME).rel))
 
 all:
 	$(MAKE) PFS173
-	$(PROG) -s 0x30 -n PFS173 write $(TARGET)
+	$(PROG) -s 31 -n PFS173 write $(TARGET)
 
 PFS154:  $(TARGET)
 PFS172:  $(TARGET)
