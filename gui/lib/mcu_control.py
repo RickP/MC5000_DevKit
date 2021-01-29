@@ -72,8 +72,8 @@ COMMANDS = {
 class MCUControl():
 
     def __init__(self, serial_port):
-        self.serial_delay_time = 0.05
-        self.ser = serial.Serial(serial_port, 9600, timeout=0.5)  # open serial port
+        self.serial_delay_time = 0.01
+        self.ser = serial.Serial(serial_port, 19200, timeout=0.1)  # open serial port
         self.ser.reset_input_buffer()
 
 
@@ -87,17 +87,14 @@ class MCUControl():
 
     def GetStatus(self):
         if self.mcu_id is not None:
+            self.ser.reset_input_buffer()
             self.write_serial_8bit(self.mcu_id, False)
-            hex = []
-            for i in range(4):
-                line = self.ser.readline(3).rstrip()
-                if not len(line):
-                    return None
-                hex.append(line)
-            print(hex)
+            bytes = self.ser.read(4)
+            if len(bytes) < 4:
+                return None
             ret = []
-            ret.append(int(hex[0] + hex[1], 16)-1000)
-            ret.append(int(hex[2] + hex[3], 16)-1000)
+            ret.append((bytes[0] << 7 | bytes[1])-1000)
+            ret.append((bytes[2] << 7 | bytes[3])-1000)
             return ret
 
 

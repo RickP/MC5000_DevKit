@@ -3,7 +3,7 @@
 #define __DELAY_H__
 
 #include <stdint.h>
-#include "easypdk/pdk.h"
+#include "pfs173.h"
 
 void delay_ms(uint32_t msec)
 {

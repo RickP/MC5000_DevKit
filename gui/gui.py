@@ -16,7 +16,7 @@ class MainWindow(wx.Frame):
 
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
-        self.timer.Start(milliseconds=400)
+        self.timer.Start(milliseconds=200)
 
         self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
 
@@ -52,7 +52,7 @@ class MainWindow(wx.Frame):
 
         # Creating the menubar.
         menuBar = wx.MenuBar()
-        menuBar.Append(filemenu,"&File") # Adding the "filemenu" to the MenuBar
+        menuBar.Append(filemenu, "&File")  # Adding the "filemenu" to the MenuBar
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
 
         # Events.

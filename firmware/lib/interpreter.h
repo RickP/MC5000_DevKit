@@ -1,7 +1,7 @@
 #ifndef __INTERPRETER_H__
 #define __INTERPRETER_H__
 
-#include "easypdk/pdk.h"
+#include "pfs173.h"
 #include "delay.h"
 #include "serial.h"
 #include "manchester.h"
@@ -12,7 +12,7 @@
 #define CHECK_CONDITION(x) if (command_condition != none && current_condition != command_condition) {current_pos += (uint8_t) x; break;}
 
 
-#define SLEEP_TICKS 100
+#define SLEEP_TICKS 500
 
 uint8_t *program;
 uint8_t program_size = 0;
@@ -174,13 +174,6 @@ void setup_interpreter_hardware() {
     PWMG2C = PWMG2C_ENABLE;
     PWMGCUBL = 0x00;
     PWMGCUBH = 0x80;
-}
-
-void handle_interpreter_status_request(uint8_t * ret) {
-        ret[0] = acc_register+1000 >> 8;
-        ret[1] = acc_register+1000 & 0xFF;
-        ret[2] = dat_register+1000 >> 8;
-        ret[3] = dat_register+1000 & 0xFF;
 }
 
 void reset_program() {
@@ -428,25 +421,26 @@ uint8_t run_program_line() {
                 CHECK_CONDITION(2);
                 ri_1 = GET_RI;
                 acc_register += ri_1;
-                if (acc_register > 1998) {
-                    acc_register = 1998;
+                if (acc_register > 999) {
+                    acc_register = 999;
                 }
                 break;
             case 11: // sub R/I
                 CHECK_CONDITION(2);
                 ri_1 = GET_RI;
-                if (acc_register < ri_1) {
-                    acc_register = 0;
-                } else {
-                    acc_register -= ri_1;
+                acc_register -= ri_1;
+                if (acc_register < -999) {
+                    acc_register = -999;
                 }
                 break;
             case 12: // mul R/I
                 CHECK_CONDITION(2);
                 ri_1 = GET_RI;
                 acc_register *= ri_1;
-                if (acc_register > 1998) {
-                    acc_register = 1998;
+                if (acc_register > 999) {
+                    acc_register = 999;
+                } else if (acc_register < -999) {
+                    acc_register = -999;
                 }
                 break;
             case 13: // not

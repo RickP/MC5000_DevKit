@@ -16,13 +16,8 @@ LDFLAGS=-m$(ICTYPE)
 
 OBJS = $(addprefix $(OUTDIR)/, $(SRCS:.c=.$(ICNAME).rel))
 
-all:
-	$(MAKE) PFS173
-	$(PROG) -s 31 -n PFS173 write $(TARGET)
-
-PFS154:  $(TARGET)
-PFS172:  $(TARGET)
-PFS173:  $(TARGET)
+all: $(TARGET)
+	$(PROG) -s 31 -n $(ICNAME) write $(TARGET)
 
 $(OUTDIR)/%.$(ICNAME).rel: %.c .FORCE
 	$(SDCC) $(CFLAGS) -c $< -o $@
@@ -35,4 +30,4 @@ clean:
 
 .FORCE:
 
-.PHONY: all clean flash PFS173 PFS172 PFS154
+.PHONY: all clean flash
