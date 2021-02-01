@@ -125,7 +125,7 @@ class MainWindow(wx.Frame):
         default = 0
         for i, port in enumerate(serial.tools.list_ports.comports()):
             ports.append(port[0])
-            if "usbserial" in port[0]:
+            if not default and "usbserial" in port[0] or "SLAB" in port[0]:
                 default = i
         widget = wx.Choice(self, -1, choices=ports)
         widget.SetSelection(default)
@@ -143,7 +143,9 @@ class MainWindow(wx.Frame):
 
         code = self.control.GetValue()
         mcu_id = self.mcu_selector.GetString(self.mcu_selector.GetSelection())
-        self.mcu.UploadCode(code, mcu_id)
+        upload_error = self.mcu.UploadCode(code, mcu_id)
+        if upload_error is not None:
+            print(upload_error)
         self.timer.Start()
 
 

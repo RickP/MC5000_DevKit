@@ -38,7 +38,7 @@ typedef enum {
 
 true_or_false current_condition;
 
-#define NUM_COMMANDS 19 // MAX 31!
+#define NUM_COMMANDS 17 // MAX 31!
 const uint8_t commands[NUM_COMMANDS] = {
         0x0,   // failure
         0x01 << 2,   // nop
@@ -197,9 +197,8 @@ void set_program(uint8_t *new_program, uint8_t new_program_size) {
 }
 
 uint8_t find_label(uint8_t label) {
-    for (uint8_t i = 0; i < program_size-1; i++) {
-        uint8_t command = program[i] & 0xFC;
-        if (command == 16) {
+    for (uint8_t i = 0; i < program_size; i++) {
+        if (program[i] == commands[16]) {
                 if (program[i+1] == label) return i+2;
         }
     }
@@ -463,7 +462,7 @@ uint8_t run_program_line() {
                 // @ToDo: set the digit from the first operant in acc to the scond opernat
                 break;
             case 16: // label L
-                current_pos++; // Label, jump to next command
+                current_pos++; // Label, just jump to next command
                 break;
         }
         return 0;

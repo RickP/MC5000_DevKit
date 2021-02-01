@@ -108,21 +108,24 @@ class MCUControl():
 
             labels = []
 
-            for line in code.splitlines():
+            for line_num, line in enumerate(code.splitlines()):
+                for i, part in enumerate(line.split()):
+                    if part.endswith(LABEL_MARKER):
+                        if part not in labels:
+                            labels.append(part)
+
+            for line_num, line in enumerate(code.splitlines()):
                 parts = line.split()
 
                 add_to_command = 0
+
                 for i, part in enumerate(parts):
 
                     if part.startswith(COMMENT_MARKER):
                         continue
 
                     if part.endswith(LABEL_MARKER):
-                        if part in labels:
-                            label_id = labels.index(part)
-                        else:
-                            label_id = len(labels)
-                            labels.append(part)
+                        label_id = labels.index(part)
                         self.write_serial_8bit(LABEL_HEXCODE)
                         self.write_serial_8bit(label_id)
 
@@ -144,15 +147,17 @@ class MCUControl():
                             elif parameter == 'r':
                                 self.write_r(parts[i + j + 1])
                             elif parameter == 'l':
-                                print("L", parts[i + j + 1])
-                                if parts[i + j + 1] in labels:
-                                    self.write_serial_8bit(labels.index(parts[i + j + 1]))
+                                label = parts[i + j + 1] + ':'
+                                if label in labels:
+                                    self.write_serial_8bit(labels.index(label))
                                 else:
-                                    self.write_serial_8bit(len(labels))  # @FixMe: parse all labels first
+                                    self.write_end_prog()
+                                    return "Missing label definition (Line %d)" % (line_num + 1)
 
                         break
 
             self.write_end_prog()
+            return None
 
     def write_r(self, r):
         if r == 'x0':
