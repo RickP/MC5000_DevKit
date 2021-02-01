@@ -4,7 +4,6 @@
 #include "pfs173.h"
 #include "delay.h"
 #include "serial.h"
-#include "manchester.h"
 
 #define SLEEP_TICKS     500
 
@@ -12,12 +11,11 @@
 #define XBUS_SHORT_DELAY    XBUS_DELAY/5
 #define XBUS_SIGNAL_TX  ((uint8_t) 0xC000)
 #define XBUS_TX         ((uint8_t) 0x8000)
-#define XBUS_SLX        ((uint8_t) 0x7000)
-#define XBUS_SIGNAL_RX  ((uint8_t) 0x6000)
-#define XBUS_RX_START   ((uint8_t) 0x5000)
+#define XBUS_SLX        ((uint8_t) 0xF000)
+#define XBUS_SIGNAL_RX  ((uint8_t) 0xE000)
+#define XBUS_RX_START   ((uint8_t) 0xD000)
 #define XBUS_RX         ((uint8_t) 0x4000)
-
-
+#define XBUS_RX_DONE    ((uint8_t) 0xF800)
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
 #define GET_RI get_val(program[current_pos++], program[current_pos++])
@@ -28,15 +26,14 @@
 uint8_t *program;
 uint8_t program_size = 0;
 uint8_t current_pos = 0;
-uint16_t ri_1;
-uint16_t ri_2;
+uint16_t ri[2] = {0, 0};
 uint8_t reg;
 int16_t xbus_data[2] = {0, 0};
-uint8_t xbus_ticks[2] = {0, 0};
 int16_t acc_register = 0;
 int16_t dat_register = 0;
-volatile uint16_t clock_tick = 0;
+uint8_t xbus_bit_counter = 0;
 uint16_t sleep_until = 0;
+volatile uint16_t clock_tick = 0;
 
 typedef enum {
         none=0,
@@ -86,9 +83,9 @@ const uint8_t commands[NUM_COMMANDS] = {
 #define X1_PIN 6
 
 inline uint8_t get_p0_value() {
-    P0_PWM &= ~P0_PWM_ENABLE; // Disable PWM output on pin
-    PAC &= ~(1 << P0_PIN);      // Enable P0 Pin as input
-    ADCC = P0_ADC;                             // Set ADC for pin
+    P0_PWM &= ~P0_PWM_ENABLE;                   // Disable PWM output on pin
+    PAC &= ~(1 << P0_PIN);                      // Enable P0 Pin as input
+    ADCC = P0_ADC;                              // Set ADC for pin
     ADCC |= ADCC_ADC_ENABLE;                    // Enable ADC
     delay_us(400);                              // wait to settle
     ADCC |= ADCC_ADC_CONV_START;                //start ADC conversion
@@ -105,11 +102,11 @@ inline void set_p0_value(uint8_t val) {
 }
 
 inline uint8_t get_p1_value() {
-    P1_PWM &= ~P1_PWM_ENABLE; // Disable PWM output on pin
-    PAC |= (1 << P1_PIN);      // Enable P1 Pin as input
-    ADCC = P1_ADC;                             // Set ADC for pin
+    P1_PWM &= ~P1_PWM_ENABLE;                   // Disable PWM output on pin
+    PAC |= (1 << P1_PIN);                       // Enable P1 Pin as input
+    ADCC = P1_ADC;                              // Set ADC for pin
     ADCC |= ADCC_ADC_ENABLE;                    // Enable ADC
-    delay_us(400);                                // wait to settle
+    delay_us(400);                              // wait to settle
     ADCC |= ADCC_ADC_CONV_START;                //start ADC conversion
     while( !(ADCC & ADCC_ADC_CONV_COMPLETE) );  //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
     return ADCR;
@@ -126,20 +123,20 @@ inline void set_p1_value(uint8_t val) {
 }
 
 void setup_interpreter_hardware() {
-    PAC &= ~(1 << P0_PIN);     // Enable P0 Pin as input
-    PAPH &= ~(1 << P0_PIN);    // Disable P0 pullup
+    PAC &= ~(1 << P0_PIN);          // Enable P0 Pin as input
+    PAPH &= ~(1 << P0_PIN);         // Disable P0 pullup
 
-    PAC &= ~(1 << P1_PIN);     // Enable P1 Pin as input
-    PAPH &= ~(1 << P1_PIN);    // Disable P1 pullup
+    PAC &= ~(1 << P1_PIN);          // Enable P1 Pin as input
+    PAPH &= ~(1 << P1_PIN);         // Disable P1 pullup
 
-    PAC &= ~(1 << X0_PIN);      // Enable X0 Pin as input
-    PAPH &= ~(1 << X0_PIN);    // Disable X0 pullup
+    PAC &= ~(1 << X0_PIN);          // Enable X0 Pin as input
+    PAPH &= ~(1 << X0_PIN);         // Disable X0 pullup
 
-    PAC &= ~(1 << X1_PIN);     // Enable X1 Pin as input
-    PAPH &= ~(1 << P1_PIN);    // Disable P1 pullup
+    PAC &= ~(1 << X1_PIN);          // Enable X1 Pin as input
+    PAPH &= ~(1 << P1_PIN);         // Disable P1 pullup
 
-    ADCRGC = ADCRG_ADC_REF_VDD;                // VCC reference for ADC
-    ADCM = ADCM_CLK_SYSCLK_DIV16;             // ADC divider 16
+    ADCRGC = ADCRG_ADC_REF_VDD;     // VCC reference for ADC
+    ADCM = ADCM_CLK_SYSCLK_DIV16;   // ADC divider 16
 
     // Enable PWMG1 and PWMG2 for p port output
     PWMGCLK = PWMGCLK_PWMG_ENABLE;
@@ -157,9 +154,7 @@ void reset_program() {
         dat_register = 0;
         current_condition = none;
         xbus_data[0] = 0;
-        xbus_ticks[0] = 0;
         xbus_data[1] = 0;
-        xbus_ticks[1] = 0;
         sleep_until = 0;
         set_p0_value(0);
         set_p1_value(0);
@@ -206,10 +201,22 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
                 // x pin -> bit 4 defines port num
                 if (argh & 0x08) {
                     // Set X1 as waiting for data
-                    xbus_data[1] = XBUS_SIGNAL_RX;
+                    if ((xbus_data[1] & 0xFF00) == XBUS_RX_DONE) {
+                        return xbus_data[1] & ~XBUS_RX_DONE;
+                    } else {
+                        xbus_data[1] = XBUS_SIGNAL_RX;
+                        return 0xFFFF;
+                    }
                 } else {
                     // Set X0 as waiting for data
-                    xbus_data[0] = XBUS_SIGNAL_RX;
+                    if ((xbus_data[0] & 0xFF00) == XBUS_RX_DONE) {
+                        return xbus_data[0] & ~XBUS_RX_DONE;
+                    }
+                    else
+                    {
+                        xbus_data[0] = XBUS_SIGNAL_RX;
+                        return 0xFFFF;
+                    }
                 }
             }
         }
@@ -254,15 +261,82 @@ void set_val(int16_t arg, uint8_t reg) {
             // x pin -> bit 3 defines port num
             if (reg & 0x10) {
                 // Set X1 as waiting to send arg
-                xbus_data[1] = XBUS_TX & arg;
+                xbus_data[1] = XBUS_SIGNAL_TX | arg;
             } else {
                 // Set X0 as waiting to send arg
-                xbus_data[0] = XBUS_TX & arg;
+                xbus_data[0] = XBUS_SIGNAL_TX | arg;
             }
         }
 
     }
 
+}
+
+// Handle XBUS transmission
+inline uint8_t handle_xbus(uint8_t xpin, uint16_t *xbus_dat) {
+
+    if ((*xbus_dat & 0xF000) == XBUS_SLX) {
+        // XBus is in slx mode -> set port as input and check for a high signal
+        PAPH &= ~(1 << xpin); // Disable pullup
+        PAC &= ~(1 << xpin);  // Enable pin as input
+        if (PA & (1 << xpin)) {
+            *xbus_dat = 0; // Sender is ready to send, go on
+        } else {
+            return 0; // idle while pin is low
+        }
+    } else if ((*xbus_dat & 0xF000) == XBUS_SIGNAL_RX) {
+        // XBus is in read mode -> set port as output and display readyness by pulling the pin low
+        PAPH &= ~(1 << xpin); // Disable pullup
+        PAC |= (1 << xpin);   // Enable pin as output
+        PA |= (1 << xpin);    // Set pin to low
+        *xbus_dat = XBUS_RX;
+        SLEEP(XBUS_DELAY); // wait a bit
+        return 0;
+    } else if ((*xbus_dat & 0xF000) == XBUS_RX_START) {
+        // XBus is in read mode -> set port as imput and trigger transmission start by enabling pullup
+        PAC &= ~(1 << xpin); // Enable pin as input
+        PAPH |= (1 << xpin); // Enable pullup to signal transmission start
+        *xbus_dat = XBUS_RX;
+        xbus_bit_counter = 0;               // re-use ri as bit couter
+        SLEEP(XBUS_SHORT_DELAY); // wait a bit
+        return 0;
+    } else if ((*xbus_dat & 0xF000) == XBUS_SIGNAL_TX) {
+        PAC &= ~(1 << xpin); // Enable pin as input
+        PAPH |= (1 << xpin); // Enable pullup to signal transmission ready
+        if (PA & (1 << xpin)) {
+            return 0; // noone is ready to receive, just idle
+        } else {
+            *xbus_dat = XBUS_TX;  // Sender is ready to send, go on
+            xbus_bit_counter = 0;      // re-use ri as bit couter
+            SLEEP(XBUS_SHORT_DELAY); // wait a bit
+            return 0;
+        }
+    } else if ((*xbus_dat & 0xC000) == XBUS_TX) {
+        PAPH &= ~(1 << xpin); // Disable pullup
+        PAC |= (1 << xpin);   // Enable pin as output
+
+        if (*xbus_dat & (1 << xbus_bit_counter++)) {
+            PA |= (1 << xpin);
+        } else {
+            PA &= ~(1 << xpin);
+        } if (xbus_bit_counter > 11) {
+            *xbus_dat = 0; // Transmission was sent -> go on
+        } else {
+            SLEEP(XBUS_DELAY); // wait a bit
+            return 0;
+        }
+    } else if ((*xbus_dat & 0xC000) == XBUS_RX) {
+        if (PA &= (1 << xpin)) {
+            *xbus_dat |= (1 << xbus_bit_counter++);
+        }
+        if (xbus_bit_counter > 11) {
+            *xbus_dat |= XBUS_RX_DONE; // Mark transmission as received
+        } else {
+            SLEEP(XBUS_DELAY); // wait a bit
+            return 0;
+        }
+    }
+    return 1;
 }
 
 uint8_t run_program_line() {
@@ -272,53 +346,7 @@ uint8_t run_program_line() {
         }
         sleep_until = 0;
 
-        uint8_t i = 0;
-
-        // Hadnle XBUS transmission
-        uint8_t xpin;
-        for (i=0; i < 2; i++) {
-            xpin = i ? X1_PIN : X0_PIN;
-            if ((xbus_data[i] & 0xE000) == XBUS_SLX) {
-                // XBus is in slx mode -> set port as input and check for a high signal
-                PAPH &= ~(1 << xpin);     // Disable pullup
-                PAC &= ~(1 << xpin);      // Enable pin as input
-                if (PA & (1 << xpin)) {
-                    xbus_data[i] = 0; // Sender is ready to send, go on
-                } else {
-                    return 0;             // idle while pin is low
-                }
-            } else if ((xbus_data[i] & 0xE000) == XBUS_SIGNAL_RX) {
-                // XBus is in read mode -> set port as output and display readyness by pulling the pin low
-                PAPH &= ~(1 << xpin);      // Disable pullup
-                PAC |= (1 << xpin);        // Enable pin as output
-                PA |= (1 << xpin);         // Set pin to low
-                xbus_data[i] = XBUS_RX;
-                SLEEP(XBUS_DELAY);         // wait a bit
-                return 0;
-            } else if ((xbus_data[i] & 0xE000) == XBUS_RX_START) {
-                // XBus is in read mode -> set port as imput and trigger transmission start by enabling pullup
-                PAC &= ~(1 << xpin);       // Enable pin as input
-                PAPH |= (1 << xpin);       // Enable pullup to signal transmission start
-                xbus_data[i] = XBUS_RX;
-                SLEEP(XBUS_DELAY);         // wait a bit
-                return 0;
-            } else if ((xbus_data[i] & 0xC000) == XBUS_RX) {
-                xbus_data[i] = 0;
-                return 0;
-            } else if ((xbus_data[i] & 0xC000) == XBUS_SIGNAL_TX) {
-                PAC &= ~(1 << xpin);       // Enable pin as input
-                PAPH |= (1 << xpin);       // Enable pullup to signal transmission ready
-                if (PA & (1 << xpin)) {
-                    return 0;               // noone is ready to receive, just idle
-                } else {
-                    xbus_data[i] = XBUS_TX;     // Sender is ready to send, go on
-                    SLEEP(XBUS_SHORT_DELAY);    // wait a bit
-                    return 0;                   
-                }
-            } else if ((xbus_data[i] & 0xC000) == XBUS_TX) {
-     
-            }
-        }
+        if (handle_xbus(X0_PIN, &xbus_data[0]) == 0 || handle_xbus(X1_PIN, &xbus_data[1]) == 0) return 0;
 
         // Handle end of program buffer
         if (current_pos >= program_size-1) current_pos = 0;
@@ -340,7 +368,7 @@ uint8_t run_program_line() {
 
         // Get command number from static list
         uint8_t command_num = 0;
-        for (i = 1; i < NUM_COMMANDS; i++) {
+        for (uint8_t i = 1; i < NUM_COMMANDS; i++) {
                 if (commands[i] == command) {
                     command_num = i;
                     break;
@@ -357,9 +385,13 @@ uint8_t run_program_line() {
                 break;
             case 2: // mov R/I R
                 CHECK_CONDITION(3);
-                ri_1 = GET_RI;
+                ri[0] = GET_RI;
+                if (ri[0] == 0xFFFF) {
+                    current_pos -= 3;
+                    break;
+                }
                 reg = GET_R;
-                set_val(ri_1, reg); // set value to register/pin
+                set_val(ri[0], reg); // set value to register/pin
                 break;
             case 3: // jmp L
                 CHECK_CONDITION(1);
@@ -384,9 +416,9 @@ uint8_t run_program_line() {
                 break;
             case 6: // teq R/I R/I
                 CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
-                if (ri_1 == ri_2) {
+                ri[0] = GET_RI;
+                ri[1] = GET_RI;
+                if (ri[0] == ri[1]) {
                     current_condition = true;
                 } else {
                     current_condition = false;
@@ -394,9 +426,9 @@ uint8_t run_program_line() {
                 break;
             case 7: // tgt R/I R/I
                 CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
-                if (ri_1 > ri_2) {
+                ri[0] = GET_RI;
+                ri[1] = GET_RI;
+                if (ri[0] > ri[1]) {
                     current_condition = true;
                 } else {
                     current_condition = false;
@@ -404,9 +436,9 @@ uint8_t run_program_line() {
                 break;
             case 8: // tlt R/I R/I
                 CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
-                if (ri_1 < ri_2) {
+                ri[0] = GET_RI;
+                ri[1] = GET_RI;
+                if (ri[0] < ri[1]) {
                     current_condition = true;
                 } else {
                     current_condition = false;
@@ -414,11 +446,11 @@ uint8_t run_program_line() {
                 break;
             case 9: // tcp R/I R/I
                 CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
-                if (ri_1 > ri_2) {
+                ri[0] = GET_RI;
+                ri[1] = GET_RI;
+                if (ri[0] > ri[1]) {
                     current_condition = true;
-                } else if (ri_1 < ri_2) {
+                } else if (ri[0] < ri[1]) {
                     current_condition = false;
                 } else {
                     current_condition = none;
@@ -426,24 +458,24 @@ uint8_t run_program_line() {
                 break;
             case 10: // add R/I
                 CHECK_CONDITION(2);
-                ri_1 = GET_RI;
-                acc_register += ri_1;
+                ri[0] = GET_RI;
+                acc_register += ri[0];
                 if (acc_register > 999) {
                     acc_register = 999;
                 }
                 break;
             case 11: // sub R/I
                 CHECK_CONDITION(2);
-                ri_1 = GET_RI;
-                acc_register -= ri_1;
+                ri[0] = GET_RI;
+                acc_register -= ri[0];
                 if (acc_register < -999) {
                     acc_register = -999;
                 }
                 break;
             case 12: // mul R/I
                 CHECK_CONDITION(2);
-                ri_1 = GET_RI;
-                acc_register *= ri_1;
+                ri[0] = GET_RI;
+                acc_register *= ri[0];
                 if (acc_register > 999) {
                     acc_register = 999;
                 } else if (acc_register < -999) {
@@ -460,13 +492,13 @@ uint8_t run_program_line() {
                 break;
             case 14: // dgt R/I
                 CHECK_CONDITION(2);
-                ri_1 = GET_RI;
+                ri[0] = GET_RI;
                 // @ToDo: isolate a digit from acc and store it in acc
                 break;
             case 15: // dst R/I R/I
                 CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
+                ri[0] = GET_RI;
+                ri[1] = GET_RI;
                 // @ToDo: set the digit from the first operant in acc to the scond opernat
                 break;
             case 16: // label L

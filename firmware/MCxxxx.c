@@ -16,7 +16,7 @@
 // Insert serial number
 EASY_PDK_SERIAL(serial_number);
 
-#define PROGSIZE 70
+#define PROGSIZE 60
 
 #define SIGNAL_CHAR 0x7F
 
