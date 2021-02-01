@@ -77,7 +77,7 @@ const uint8_t commands[NUM_COMMANDS] = {
 
 #define X1_PIN 6
 
-uint8_t get_p0_value() {
+inline uint8_t get_p0_value() {
     P0_PWM &= ~P0_PWM_ENABLE; // Disable PWM output on pin
     PAC &= ~(1 << P0_PIN);      // Enable P0 Pin as input
     ADCC = P0_ADC;                             // Set ADC for pin
@@ -88,7 +88,7 @@ uint8_t get_p0_value() {
     return ADCR;
 }
 
-void set_p0_value(uint8_t val) {
+inline void set_p0_value(uint8_t val) {
     ADCC = 0;
     PAC |= (1 << P0_PIN);    // Enable P0 Pin as output
     P0_PWM |= P0_PWM_ENABLE; // Enable PWN output on Pin
@@ -96,7 +96,7 @@ void set_p0_value(uint8_t val) {
     P0_PWM_DUTY_L = 0;
 }
 
-uint8_t get_p1_value() {
+inline uint8_t get_p1_value() {
     P1_PWM &= ~P1_PWM_ENABLE; // Disable PWM output on pin
     PAC |= (1 << P1_PIN);      // Enable P1 Pin as input
     ADCC = P1_ADC;                             // Set ADC for pin
@@ -107,7 +107,7 @@ uint8_t get_p1_value() {
     return ADCR;
 }
 
-void set_p1_value(uint8_t val) {
+inline void set_p1_value(uint8_t val) {
     if (!(PAC & (1 << P1_PIN))) {
         ADCC = 0;
         PAC |= (1 << P1_PIN);    // Enable P0 Pin as output
@@ -124,7 +124,7 @@ void get_x0_value() {
     xbus0_ticks = 255;
 }
 
-void set_x0_value(uint16_t val) {
+inline void set_x0_value(uint16_t val) {
     PAC |= (1 << X0_PIN);       // Enable X0 Pin as output
     PADIER &= ~(1 << X0_PIN);   // Disable digital input on X0
     // fill up buffer and mark buffer as a send buffer by setting bit0
@@ -142,7 +142,7 @@ void get_x1_value() {
     xbus1_ticks = 255;
 }
 
-void set_x1_value(uint16_t val) {
+inline void set_x1_value(uint16_t val) {
     PAC |= (1 << X1_PIN);       // Enable X1 Pin as output
     PADIER &= ~(1 << X1_PIN);   // Disable digital input on X1
     // fill up buffer and mark buffer as a send buffer by setting bit0
@@ -191,7 +191,7 @@ void reset_program() {
         set_p1_value(0);
 }
 
-void set_program(uint8_t *new_program, uint8_t new_program_size) {
+inline void set_program(uint8_t *new_program, uint8_t new_program_size) {
         program = new_program;
         program_size = new_program_size;
 }
