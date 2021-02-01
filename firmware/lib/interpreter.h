@@ -6,13 +6,24 @@
 #include "serial.h"
 #include "manchester.h"
 
+#define SLEEP_TICKS     500
+
+#define XBUS_DELAY          10
+#define XBUS_SHORT_DELAY    XBUS_DELAY/5
+#define XBUS_SIGNAL_TX  ((uint8_t) 0xC000)
+#define XBUS_TX         ((uint8_t) 0x8000)
+#define XBUS_SLX        ((uint8_t) 0x7000)
+#define XBUS_SIGNAL_RX  ((uint8_t) 0x6000)
+#define XBUS_RX_START   ((uint8_t) 0x5000)
+#define XBUS_RX         ((uint8_t) 0x4000)
+
+
+
 #define INTERPRETER_CLOCK_TICK clock_tick++
 #define GET_RI get_val(program[current_pos++], program[current_pos++])
 #define GET_R program[current_pos++]
 #define CHECK_CONDITION(x) if (command_condition != none && current_condition != command_condition) {current_pos += (uint8_t) x; break;}
-
-
-#define SLEEP_TICKS 500
+#define SLEEP(x) clock_tick = 0; sleep_until = x
 
 uint8_t *program;
 uint8_t program_size = 0;
@@ -20,11 +31,8 @@ uint8_t current_pos = 0;
 uint16_t ri_1;
 uint16_t ri_2;
 uint8_t reg;
-int16_t xbus0_data = 0;
-uint8_t xbus0_ticks = 0;
-int16_t xbus1_data = 0;
-uint8_t xbus1_ticks = 0;
-uint8_t xbus_state = 0;
+int16_t xbus_data[2] = {0, 0};
+uint8_t xbus_ticks[2] = {0, 0};
 int16_t acc_register = 0;
 int16_t dat_register = 0;
 volatile uint16_t clock_tick = 0;
@@ -117,41 +125,6 @@ inline void set_p1_value(uint8_t val) {
     P1_PWM_DUTY_L = 0;
 }
 
-void get_x0_value() {
-    PAC &= ~(1 << X0_PIN);      // Enable X0 Pin as input
-    PADIER |= (1 << X0_PIN);    // Enable digital input on X0
-    xbus0_data = 0x4000;
-    xbus0_ticks = 255;
-}
-
-inline void set_x0_value(uint16_t val) {
-    PAC |= (1 << X0_PIN);       // Enable X0 Pin as output
-    PADIER &= ~(1 << X0_PIN);   // Disable digital input on X0
-    // fill up buffer and mark buffer as a send buffer by setting bit0
-    // buffer will be sent in interpreter loop
-    xbus0_data = val & 0x8000;
-    xbus0_ticks = 255;
-}
-
-void get_x1_value() {
-    PAC &= ~(1 << X1_PIN);      // Enable X1 Pin as input
-    PADIER |= (1 << X1_PIN);    // Enable digital input on X0
-    // clear buffer and mark it as a receive buffer by setting bit1
-    // buffer will be received in interpreter loop
-    xbus1_data = 0x4000;
-    xbus1_ticks = 255;
-}
-
-inline void set_x1_value(uint16_t val) {
-    PAC |= (1 << X1_PIN);       // Enable X1 Pin as output
-    PADIER &= ~(1 << X1_PIN);   // Disable digital input on X1
-    // fill up buffer and mark buffer as a send buffer by setting bit0
-    // buffer will be sent in interpreter loop
-    xbus1_data = val & 0x8000;
-    xbus1_ticks = 255;
-}
-
-
 void setup_interpreter_hardware() {
     PAC &= ~(1 << P0_PIN);     // Enable P0 Pin as input
     PAPH &= ~(1 << P0_PIN);    // Disable P0 pullup
@@ -183,9 +156,10 @@ void reset_program() {
         acc_register = 0;
         dat_register = 0;
         current_condition = none;
-        xbus0_data = 0;
-        xbus1_data = 0;
-        xbus_state = 0;
+        xbus_data[0] = 0;
+        xbus_ticks[0] = 0;
+        xbus_data[1] = 0;
+        xbus_ticks[1] = 0;
         sleep_until = 0;
         set_p0_value(0);
         set_p1_value(0);
@@ -231,9 +205,11 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
             } else {
                 // x pin -> bit 4 defines port num
                 if (argh & 0x08) {
-                    return xbus1_data;
+                    // Set X1 as waiting for data
+                    xbus_data[1] = XBUS_SIGNAL_RX;
                 } else {
-                    return xbus0_data;
+                    // Set X0 as waiting for data
+                    xbus_data[0] = XBUS_SIGNAL_RX;
                 }
             }
         }
@@ -266,9 +242,7 @@ void set_val(int16_t arg, uint8_t reg) {
         // pin -> bit 2 defines p(1) or x(0)
         if (reg & 0x20) {
             // p pin -> bit 3 defines port num
-
-            // Limit arg
-            if (arg < 0) arg = 0;
+            if (arg < 0) arg = 0; // Limit arg
             else if (arg > 100) arg = 100;
 
             if (reg & 0x10) {
@@ -279,9 +253,11 @@ void set_val(int16_t arg, uint8_t reg) {
         } else {
             // x pin -> bit 3 defines port num
             if (reg & 0x10) {
-                set_x1_value(arg);
+                // Set X1 as waiting to send arg
+                xbus_data[1] = XBUS_TX & arg;
             } else {
-                set_x0_value(arg);
+                // Set X0 as waiting to send arg
+                xbus_data[0] = XBUS_TX & arg;
             }
         }
 
@@ -296,18 +272,52 @@ uint8_t run_program_line() {
         }
         sleep_until = 0;
 
-        if (xbus0_data & 0x8000) {
-            // @ToDo send xbus transmission
-        }
-        if (xbus0_data & 0x4000) {
-            // @ToDo receive xbus transmission
-        }
+        uint8_t i = 0;
 
-        if (xbus1_data & 0x8000) {
-            // @ToDo send xbus transmission
-        }
-        if (xbus1_data & 0x4000) {
-            // @ToDo receive xbus transmission
+        // Hadnle XBUS transmission
+        uint8_t xpin;
+        for (i=0; i < 2; i++) {
+            xpin = i ? X1_PIN : X0_PIN;
+            if ((xbus_data[i] & 0xE000) == XBUS_SLX) {
+                // XBus is in slx mode -> set port as input and check for a high signal
+                PAPH &= ~(1 << xpin);     // Disable pullup
+                PAC &= ~(1 << xpin);      // Enable pin as input
+                if (PA & (1 << xpin)) {
+                    xbus_data[i] = 0; // Sender is ready to send, go on
+                } else {
+                    return 0;             // idle while pin is low
+                }
+            } else if ((xbus_data[i] & 0xE000) == XBUS_SIGNAL_RX) {
+                // XBus is in read mode -> set port as output and display readyness by pulling the pin low
+                PAPH &= ~(1 << xpin);      // Disable pullup
+                PAC |= (1 << xpin);        // Enable pin as output
+                PA |= (1 << xpin);         // Set pin to low
+                xbus_data[i] = XBUS_RX;
+                SLEEP(XBUS_DELAY);         // wait a bit
+                return 0;
+            } else if ((xbus_data[i] & 0xE000) == XBUS_RX_START) {
+                // XBus is in read mode -> set port as imput and trigger transmission start by enabling pullup
+                PAC &= ~(1 << xpin);       // Enable pin as input
+                PAPH |= (1 << xpin);       // Enable pullup to signal transmission start
+                xbus_data[i] = XBUS_RX;
+                SLEEP(XBUS_DELAY);         // wait a bit
+                return 0;
+            } else if ((xbus_data[i] & 0xC000) == XBUS_RX) {
+                xbus_data[i] = 0;
+                return 0;
+            } else if ((xbus_data[i] & 0xC000) == XBUS_SIGNAL_TX) {
+                PAC &= ~(1 << xpin);       // Enable pin as input
+                PAPH |= (1 << xpin);       // Enable pullup to signal transmission ready
+                if (PA & (1 << xpin)) {
+                    return 0;               // noone is ready to receive, just idle
+                } else {
+                    xbus_data[i] = XBUS_TX;     // Sender is ready to send, go on
+                    SLEEP(XBUS_SHORT_DELAY);    // wait a bit
+                    return 0;                   
+                }
+            } else if ((xbus_data[i] & 0xC000) == XBUS_TX) {
+     
+            }
         }
 
         // Handle end of program buffer
@@ -330,7 +340,7 @@ uint8_t run_program_line() {
 
         // Get command number from static list
         uint8_t command_num = 0;
-        for (uint8_t i = 1; i < NUM_COMMANDS; i++) {
+        for (i = 1; i < NUM_COMMANDS; i++) {
                 if (commands[i] == command) {
                     command_num = i;
                     break;
@@ -346,7 +356,6 @@ uint8_t run_program_line() {
             case 1: // nop
                 break;
             case 2: // mov R/I R
-                // serial_println("M");
                 CHECK_CONDITION(3);
                 ri_1 = GET_RI;
                 reg = GET_R;
@@ -358,20 +367,19 @@ uint8_t run_program_line() {
                 current_pos = find_label(reg); // Set position to after label pos
                 break;
             case 4: // slp R/I
-                // serial_println("S");
                 CHECK_CONDITION(2);
-                ri_1 = GET_RI;
-                clock_tick = 0;
-                sleep_until = ri_1 * SLEEP_TICKS;
+                SLEEP(GET_RI * SLEEP_TICKS);
                 break;
             case 5: // slx P
                 CHECK_CONDITION(1);
                 reg = GET_R;
                 // fist two bits of argument encode the XBus port to use
-                if (reg) {
-                    get_x1_value();
+                if (reg & 0x4800 == 0x4800) {
+                    // mark X1 as waiting for ready
+                    xbus_data[1] = XBUS_SLX;
                 } else {
-                    get_x0_value();
+                    // mark X0 as waiting for ready
+                    xbus_data[0] = XBUS_SLX;
                 }
                 break;
             case 6: // teq R/I R/I
