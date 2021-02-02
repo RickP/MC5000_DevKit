@@ -60,10 +60,10 @@ void handle_rx() {
         if (process_serial_rx_byte(&rx_char)) {
                 // Start char received
                 if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) {
-                        putchar(acc_register+1000 >> 7);
-                        putchar(acc_register+1000 & 0x7F);
-                        putchar(dat_register+1000 >> 7);
-                        putchar(dat_register+1000 & 0x7F);
+                        putchar((acc_register+1000) >> 7);
+                        putchar((acc_register+1000) & 0x7F);
+                        putchar((dat_register+1000) >> 7);
+                        putchar((dat_register+1000) & 0x7F);
                 } else if (state == transmission_start) {
                         if (rx_char == *serial_number) {
                                 state = line_prog;
@@ -116,6 +116,6 @@ void main(void) {
 
 uint8_t _sdcc_external_startup(void) {
         EASY_PDK_INIT_SYSCLOCK_8MHZ();                                          //use 8MHz sysclock
-        EASY_PDK_CALIBRATE_IHRC(8000000,5000);                                  //tune SYSCLK to 8MHz @ 5.000V
+        EASY_PDK_CALIBRATE_IHRC(8000000, 5000);                                  //tune SYSCLK to 8MHz @ 5.000V
         return 0;                                                               //perform normal initialization
 }
