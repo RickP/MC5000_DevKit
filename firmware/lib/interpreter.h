@@ -9,13 +9,13 @@
 
 #define XBUS_DELAY          10
 #define XBUS_SHORT_DELAY    XBUS_DELAY/5
-#define XBUS_SIGNAL_TX  ((uint8_t) 0xC000)
-#define XBUS_TX         ((uint8_t) 0x8000)
-#define XBUS_SLX        ((uint8_t) 0xF000)
-#define XBUS_SIGNAL_RX  ((uint8_t) 0xE000)
-#define XBUS_RX_START   ((uint8_t) 0xD000)
-#define XBUS_RX         ((uint8_t) 0x4000)
-#define XBUS_RX_DONE    ((uint8_t) 0xF800)
+#define XBUS_SIGNAL_TX         0xC000
+#define XBUS_TX                0x8000
+#define XBUS_SLX               0xF000
+#define XBUS_SIGNAL_RX         0xE000
+#define XBUS_RX_START          0xD000
+#define XBUS_RX                0x4000
+#define XBUS_RX_DONE           0xF800
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
 #define GET_RI get_val(program[current_pos++], program[current_pos++])
@@ -28,7 +28,7 @@ uint8_t program_size = 0;
 uint8_t current_pos = 0;
 uint16_t ri[2] = {0, 0};
 uint8_t reg;
-int16_t xbus_data[2] = {0, 0};
+uint16_t xbus_data[2] = {0, 0};
 int16_t acc_register = 0;
 int16_t dat_register = 0;
 uint8_t xbus_bit_counter = 0;
@@ -267,74 +267,76 @@ void set_val(int16_t arg, uint8_t reg) {
                 xbus_data[0] = XBUS_SIGNAL_TX | arg;
             }
         }
-
     }
-
 }
 
 // Handle XBUS transmission
 inline uint8_t handle_xbus(uint8_t xpin, uint16_t *xbus_dat) {
 
-    if ((*xbus_dat & 0xF000) == XBUS_SLX) {
-        // XBus is in slx mode -> set port as input and check for a high signal
-        PAPH &= ~(1 << xpin); // Disable pullup
-        PAC &= ~(1 << xpin);  // Enable pin as input
-        if (PA & (1 << xpin)) {
-            *xbus_dat = 0; // Sender is ready to send, go on
-        } else {
-            return 0; // idle while pin is low
-        }
-    } else if ((*xbus_dat & 0xF000) == XBUS_SIGNAL_RX) {
-        // XBus is in read mode -> set port as output and display readyness by pulling the pin low
-        PAPH &= ~(1 << xpin); // Disable pullup
-        PAC |= (1 << xpin);   // Enable pin as output
-        PA |= (1 << xpin);    // Set pin to low
-        *xbus_dat = XBUS_RX;
-        SLEEP(XBUS_DELAY); // wait a bit
-        return 0;
-    } else if ((*xbus_dat & 0xF000) == XBUS_RX_START) {
-        // XBus is in read mode -> set port as imput and trigger transmission start by enabling pullup
-        PAC &= ~(1 << xpin); // Enable pin as input
-        PAPH |= (1 << xpin); // Enable pullup to signal transmission start
-        *xbus_dat = XBUS_RX;
-        xbus_bit_counter = 0;               // re-use ri as bit couter
-        SLEEP(XBUS_SHORT_DELAY); // wait a bit
-        return 0;
-    } else if ((*xbus_dat & 0xF000) == XBUS_SIGNAL_TX) {
-        PAC &= ~(1 << xpin); // Enable pin as input
-        PAPH |= (1 << xpin); // Enable pullup to signal transmission ready
-        if (PA & (1 << xpin)) {
-            return 0; // noone is ready to receive, just idle
-        } else {
-            *xbus_dat = XBUS_TX;  // Sender is ready to send, go on
-            xbus_bit_counter = 0;      // re-use ri as bit couter
+    switch (*xbus_dat & 0xF000) {
+        case XBUS_SLX:
+            // XBus is in slx mode -> set port as input and check for a high signal
+            PAPH &= ~(1 << xpin); // Disable pullup
+            PAC &= ~(1 << xpin);  // Enable pin as input
+            if (PA & (1 << xpin)) {
+                *xbus_dat = 0; // Sender is ready to send, go on
+            } else {
+                return 0; // idle while pin is low
+            }
+            break;
+        case XBUS_SIGNAL_RX:
+            // XBus is in read mode -> set port as output and display readyness by pulling the pin low
+            PAPH &= ~(1 << xpin); // Disable pullup
+            PAC |= (1 << xpin);   // Enable pin as output
+            PA |= (1 << xpin);    // Set pin to low
+            *xbus_dat = XBUS_RX;
+            SLEEP(XBUS_DELAY); // wait a bit
+            return 0;
+        case XBUS_RX_START:
+            // XBus is in read mode -> set port as imput and trigger transmission start by enabling pullup
+            PAC &= ~(1 << xpin); // Enable pin as input
+            PAPH |= (1 << xpin); // Enable pullup to signal transmission start
+            *xbus_dat = XBUS_RX;
+            xbus_bit_counter = 0;               // re-use ri as bit couter
             SLEEP(XBUS_SHORT_DELAY); // wait a bit
             return 0;
-        }
-    } else if ((*xbus_dat & 0xC000) == XBUS_TX) {
-        PAPH &= ~(1 << xpin); // Disable pullup
-        PAC |= (1 << xpin);   // Enable pin as output
+        case XBUS_SIGNAL_TX:
+            PAC &= ~(1 << xpin); // Enable pin as input
+            PAPH |= (1 << xpin); // Enable pullup to signal transmission ready
+            if (PA & (1 << xpin) == 0) {
+                *xbus_dat = XBUS_TX;  // Sender is ready to send, go on
+                xbus_bit_counter = 0;      // re-use ri as bit couter
+                SLEEP(XBUS_SHORT_DELAY); // wait a bit
+            }
+            return 0;
+        case XBUS_TX:
+            PAPH &= ~(1 << xpin); // Disable pullup
+            PAC |= (1 << xpin);   // Enable pin as output
 
-        if (*xbus_dat & (1 << xbus_bit_counter++)) {
-            PA |= (1 << xpin);
-        } else {
-            PA &= ~(1 << xpin);
-        } if (xbus_bit_counter > 11) {
-            *xbus_dat = 0; // Transmission was sent -> go on
-        } else {
-            SLEEP(XBUS_DELAY); // wait a bit
-            return 0;
-        }
-    } else if ((*xbus_dat & 0xC000) == XBUS_RX) {
-        if (PA &= (1 << xpin)) {
-            *xbus_dat |= (1 << xbus_bit_counter++);
-        }
-        if (xbus_bit_counter > 11) {
-            *xbus_dat |= XBUS_RX_DONE; // Mark transmission as received
-        } else {
-            SLEEP(XBUS_DELAY); // wait a bit
-            return 0;
-        }
+            if (*xbus_dat & (((uint16_t) 1) << xbus_bit_counter++)) {
+                PA |= (1 << xpin);
+            } else {
+                PA &= ~(1 << xpin);
+            } 
+            
+            if (xbus_bit_counter > 11) {
+                *xbus_dat = 0; // Transmission was sent -> go on
+            } else {
+                SLEEP(XBUS_DELAY); // wait a bit
+                return 0;
+            }
+            break;
+        case XBUS_RX:
+            if (PA &= (1 << xpin)) {
+                *xbus_dat |= (((uint16_t) 1) << xbus_bit_counter++);
+            }
+            if (xbus_bit_counter > 11) {
+                *xbus_dat |= XBUS_RX_DONE; // Mark transmission as received
+            } else {
+                SLEEP(XBUS_DELAY); // wait a bit
+                return 0;
+            }
+            break;
     }
     return 1;
 }
