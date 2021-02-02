@@ -9,13 +9,14 @@
 
 #define XBUS_DELAY          10
 #define XBUS_SHORT_DELAY    XBUS_DELAY/5
-#define XBUS_SIGNAL_TX         0xC000
-#define XBUS_TX                0x8000
-#define XBUS_SLX               0xF000
-#define XBUS_SIGNAL_RX         0xE000
-#define XBUS_RX_START          0xD000
-#define XBUS_RX                0x4000
-#define XBUS_RX_DONE           0xF800
+
+#define XBUS_SIGNAL_TX      0xC0
+#define XBUS_TX             0x80
+#define XBUS_SLX            0xF0
+#define XBUS_SIGNAL_RX      0xE0
+#define XBUS_RX_START       0xD0
+#define XBUS_RX             0x40
+#define XBUS_RX_DONE        0xF8
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
 #define GET_RI get_val(program[current_pos++], program[current_pos++])
@@ -29,9 +30,9 @@ uint8_t current_pos = 0;
 uint16_t ri[2] = {0, 0};
 uint8_t reg;
 uint16_t xbus_data[2] = {0, 0};
+uint8_t xbus_state[2] = {0, 0};
 int16_t acc_register = 0;
 int16_t dat_register = 0;
-uint8_t xbus_bit_counter = 0;
 uint16_t sleep_until = 0;
 volatile uint16_t clock_tick = 0;
 
@@ -155,6 +156,8 @@ void reset_program() {
         current_condition = none;
         xbus_data[0] = 0;
         xbus_data[1] = 0;
+        xbus_state[0] = 0;
+        xbus_state[1] = 0;
         sleep_until = 0;
         set_p0_value(0);
         set_p1_value(0);
@@ -201,20 +204,18 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
                 // x pin -> bit 4 defines port num
                 if (argh & 0x08) {
                     // Set X1 as waiting for data
-                    if ((xbus_data[1] & 0xFF00) == XBUS_RX_DONE) {
-                        return xbus_data[1] & ~XBUS_RX_DONE;
+                    if (xbus_state[1] == XBUS_RX_DONE) {
+                        return xbus_data[1];
                     } else {
-                        xbus_data[1] = XBUS_SIGNAL_RX;
+                        xbus_state[1] = XBUS_SIGNAL_RX;
                         return 0xFFFF;
                     }
                 } else {
                     // Set X0 as waiting for data
-                    if ((xbus_data[0] & 0xFF00) == XBUS_RX_DONE) {
-                        return xbus_data[0] & ~XBUS_RX_DONE;
-                    }
-                    else
-                    {
-                        xbus_data[0] = XBUS_SIGNAL_RX;
+                    if (xbus_state[0] == XBUS_RX_DONE) {
+                        return xbus_data[0];
+                    } else {
+                        xbus_state[0] = XBUS_SIGNAL_RX;
                         return 0xFFFF;
                     }
                 }
@@ -261,25 +262,28 @@ void set_val(int16_t arg, uint8_t reg) {
             // x pin -> bit 3 defines port num
             if (reg & 0x10) {
                 // Set X1 as waiting to send arg
-                xbus_data[1] = XBUS_SIGNAL_TX | arg;
+                xbus_state[1] = XBUS_SIGNAL_TX;
+                xbus_data[1] = arg;
             } else {
                 // Set X0 as waiting to send arg
-                xbus_data[0] = XBUS_SIGNAL_TX | arg;
+                xbus_state[0] = XBUS_SIGNAL_TX;
+                xbus_data[0] = arg;
             }
         }
     }
 }
 
 // Handle XBUS transmission
-inline uint8_t handle_xbus(uint8_t xpin, uint16_t *xbus_dat) {
+inline uint8_t handle_xbus(uint8_t xpin, uint16_t *data, uint8_t *state) {
+    uint8_t  bit_counter;
 
-    switch (*xbus_dat & 0xF000) {
+    switch (*state) {
         case XBUS_SLX:
             // XBus is in slx mode -> set port as input and check for a high signal
             PAPH &= ~(1 << xpin); // Disable pullup
             PAC &= ~(1 << xpin);  // Enable pin as input
             if (PA & (1 << xpin)) {
-                *xbus_dat = 0; // Sender is ready to send, go on
+                *state = 0; // Sender is ready to send, go on
             } else {
                 return 0; // idle while pin is low
             }
@@ -289,23 +293,21 @@ inline uint8_t handle_xbus(uint8_t xpin, uint16_t *xbus_dat) {
             PAPH &= ~(1 << xpin); // Disable pullup
             PAC |= (1 << xpin);   // Enable pin as output
             PA |= (1 << xpin);    // Set pin to low
-            *xbus_dat = XBUS_RX;
+            *state = XBUS_RX;
             SLEEP(XBUS_DELAY); // wait a bit
             return 0;
         case XBUS_RX_START:
             // XBus is in read mode -> set port as imput and trigger transmission start by enabling pullup
             PAC &= ~(1 << xpin); // Enable pin as input
             PAPH |= (1 << xpin); // Enable pullup to signal transmission start
-            *xbus_dat = XBUS_RX;
-            xbus_bit_counter = 0;               // re-use ri as bit couter
+            *state = XBUS_RX;
             SLEEP(XBUS_SHORT_DELAY); // wait a bit
             return 0;
         case XBUS_SIGNAL_TX:
             PAC &= ~(1 << xpin); // Enable pin as input
             PAPH |= (1 << xpin); // Enable pullup to signal transmission ready
             if (PA & (1 << xpin) == 0) {
-                *xbus_dat = XBUS_TX;  // Sender is ready to send, go on
-                xbus_bit_counter = 0;      // re-use ri as bit couter
+                *state = XBUS_TX;  // Sender is ready to send, go on
                 SLEEP(XBUS_SHORT_DELAY); // wait a bit
             }
             return 0;
@@ -313,26 +315,33 @@ inline uint8_t handle_xbus(uint8_t xpin, uint16_t *xbus_dat) {
             PAPH &= ~(1 << xpin); // Disable pullup
             PAC |= (1 << xpin);   // Enable pin as output
 
-            if (*xbus_dat & (((uint16_t) 1) << xbus_bit_counter++)) {
+            bit_counter = *data >> 11;
+
+            if (*data & (((uint16_t) 1) << bit_counter)) {
                 PA |= (1 << xpin);
             } else {
                 PA &= ~(1 << xpin);
             } 
             
-            if (xbus_bit_counter > 11) {
-                *xbus_dat = 0; // Transmission was sent -> go on
+            if (bit_counter > 11) {
+                *state = 0; // Transmission was sent -> go on
             } else {
+                *data += ((uint16_t) ++bit_counter) << 11;
                 SLEEP(XBUS_DELAY); // wait a bit
                 return 0;
             }
             break;
         case XBUS_RX:
+
+            bit_counter = *data >> 11;
+
             if (PA &= (1 << xpin)) {
-                *xbus_dat |= (((uint16_t) 1) << xbus_bit_counter++);
+                *data |= (((uint16_t) 1) << bit_counter);
             }
-            if (xbus_bit_counter > 11) {
-                *xbus_dat |= XBUS_RX_DONE; // Mark transmission as received
+            if (bit_counter > 11) {
+                *state = XBUS_RX_DONE; // Mark transmission as received
             } else {
+                *data += (uint16_t) ++bit_counter << 11;
                 SLEEP(XBUS_DELAY); // wait a bit
                 return 0;
             }
@@ -348,7 +357,8 @@ uint8_t run_program_line() {
         }
         sleep_until = 0;
 
-        if (handle_xbus(X0_PIN, &xbus_data[0]) == 0 || handle_xbus(X1_PIN, &xbus_data[1]) == 0) return 0;
+        // if (handle_xbus(X0_PIN, &xbus_data[0], &xbus_state[0]) == 0) return 0;
+        // if (handle_xbus(X1_PIN, &xbus_data[1], &xbus_state[1]) == 0) return 0;
 
         // Handle end of program buffer
         if (current_pos >= program_size-1) current_pos = 0;
