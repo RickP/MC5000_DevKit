@@ -13,7 +13,7 @@
 #define RX_INTERVAL 12
 #define CNT_BUF_MAX 11
 
-volatile uint16_t cnt_buf[CNT_BUF_MAX];
+volatile uint8_t cnt_buf[CNT_BUF_MAX];
 volatile uint16_t rxdata = 0;  // Serial data bit array
 volatile uint16_t txdata = 0; // Serial data shift register
 volatile uint16_t bit_counter = 0;  // bit counter

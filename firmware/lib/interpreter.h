@@ -7,17 +7,6 @@
 
 #define SLEEP_TICKS     500
 
-#define XBUS_DELAY          10
-#define XBUS_SHORT_DELAY    XBUS_DELAY/5
-
-#define XBUS_SIGNAL_TX      0xC0
-#define XBUS_TX             0x80
-#define XBUS_SLX            0xF0
-#define XBUS_SIGNAL_RX      0xE0
-#define XBUS_RX_START       0xD0
-#define XBUS_RX             0x40
-#define XBUS_RX_DONE        0xF8
-
 #define INTERPRETER_CLOCK_TICK clock_tick++
 #define GET_RI get_val(program[current_pos++], program[current_pos++])
 #define GET_R program[current_pos++]
@@ -27,10 +16,13 @@
 uint8_t *program;
 uint8_t program_size = 0;
 uint8_t current_pos = 0;
-uint16_t ri[2] = {0, 0};
+int16_t ri_1 = 0;
+int16_t ri_2 = 0;
 uint8_t reg;
-uint16_t xbus_data[2] = {0, 0};
-uint8_t xbus_state[2] = {0, 0};
+uint16_t xbus_data_0 = 0;
+uint16_t xbus_data_1 = 0;
+uint8_t xbus_state_0 = 0;
+uint8_t xbus_state_1 = 0;
 int16_t acc_register = 0;
 int16_t dat_register = 0;
 uint16_t sleep_until = 0;
@@ -43,6 +35,10 @@ typedef enum {
 } true_or_false;
 
 true_or_false current_condition;
+
+#define XBUS_SLX 0x01
+#define XBUS_RX 0x02
+#define XBUS_TX 0x03
 
 #define CMD_NOP 0x04
 #define CMD_MOV 0x08
@@ -77,7 +73,6 @@ true_or_false current_condition;
 #define P1_PWM_DUTY_L PWMG1DTL
 
 #define X0_PIN 5
-
 #define X1_PIN 6
 
 inline uint8_t get_p0_value() {
@@ -120,6 +115,54 @@ inline void set_p1_value(uint8_t val) {
     P1_PWM_DUTY_L = 0;
 }
 
+uint8_t get_x0_value(uint8_t pull_up) {
+    if (pull_up) {
+        PAPH |= (1 << X0_PIN); // Enable pullup
+    } else {
+        PAPH &= ~(1 << X0_PIN); // Disable pullup
+    }
+    PAC &= ~(1 << X0_PIN);  // Set pin as input
+    return PA & (1 << X0_PIN);
+}
+
+inline void set_x0_value(uint8_t pin_state, uint8_t pull_up) {
+    if (pull_up) {
+        PAPH |= (1 << X0_PIN); // Enable pullup
+    } else {
+        PAPH &= ~(1 << X0_PIN); // Disable pullup
+    }
+    PAC &= ~(1 << X0_PIN);  // Set pin as output
+    if (pin_state) {
+        PA |= (1 << X0_PIN);
+    } else {
+        PA &= ~(1 << X0_PIN);
+    }
+}
+
+uint8_t get_x1_value(uint8_t pull_up) {
+    if (pull_up) {
+        PAPH |= (1 << X1_PIN); // Enable pullup
+    } else {
+        PAPH &= ~(1 << X1_PIN); // Disable pullup
+    }
+    PAC &= ~(1 << X1_PIN);  // Set pin as input
+    return PA & (1 << X1_PIN);
+}
+
+inline void set_x1_value(uint8_t pin_state, uint8_t pull_up) {
+    if (pull_up) {
+        PAPH |= (1 << X1_PIN); // Enable pullup
+    } else {
+        PAPH &= ~(1 << X1_PIN); // Disable pullup
+    }
+    PAC &= ~(1 << X1_PIN);  // Set pin as output
+    if (pin_state) {
+        PA |= (1 << X1_PIN);
+    } else {
+        PA &= ~(1 << X1_PIN);
+    }
+}
+
 void setup_interpreter_hardware() {
     PAC &= ~(1 << P0_PIN);          // Enable P0 Pin as input
     PAPH &= ~(1 << P0_PIN);         // Disable P0 pullup
@@ -151,10 +194,10 @@ void reset_program() {
         acc_register = 0;
         dat_register = 0;
         current_condition = none;
-        xbus_data[0] = 0;
-        xbus_data[1] = 0;
-        xbus_state[0] = 0;
-        xbus_state[1] = 0;
+        xbus_data_0 = 0;
+        xbus_data_1 = 0;
+        xbus_state_0 = 0;
+        xbus_state_1 = 0;
         sleep_until = 0;
         set_p0_value(0);
         set_p1_value(0);
@@ -200,21 +243,9 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
             } else {
                 // x pin -> bit 4 defines port num
                 if (argh & 0x08) {
-                    // Set X1 as waiting for data
-                    if (xbus_state[1] == XBUS_RX_DONE) {
-                        return xbus_data[1];
-                    } else {
-                        xbus_state[1] = XBUS_SIGNAL_RX;
-                        return 0xFFFF;
-                    }
+                    // @ToDo: get data from xbus 1
                 } else {
-                    // Set X0 as waiting for data
-                    if (xbus_state[0] == XBUS_RX_DONE) {
-                        return xbus_data[0];
-                    } else {
-                        xbus_state[0] = XBUS_SIGNAL_RX;
-                        return 0xFFFF;
-                    }
+                    // @ToDo: get data from xbus 0
                 }
             }
         }
@@ -258,135 +289,12 @@ void set_val(int16_t arg, uint8_t reg) {
         } else {
             // x pin -> bit 3 defines port num
             if (reg & 0x10) {
-                // Set X1 as waiting to send arg
-                xbus_state[1] = XBUS_SIGNAL_TX;
-                xbus_data[1] = arg;
+                // @ToDo: write data on XBus1
             } else {
-                // Set X0 as waiting to send arg
-                xbus_state[0] = XBUS_SIGNAL_TX;
-                xbus_data[0] = arg;
+                // @ToDo: write data on XBus0
             }
         }
     }
-}
-
-
-uint8_t get_x0_state(uint8_t pullup) {
-    if (pullup) {
-        PAPH |= (1 << X0_PIN); // Enable pullup
-    } else {
-        PAPH &= ~(1 << X0_PIN); // Disable pullup
-    }
-    PAC &= ~(1 << X0_PIN);  // Set pin as input
-    return PA & (1 << X0_PIN);
-}
-
-uint8_t get_x1_state(uint8_t pullup) {
-    if (pullup) {
-        PAPH |= (1 << X1_PIN); // Enable pullup
-    } else {
-        PAPH &= ~(1 << X1_PIN); // Disable pullup
-    }
-    PAC &= ~(1 << X1_PIN);  // Set pin as input
-    return PA & (1 << X1_PIN);
-}
-
-void set_x0_state(uint8_t pin_state, uint8_t pullup) {
-    if (pullup) {
-        PAPH |= (1 << X0_PIN); // Enable pullup
-    } else {
-        PAPH &= ~(1 << X0_PIN); // Disable pullup
-    }
-    PAC &= ~(1 << X0_PIN);  // Set pin as output
-    if (pin_state) {
-        PA |= (1 << X0_PIN);
-    } else {
-        PA &= ~(1 << X0_PIN);
-    }
-}
-
-
-void set_x1_state(uint8_t pin_state, uint8_t pullup) {
-    if (pullup) {
-        PAPH |= (1 << X1_PIN); // Enable pullup
-    } else {
-        PAPH &= ~(1 << X1_PIN); // Disable pullup
-    }
-    PAC &= ~(1 << X1_PIN);  // Set pin as output
-    if (pin_state) {
-        PA |= (1 << X1_PIN);
-    } else {
-        PA &= ~(1 << X1_PIN);
-    }
-}
-
-// Handle XBUS transmission
-uint8_t handle_xbus(uint8_t xpin) {
-    uint8_t  bit_counter;
-
-    switch (xbus_state[xpin]) {
-        case XBUS_SLX:
-            // XBus is in slx mode -> check for a high signal
-            if (xpin == 1 ? get_x1_state(0) : get_x0_state(0)) {
-                xbus_state[xpin] = 0; // Sender is ready to send, go on
-            } else {
-                return 0; // idle while pin is low
-            }
-            break;
-        case XBUS_SIGNAL_RX:
-            // XBus is in read mode -> set port as output and display readyness by pulling the pin low
-            xpin ? set_x1_state(0, 0) : set_x0_state(0, 0);
-            xbus_state[xpin] = XBUS_RX;
-            SLEEP(XBUS_DELAY); // wait a bit
-            return 0;
-        case XBUS_RX_START:
-            // XBus is in read mode -> set port as input and trigger transmission start by enabling pullup
-            xpin ? get_x1_state(1) : get_x0_state(1);
-            xbus_state[xpin] = XBUS_RX;
-            SLEEP(XBUS_SHORT_DELAY); // wait a bit
-            return 0;
-        case XBUS_SIGNAL_TX:
-            if (xpin ? get_x1_state(1) : get_x0_state(1)) {
-                xbus_state[xpin] = XBUS_TX;  // Sender is ready to send, go on
-                SLEEP(XBUS_SHORT_DELAY); // wait a bit
-            }
-            return 0;
-        case XBUS_TX:
-            xpin ? set_x0_state(0, 0) : set_x0_state(0, 0);
-
-            bit_counter = xbus_data[xpin] >> 11;
-
-            if (xbus_data[xpin] & (((uint16_t) 1) << bit_counter)) {
-                PA |= xpin ? (1 << X1_PIN) : (1 << X0_PIN);
-            } else {
-                PA &= xpin ? ~(1 << X1_PIN) : ~(1 << X0_PIN);
-            } 
-            
-            if (bit_counter > 11) {
-                xbus_state[xpin] = 0; // Transmission was sent -> go on
-            } else {
-                xbus_data[xpin] += ((uint16_t) ++bit_counter) << 11;
-                SLEEP(XBUS_DELAY); // wait a bit
-                return 0;
-            }
-            break;
-        case XBUS_RX:
-
-            bit_counter = xbus_data[xpin] >> 11;
-
-            if (xpin ? PA & (1 << X1_PIN) : PA & (1 << X0_PIN)) {
-                xbus_data[xpin] |= (((uint16_t) 1) << bit_counter);
-            }
-            if (bit_counter > 11) {
-                xbus_state[xpin] = XBUS_RX_DONE; // Mark transmission as received
-            } else {
-                xbus_data[xpin] += (uint16_t) ++bit_counter << 11;
-                SLEEP(XBUS_DELAY); // wait a bit
-                return 0;
-            }
-            break;
-    }
-    return 1;
 }
 
 
@@ -397,8 +305,22 @@ uint8_t run_program_line() {
         }
         sleep_until = 0;
 
-        if (handle_xbus(0) == 0 || handle_xbus(1) == 0) return 0;
-
+        if (xbus_state_0 == XBUS_SLX) {
+            if (get_x0_value(0)) {
+                xbus_state_0 == 0;
+            } else {
+                SLEEP(10);
+                return 0;
+            }
+        } else if (xbus_state_1 == XBUS_SLX) {
+            if (get_x1_value(0)) {
+                xbus_state_1 == 0;
+            } else {
+                SLEEP(10);
+                return 0;
+            }
+        }
+        
         // Handle end of program buffer
         if (current_pos >= program_size-1) current_pos = 0;
 
@@ -427,13 +349,13 @@ uint8_t run_program_line() {
                 break;
             case CMD_MOV: // mov R/I R
                 CHECK_CONDITION(3);
-                ri[0] = GET_RI;
-                if (ri[0] == 0xFFFF) {
+                ri_1 = GET_RI;
+                if (ri_1 == 0xFFFF) {
                     current_pos -= 3;
                     break;
                 }
                 reg = GET_R;
-                set_val(ri[0], reg); // set value to register/pin
+                set_val(ri_1, reg); // set value to register/pin
                 break;
             case CMD_JMP: // jmp L
                 CHECK_CONDITION(1);
@@ -448,19 +370,17 @@ uint8_t run_program_line() {
                 CHECK_CONDITION(1);
                 reg = GET_R;
                 // fist two bits of argument encode the XBus port to use
-                if (reg & 0x4800 == 0x4800) {
-                    // mark X1 as waiting for ready
-                    xbus_state[1] = XBUS_SLX;
+                if (reg == 0x30) {
+                    xbus_state_0 = XBUS_SLX;
                 } else {
-                    // mark X0 as waiting for ready
-                    xbus_state[0] = XBUS_SLX;
+                    xbus_state_1 = XBUS_SLX;
                 }
                 break;
             case CMD_TEQ: // teq R/I R/I
                 CHECK_CONDITION(4);
-                ri[0] = GET_RI;
-                ri[1] = GET_RI;
-                if (ri[0] == ri[1]) {
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
+                if (ri_1 == ri_2) {
                     current_condition = true;
                 } else {
                     current_condition = false;
@@ -468,9 +388,9 @@ uint8_t run_program_line() {
                 break;
             case CMD_TGT: // tgt R/I R/I
                 CHECK_CONDITION(4);
-                ri[0] = GET_RI;
-                ri[1] = GET_RI;
-                if (ri[0] > ri[1]) {
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
+                if (ri_1 > ri_2) {
                     current_condition = true;
                 } else {
                     current_condition = false;
@@ -478,9 +398,9 @@ uint8_t run_program_line() {
                 break;
             case CMD_TLT: // tlt R/I R/I
                 CHECK_CONDITION(4);
-                ri[0] = GET_RI;
-                ri[1] = GET_RI;
-                if (ri[0] < ri[1]) {
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
+                if (ri_1 < ri_2) {
                     current_condition = true;
                 } else {
                     current_condition = false;
@@ -488,11 +408,11 @@ uint8_t run_program_line() {
                 break;
             case CMD_TCP: // tcp R/I R/I
                 CHECK_CONDITION(4);
-                ri[0] = GET_RI;
-                ri[1] = GET_RI;
-                if (ri[0] > ri[1]) {
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
+                if (ri_1 > ri_2) {
                     current_condition = true;
-                } else if (ri[0] < ri[1]) {
+                } else if (ri_1 < ri_2) {
                     current_condition = false;
                 } else {
                     current_condition = none;
@@ -500,24 +420,24 @@ uint8_t run_program_line() {
                 break;
             case CMD_ADD: // add R/I
                 CHECK_CONDITION(2);
-                ri[0] = GET_RI;
-                acc_register += ri[0];
+                ri_1 = GET_RI;
+                acc_register += ri_1;
                 if (acc_register > 999) {
                     acc_register = 999;
                 }
                 break;
             case CMD_SUB: // sub R/I
                 CHECK_CONDITION(2);
-                ri[0] = GET_RI;
-                acc_register -= ri[0];
+                ri_1 = GET_RI;
+                acc_register -= ri_1;
                 if (acc_register < -999) {
                     acc_register = -999;
                 }
                 break;
             case CMD_MUL: // mul R/I
                 CHECK_CONDITION(2);
-                ri[0] = GET_RI;
-                acc_register *= ri[0];
+                ri_1 = GET_RI;
+                acc_register *= ri_1;
                 if (acc_register > 999) {
                     acc_register = 999;
                 } else if (acc_register < -999) {
@@ -534,14 +454,51 @@ uint8_t run_program_line() {
                 break;
             case CMD_DGT: // dgt R/I
                 CHECK_CONDITION(2);
-                ri[0] = GET_RI;
-                // @ToDo: isolate a digit from acc and store it in acc
+                ri_1 = GET_RI;
+                if (ri_1 > 2) ri_1 = 2;
+                else if (ri_1 < 0) ri_1 = 0;
+                
+                acc_register = acc_register < 0 ? -acc_register : acc_register;
+                reg = acc_register/100;
+                if (ri_1 < 2) {
+                    acc_register -= reg*100;
+                    reg = acc_register/10;
+                }
+                if (ri_1 == 0) acc_register -= reg*10;
+                else acc_register = reg;
+
                 break;
             case CMD_DST: // dst R/I R/I
                 CHECK_CONDITION(4);
-                ri[0] = GET_RI;
-                ri[1] = GET_RI;
-                // @ToDo: set the digit from the first operant in acc to the scond opernat
+                ri_1 = GET_RI;
+                ri_2 = GET_RI;
+
+                if (ri_1 > 2) ri_1 = 2;
+                else if (ri_1 < 0) ri_1 = 0;
+                if (ri_2 > 9) ri_2 = 9;
+                else if (ri_2 < 0) ri_2 = 0;
+
+                sleep_until = 0; // Reuse sleep_until to mark negative acc
+                if (acc_register < 0) {
+                    acc_register = -acc_register;
+                    sleep_until = 1;
+                }
+
+                if (ri_1 == 0) {
+                    acc_register = ((acc_register / 10) * 10) + ri_2;
+                } else if (ri_1 == 1) {
+                    reg = acc_register - (acc_register / 100 * 100) - (acc_register / 10 * 10);
+                    acc_register = ((acc_register / 100) * 100) + ri_2 * 10 + reg;
+                } else if (ri_1 == 2) {
+                    reg = acc_register - (acc_register / 100 * 100);
+                    acc_register = ri_2 * 100 + reg; 
+                }
+
+                if (sleep_until) {
+                    acc_register = -acc_register;
+                    sleep_until = 0;
+                }
+
                 break;
             case CMD_LBL: // label L
                 current_pos++; // Label, just jump to next command

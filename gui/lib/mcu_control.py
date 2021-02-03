@@ -202,14 +202,9 @@ class MCUControl():
 
     def write_serial_8bit(self, a, printval=True):
         time.sleep(self.serial_delay_time)
-        if printval:
-            print(a.to_bytes(1, 'big'))
         self.ser.write(a.to_bytes(1, 'big'))
 
     def write_serial_16bit(self, a, printval=True):
-        if printval:
-            print(a.to_bytes(2, 'big'))
-
         # This is a register
         if a >= 0x4000:
             time.sleep(self.serial_delay_time)
