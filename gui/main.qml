@@ -17,7 +17,7 @@ ApplicationWindow {
 
     header: ToolBar {
 
-        visible: true
+        visible: serial.mcuConnections > 0
 
         RowLayout {
             anchors.fill: parent
@@ -44,21 +44,27 @@ ApplicationWindow {
         }
     }
 
-    Item {
+
+    Column {
         id: connection
         visible: serial.mcuConnections == 0
-        anchors.fill: parent
+        anchors.centerIn: parent
+        width: 200
 
-        Text {
-            anchors.fill: parent
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 18
-            text: "Connecting"
-            color: "black"
+        ComboBox {
+            id: serial_ports
+            width: parent.width
+            model: serial.serialports
         }
 
+        Button {
+            width: parent.width
+            text: "Connect"
+            onClicked: serial.connect(serial_ports.currentText)
+        }
     }
+
+
 
     Item {
         id: editors
