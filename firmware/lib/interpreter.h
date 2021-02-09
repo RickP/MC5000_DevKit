@@ -8,7 +8,7 @@
 #define SLEEP_TICKS     500
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
-#define GET_RI get_val(program[current_pos++], program[current_pos++])
+#define GET_RI get_val(program[current_pos], program[current_pos+1]); current_pos += 2
 #define GET_R program[current_pos++]
 #define CHECK_CONDITION(x) if (command_condition != none && current_condition != command_condition) {current_pos += (uint8_t) x; break;}
 #define SLEEP(x) clock_tick = 0; sleep_until = x
@@ -307,14 +307,14 @@ uint8_t run_program_line() {
 
         if (xbus_state_0 == XBUS_SLX) {
             if (get_x0_value(0)) {
-                xbus_state_0 == 0;
+                xbus_state_0 = 0;
             } else {
                 SLEEP(10);
                 return 0;
             }
         } else if (xbus_state_1 == XBUS_SLX) {
             if (get_x1_value(0)) {
-                xbus_state_1 == 0;
+                xbus_state_1 = 0;
             } else {
                 SLEEP(10);
                 return 0;
@@ -350,7 +350,7 @@ uint8_t run_program_line() {
             case CMD_MOV: // mov R/I R
                 CHECK_CONDITION(3);
                 ri_1 = GET_RI;
-                if (ri_1 == 0xFFFF) {
+                if (ri_1 == 0x0FFF) {
                     current_pos -= 3;
                     break;
                 }

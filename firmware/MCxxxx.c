@@ -5,14 +5,6 @@
 #include "lib/interpreter.h"
 #include "lib/delay.h"
 
-#if __INTELLISENSE__
-#pragma diag_suppress 40
-#pragma diag_suppress 79
-#pragma diag_suppress 144
-#pragma diag_suppress 169
-#pragma diag_suppress 411
-#endif
-
 // Insert serial number
 EASY_PDK_SERIAL(serial_number);
 
@@ -92,7 +84,7 @@ void handle_rx() {
         }
 }
 
-void main(void) {
+int main(void) {
         // Disable wake-up on un-used pins to save power
         PADIER = 0x00;
 

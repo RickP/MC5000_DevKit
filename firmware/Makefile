@@ -1,5 +1,5 @@
 SDCC        ?= sdcc
-PROG    	?= easypdkprog
+PROG        ?= easypdkprog
 
 #setup target PFS173
 ICTYPE      = pdk15
