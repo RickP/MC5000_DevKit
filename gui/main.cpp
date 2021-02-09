@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQmlFileSelector>
+#include "serialcommunication.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +17,11 @@ int main(int argc, char *argv[])
         if (!obj && url == objUrl)
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
+
+    SerialCommunication* serial = new SerialCommunication();
+
+    engine.rootContext()->setContextProperty("serial", serial);
+
     engine.load(url);
 
     return app.exec();

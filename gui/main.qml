@@ -6,18 +6,18 @@ import QtQuick.Window 2.0
 
 ApplicationWindow {
     id: window
-    width: 220 * num_editors;
-    height: 450
-    minimumWidth: 220 * num_editors;
-    minimumHeight: 450
+    width: num_editors > 0 ? 300 * num_editors : 300;
+    height: 400
+    minimumWidth: num_editors > 0 ? 300 * num_editors : 300;
+    minimumHeight: 400
     visible: true
     title: qsTr("MC4000E V0.1")
 
-    property int num_editors: 1
+    property int num_editors: serial.mcuConnections
 
     header: ToolBar {
 
-        visible: false
+        visible: true
 
         RowLayout {
             anchors.fill: parent
@@ -28,6 +28,7 @@ ApplicationWindow {
 
                 ToolButton {
                     text: qsTr("Save")
+                    onClicked: serial.connect()
                 }
 
                 ToolButton {
@@ -45,7 +46,7 @@ ApplicationWindow {
 
     Item {
         id: connection
-        visible: true
+        visible: serial.mcuConnections == 0
         anchors.fill: parent
 
         Text {
@@ -61,14 +62,8 @@ ApplicationWindow {
 
     Item {
         id: editors
-        visible: false
+        visible: serial.mcuConnections > 0
         anchors.fill: parent
-
-        onVisibleChanged: {
-            if (this.visible) {
-                connection.visible = false;
-            }
-        }
 
         Row {
             anchors.fill: parent
