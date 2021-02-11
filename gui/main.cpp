@@ -1,7 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include <QQmlFileSelector>
+#include <QFontDatabase>
 #include "serialcommunication.h"
 
 int main(int argc, char *argv[])
@@ -9,6 +9,10 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QGuiApplication app(argc, argv);
+
+    if (QFontDatabase::addApplicationFont(":/font/Roboto-Regular.ttf") == -1) {
+        qWarning() << "Failed to load Roboto-Regular.ttf";
+    }
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));

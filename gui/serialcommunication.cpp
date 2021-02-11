@@ -15,6 +15,8 @@ SerialCommunication::SerialCommunication(QObject *parent) : QObject(parent)
         connect(m_serialports.at(0));
     }
 
+    // qDebug("0X%02X", commands.value("nop").first);
+
 }
 
 SerialCommunication::~SerialCommunication()
@@ -28,8 +30,10 @@ void SerialCommunication::connect(QString port) {
     m_serial.setBaudRate(19200);
     m_serial.open(QIODevice::ReadWrite);
 
+    if (!m_serial.isOpen()) return;
+
     // check number of mcus
-    for (int i=1;;i++) {
+    for (int i=1;; i++) {
         m_serial.write(QString::number(i).toLocal8Bit(), 1);
         if (m_serial.waitForBytesWritten(100)) {
             if (m_serial.waitForReadyRead(100)) {
@@ -41,6 +45,10 @@ void SerialCommunication::connect(QString port) {
         }
     }
     emit mcuConnectionChanged();
+}
+
+void SerialCommunication::upload(QStringList) {
+
 }
 
 void SerialCommunication::updateRegisters() {
@@ -80,9 +88,9 @@ QList<int> SerialCommunication::accRegisters() {
 }
 
 QStringList SerialCommunication::serialports() {
- return m_serialports;
+    return m_serialports;
 }
 
 int SerialCommunication::mcuConnections() const {
- return m_mcuConnections;
+    return m_mcuConnections;
 }

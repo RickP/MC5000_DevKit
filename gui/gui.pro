@@ -10,7 +10,10 @@ SOURCES += \
         main.cpp \
         serialcommunication.cpp
 
-RESOURCES += qml.qrc
+RESOURCES += \
+        qml.qrc \
+        font/Roboto-Regular.ttf
+
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -25,3 +28,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     serialcommunication.h
+
+DISTFILES += \
+    font/Roboto-Regular.ttf

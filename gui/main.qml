@@ -5,6 +5,8 @@ import Qt.labs.platform 1.1
 import QtQuick.Layouts 1.12
 import QtQuick.Window 2.0
 
+
+
 ApplicationWindow {
     id: window
     width: serial.mcuConnections > 0 ? 300 * serial.mcuConnections : 300;
@@ -49,6 +51,16 @@ ApplicationWindow {
                 Layout.rightMargin: 10
                 text: qsTr("Upload")
                 Layout.alignment: Qt.AlignRight
+                onClicked: {
+                    upload = true;
+                    var code_strings = [];
+                    for (var i=0; i < editors.count; i++) {
+                        code_strings.push(editors.itemAt(i).children[0].children[0].children[1].text);
+                    }
+                    console.log(code_strings);
+                    serial.upload(code_strings);
+                    upload = false;
+                }
             }
         }
     }
@@ -76,7 +88,6 @@ ApplicationWindow {
 
 
     Item {
-        id: editors
         visible: serial.mcuConnections > 0
         anchors.fill: parent
 
@@ -84,7 +95,7 @@ ApplicationWindow {
             anchors.fill: parent
 
             Repeater {
-
+                id: editors
                 model: Array(serial.mcuConnections)
                 delegate: Rectangle {
                     height: parent.height
@@ -115,6 +126,7 @@ ApplicationWindow {
                             }
 
                             TextEdit {
+                                id: editor
                                 selectByMouse: true
                                 textMargin: 10
                                 width: parent.width
