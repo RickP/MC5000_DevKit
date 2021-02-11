@@ -1,19 +1,27 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Controls.Material 2.12
+import Qt.labs.platform 1.1
 import QtQuick.Layouts 1.12
 import QtQuick.Window 2.0
 
 ApplicationWindow {
     id: window
-    width: num_editors > 0 ? 300 * num_editors : 300;
+    width: serial.mcuConnections > 0 ? 300 * serial.mcuConnections : 300;
     height: 400
-    minimumWidth: num_editors > 0 ? 300 * num_editors : 300;
+    minimumWidth: serial.mcuConnections > 0 ? 300 * serial.mcuConnections : 300;
     minimumHeight: 400
     visible: true
     title: qsTr("MC4000E V0.1")
 
-    property int num_editors: serial.mcuConnections
+    property bool upload: false
+
+    Timer {
+        interval: 200 + (100 * serial.mcuConnections)
+        running: serial.mcuConnections > 0 && !upload
+        repeat: true
+        onTriggered: serial.updateRegisters()
+    }
 
     header: ToolBar {
 
@@ -28,11 +36,12 @@ ApplicationWindow {
 
                 ToolButton {
                     text: qsTr("Save")
-                    onClicked: serial.connect()
+                    onClicked: saveDialog.open()
                 }
 
                 ToolButton {
                     text: qsTr("Open")
+                    onClicked: loadDialog.open()
                 }
             }
 
@@ -75,10 +84,11 @@ ApplicationWindow {
             anchors.fill: parent
 
             Repeater {
-                model: Array(num_editors)
+
+                model: Array(serial.mcuConnections)
                 delegate: Rectangle {
                     height: parent.height
-                    width: parent.width / num_editors
+                    width: parent.width / serial.mcuConnections
                     color: "lightgrey"
                     Rectangle {
                         anchors.margins: 2
@@ -141,7 +151,7 @@ ApplicationWindow {
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignRight
                                                 font.pointSize: 18
-                                                text: "-999"
+                                                text: serial.accRegisters[index]
                                                 color: "black"
                                             }
                                         }
@@ -165,7 +175,7 @@ ApplicationWindow {
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignRight
                                                 font.pointSize: 18
-                                                text: "100"
+                                                text: serial.datRegisters[index]
                                                 color: "black"
                                             }
                                         }
@@ -178,4 +188,26 @@ ApplicationWindow {
             }
         }
     }
+
+    FileDialog {
+        id: loadDialog
+        title: "Load file"
+        onAccepted: {
+            console.log("You chose: " + fileDialog.fileUrls)
+        }
+        onRejected: {
+            console.log("Canceled")
+        }
+        fileMode: FileDialog.OpenFile
+    }
+
+    FileDialog {
+        id: saveDialog
+        title: "Save File"
+        fileMode: FileDialog.SaveFile
+
+    }
+
 }
+
+
