@@ -29,9 +29,9 @@ uint16_t sleep_until = 0;
 volatile uint16_t clock_tick = 0;
 
 typedef enum {
-        none=0,
-        true=1,
-        false=2
+    none=0,
+    true=1,
+    false=2
 } true_or_false;
 
 true_or_false current_condition;
@@ -76,39 +76,39 @@ true_or_false current_condition;
 #define X1_PIN 6
 
 inline uint8_t get_p0_value() {
-    P0_PWM &= ~P0_PWM_ENABLE;                   // Disable PWM output on pin
-    PAC &= ~(1 << P0_PIN);                      // Enable P0 Pin as input
-    ADCC = P0_ADC;                              // Set ADC for pin
-    ADCC |= ADCC_ADC_ENABLE;                    // Enable ADC
-    delay_us(400);                              // wait to settle
-    ADCC |= ADCC_ADC_CONV_START;                //start ADC conversion
-    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) );  //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
+    P0_PWM &= ~P0_PWM_ENABLE;   // Disable PWM output on pin
+    PAC &= ~(1 << P0_PIN);      // Enable P0 Pin as input
+    ADCC = P0_ADC;              // Set ADC for pin
+    ADCC |= ADCC_ADC_ENABLE;    // Enable ADC
+    delay_us(400);              // wait to settle
+    ADCC |= ADCC_ADC_CONV_START; //start ADC conversion
+    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
     return ADCR;
 }
 
 inline void set_p0_value(uint8_t val) {
     ADCC = 0;
-    PAC |= (1 << P0_PIN);    // Enable P0 Pin as output
+    PAC |= (1 << P0_PIN); // Enable P0 Pin as output
     P0_PWM |= P0_PWM_ENABLE; // Enable PWN output on Pin
     P0_PWM_DUTY_H = val;
     P0_PWM_DUTY_L = 0;
 }
 
 inline uint8_t get_p1_value() {
-    P1_PWM &= ~P1_PWM_ENABLE;                   // Disable PWM output on pin
-    PAC |= (1 << P1_PIN);                       // Enable P1 Pin as input
-    ADCC = P1_ADC;                              // Set ADC for pin
-    ADCC |= ADCC_ADC_ENABLE;                    // Enable ADC
-    delay_us(400);                              // wait to settle
-    ADCC |= ADCC_ADC_CONV_START;                //start ADC conversion
-    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) );  //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
+    P1_PWM &= ~P1_PWM_ENABLE;   // Disable PWM output on pin
+    PAC |= (1 << P1_PIN);       // Enable P1 Pin as input
+    ADCC = P1_ADC;              // Set ADC for pin
+    ADCC |= ADCC_ADC_ENABLE;    // Enable ADC
+    delay_us(400);              // wait to settle
+    ADCC |= ADCC_ADC_CONV_START; //start ADC conversion
+    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
     return ADCR;
 }
 
 inline void set_p1_value(uint8_t val) {
     if (!(PAC & (1 << P1_PIN))) {
         ADCC = 0;
-        PAC |= (1 << P1_PIN);    // Enable P0 Pin as output
+        PAC |= (1 << P1_PIN); // Enable P0 Pin as output
         P1_PWM |= P1_PWM_ENABLE; // Enable PWN output on Pin
     }
     P1_PWM_DUTY_H = val;
@@ -121,7 +121,7 @@ uint8_t get_x0_value(uint8_t pull_up) {
     } else {
         PAPH &= ~(1 << X0_PIN); // Disable pullup
     }
-    PAC &= ~(1 << X0_PIN);  // Set pin as input
+    PAC &= ~(1 << X0_PIN); // Set pin as input
     return PA & (1 << X0_PIN);
 }
 
@@ -131,7 +131,7 @@ inline void set_x0_value(uint8_t pin_state, uint8_t pull_up) {
     } else {
         PAPH &= ~(1 << X0_PIN); // Disable pullup
     }
-    PAC &= ~(1 << X0_PIN);  // Set pin as output
+    PAC &= ~(1 << X0_PIN); // Set pin as output
     if (pin_state) {
         PA |= (1 << X0_PIN);
     } else {
@@ -145,7 +145,7 @@ uint8_t get_x1_value(uint8_t pull_up) {
     } else {
         PAPH &= ~(1 << X1_PIN); // Disable pullup
     }
-    PAC &= ~(1 << X1_PIN);  // Set pin as input
+    PAC &= ~(1 << X1_PIN); // Set pin as input
     return PA & (1 << X1_PIN);
 }
 
@@ -155,7 +155,7 @@ inline void set_x1_value(uint8_t pin_state, uint8_t pull_up) {
     } else {
         PAPH &= ~(1 << X1_PIN); // Disable pullup
     }
-    PAC &= ~(1 << X1_PIN);  // Set pin as output
+    PAC &= ~(1 << X1_PIN); // Set pin as output
     if (pin_state) {
         PA |= (1 << X1_PIN);
     } else {
@@ -164,20 +164,20 @@ inline void set_x1_value(uint8_t pin_state, uint8_t pull_up) {
 }
 
 void setup_interpreter_hardware() {
-    PAC &= ~(1 << P0_PIN);          // Enable P0 Pin as input
-    PAPH &= ~(1 << P0_PIN);         // Disable P0 pullup
+    PAC &= ~(1 << P0_PIN); // Enable P0 Pin as input
+    PAPH &= ~(1 << P0_PIN); // Disable P0 pullup
 
-    PAC &= ~(1 << P1_PIN);          // Enable P1 Pin as input
-    PAPH &= ~(1 << P1_PIN);         // Disable P1 pullup
+    PAC &= ~(1 << P1_PIN); // Enable P1 Pin as input
+    PAPH &= ~(1 << P1_PIN); // Disable P1 pullup
 
-    PAC &= ~(1 << X0_PIN);          // Enable X0 Pin as input
-    PAPH &= ~(1 << X0_PIN);         // Disable X0 pullup
+    PAC &= ~(1 << X0_PIN); // Enable X0 Pin as input
+    PAPH &= ~(1 << X0_PIN); // Disable X0 pullup
 
-    PAC &= ~(1 << X1_PIN);          // Enable X1 Pin as input
-    PAPH &= ~(1 << P1_PIN);         // Disable P1 pullup
+    PAC &= ~(1 << X1_PIN); // Enable X1 Pin as input
+    PAPH &= ~(1 << P1_PIN); // Disable P1 pullup
 
-    ADCRGC = ADCRG_ADC_REF_VDD;     // VCC reference for ADC
-    ADCM = ADCM_CLK_SYSCLK_DIV16;   // ADC divider 16
+    ADCRGC = ADCRG_ADC_REF_VDD; // VCC reference for ADC
+    ADCM = ADCM_CLK_SYSCLK_DIV16; // ADC divider 16
 
     // Enable PWMG1 and PWMG2 for p port output
     PWMGCLK = PWMGCLK_PWMG_ENABLE;
@@ -188,30 +188,30 @@ void setup_interpreter_hardware() {
 }
 
 void reset_program() {
-        // Reset registers and outputs
-        current_pos = 0;
-        clock_tick = 0;
-        acc_register = 0;
-        dat_register = 0;
-        current_condition = none;
-        xbus_data_0 = 0;
-        xbus_data_1 = 0;
-        xbus_state_0 = 0;
-        xbus_state_1 = 0;
-        sleep_until = 0;
-        set_p0_value(0);
-        set_p1_value(0);
+    // Reset registers and outputs
+    current_pos = 0;
+    clock_tick = 0;
+    acc_register = 0;
+    dat_register = 0;
+    current_condition = none;
+    xbus_data_0 = 0;
+    xbus_data_1 = 0;
+    xbus_state_0 = 0;
+    xbus_state_1 = 0;
+    sleep_until = 0;
+    set_p0_value(0);
+    set_p1_value(0);
 }
 
 inline void set_program(uint8_t *new_program, uint8_t new_program_size) {
-        program = new_program;
-        program_size = new_program_size;
+    program = new_program;
+    program_size = new_program_size;
 }
 
 uint8_t find_label(uint8_t label) {
     for (uint8_t i = 0; i < program_size; i++) {
         if (program[i] == CMD_LBL) {
-                if (program[i+1] == label) return i+2;
+            if (program[i+1] == label) return i+2;
         }
     }
     return 0;
@@ -266,29 +266,29 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
 
 void set_val(int16_t arg, uint8_t reg) {
 
-    // Bit 1 of reg defines memory (1) or pin (0)
-    if (reg & 0x40) {
-        // memory -> bit 2 defines acc (1) or dat(0)
-        if (reg & 0x20) {
+    // Bit 2 of reg defines memory (1) or pin (0)
+    if (reg & 0x20) {
+        // memory -> bit 3 defines acc (1) or dat(0)
+        if (reg & 0x10) {
             acc_register = arg;
         } else {
             dat_register = arg;
         }
     } else {
-        // pin -> bit 2 defines p(1) or x(0)
-        if (reg & 0x20) {
-            // p pin -> bit 3 defines port num
+        // pin -> bit 3 defines p(1) or x(0)
+        if (reg & 0x10) {
+            // p pin -> bit 4 defines port num
             if (arg < 0) arg = 0; // Limit arg
             else if (arg > 100) arg = 100;
 
-            if (reg & 0x10) {
+            if (reg & 0x08) {
                 set_p1_value(arg & 0xFF);
             } else {
                 set_p0_value(arg & 0xFF);
             }
         } else {
-            // x pin -> bit 3 defines port num
-            if (reg & 0x10) {
+            // x pin -> bit 4 defines port num
+            if (reg & 0x08) {
                 // @ToDo: write data on XBus1
             } else {
                 // @ToDo: write data on XBus0
@@ -299,212 +299,212 @@ void set_val(int16_t arg, uint8_t reg) {
 
 
 uint8_t run_program_line() {
-        // Sleep if we need to
-        if (clock_tick < sleep_until) {
+    // Sleep if we need to
+    if (clock_tick < sleep_until) {
+        return 0;
+    }
+    sleep_until = 0;
+
+    if (xbus_state_0 == XBUS_SLX) {
+        if (get_x0_value(0)) {
+            xbus_state_0 = 0;
+        } else {
+            SLEEP(10);
             return 0;
         }
-        sleep_until = 0;
-
-        if (xbus_state_0 == XBUS_SLX) {
-            if (get_x0_value(0)) {
-                xbus_state_0 = 0;
-            } else {
-                SLEEP(10);
-                return 0;
-            }
-        } else if (xbus_state_1 == XBUS_SLX) {
-            if (get_x1_value(0)) {
-                xbus_state_1 = 0;
-            } else {
-                SLEEP(10);
-                return 0;
-            }
+    } else if (xbus_state_1 == XBUS_SLX) {
+        if (get_x1_value(0)) {
+            xbus_state_1 = 0;
+        } else {
+            SLEEP(10);
+            return 0;
         }
-        
-        // Handle end of program buffer
-        if (current_pos >= program_size-1) current_pos = 0;
+    }
 
-        // get current command including current_condition
-        uint8_t command = program[current_pos];
+    // Handle end of program buffer
+    if (current_pos >= program_size-1) current_pos = 0;
 
-        // Get current_condition for command
-        true_or_false command_condition = none;
-        if (command & 0x01) {
-            command_condition = true;
+    // get current command including current_condition
+    uint8_t command = program[current_pos];
+
+    // Get current_condition for command
+    true_or_false command_condition = none;
+    if (command & 0x01) {
+        command_condition = true;
+    }
+    else if (command & 0x02) {
+        command_condition = false;
+    }
+
+    // Remove current_condition bits
+    command &= 0xFC;
+
+    // Increase programm array counter to next byte
+    current_pos++;
+
+    switch (command) {
+    case 0:
+        return 1; // Command not found - return 1 as failure
+    case CMD_NOP: // nop
+        break;
+    case CMD_MOV: // mov R/I R
+        CHECK_CONDITION(3);
+        ri_1 = GET_RI;
+        if (ri_1 == 0x0FFF) {
+            current_pos -= 3;
+            break;
         }
-        else if (command & 0x02) {
-            command_condition = false;
+        reg = GET_R;
+        set_val(ri_1, reg); // set value to register/pin
+        break;
+    case CMD_JMP: // jmp L
+        CHECK_CONDITION(1);
+        reg = GET_R;
+        current_pos = find_label(reg); // Set position to after label pos
+        break;
+    case CMD_SLP: // slp R/I
+        CHECK_CONDITION(2);
+        SLEEP(GET_RI * SLEEP_TICKS);
+        break;
+    case CMD_SLX: // slx P
+        CHECK_CONDITION(1);
+        reg = GET_R;
+        // fist two bits of argument encode the XBus port to use
+        if (reg == 0x30) {
+            xbus_state_0 = XBUS_SLX;
+        } else {
+            xbus_state_1 = XBUS_SLX;
+        }
+        break;
+    case CMD_TEQ: // teq R/I R/I
+        CHECK_CONDITION(4);
+        ri_1 = GET_RI;
+        ri_2 = GET_RI;
+        if (ri_1 == ri_2) {
+            current_condition = true;
+        } else {
+            current_condition = false;
+        }
+        break;
+    case CMD_TGT: // tgt R/I R/I
+        CHECK_CONDITION(4);
+        ri_1 = GET_RI;
+        ri_2 = GET_RI;
+        if (ri_1 > ri_2) {
+            current_condition = true;
+        } else {
+            current_condition = false;
+        }
+        break;
+    case CMD_TLT: // tlt R/I R/I
+        CHECK_CONDITION(4);
+        ri_1 = GET_RI;
+        ri_2 = GET_RI;
+        if (ri_1 < ri_2) {
+            current_condition = true;
+        } else {
+            current_condition = false;
+        }
+        break;
+    case CMD_TCP: // tcp R/I R/I
+        CHECK_CONDITION(4);
+        ri_1 = GET_RI;
+        ri_2 = GET_RI;
+        if (ri_1 > ri_2) {
+            current_condition = true;
+        } else if (ri_1 < ri_2) {
+            current_condition = false;
+        } else {
+            current_condition = none;
+        }
+        break;
+    case CMD_ADD: // add R/I
+        CHECK_CONDITION(2);
+        ri_1 = GET_RI;
+        acc_register += ri_1;
+        if (acc_register > 999) {
+            acc_register = 999;
+        }
+        break;
+    case CMD_SUB: // sub R/I
+        CHECK_CONDITION(2);
+        ri_1 = GET_RI;
+        acc_register -= ri_1;
+        if (acc_register < -999) {
+            acc_register = -999;
+        }
+        break;
+    case CMD_MUL: // mul R/I
+        CHECK_CONDITION(2);
+        ri_1 = GET_RI;
+        acc_register *= ri_1;
+        if (acc_register > 999) {
+            acc_register = 999;
+        } else if (acc_register < -999) {
+            acc_register = -999;
+        }
+        break;
+    case CMD_NOT: // not
+        CHECK_CONDITION(0);
+        if (acc_register == 0) {
+            acc_register = 100;
+        } else {
+            acc_register = 0;
+        }
+        break;
+    case CMD_DGT: // dgt R/I
+        CHECK_CONDITION(2);
+        ri_1 = GET_RI;
+        if (ri_1 > 2) ri_1 = 2;
+        else if (ri_1 < 0) ri_1 = 0;
+
+        acc_register = acc_register < 0 ? -acc_register : acc_register;
+        reg = acc_register/100;
+        if (ri_1 < 2) {
+            acc_register -= reg*100;
+            reg = acc_register/10;
+        }
+        if (ri_1 == 0) acc_register -= reg*10;
+        else acc_register = reg;
+
+        break;
+    case CMD_DST: // dst R/I R/I
+        CHECK_CONDITION(4);
+        ri_1 = GET_RI;
+        ri_2 = GET_RI;
+
+        if (ri_1 > 2) ri_1 = 2;
+        else if (ri_1 < 0) ri_1 = 0;
+        if (ri_2 > 9) ri_2 = 9;
+        else if (ri_2 < 0) ri_2 = 0;
+
+        sleep_until = 0; // Reuse sleep_until to mark negative acc
+        if (acc_register < 0) {
+            acc_register = -acc_register;
+            sleep_until = 1;
         }
 
-        // Remove current_condition bits
-        command &= 0xFC;
-
-        // Increase programm array counter to next byte
-        current_pos++;
-
-        switch (command) {
-            case 0:
-                return 1; // Command not found - return 1 as failure
-            case CMD_NOP: // nop
-                break;
-            case CMD_MOV: // mov R/I R
-                CHECK_CONDITION(3);
-                ri_1 = GET_RI;
-                if (ri_1 == 0x0FFF) {
-                    current_pos -= 3;
-                    break;
-                }
-                reg = GET_R;
-                set_val(ri_1, reg); // set value to register/pin
-                break;
-            case CMD_JMP: // jmp L
-                CHECK_CONDITION(1);
-                reg = GET_R;
-                current_pos = find_label(reg); // Set position to after label pos
-                break;
-            case CMD_SLP: // slp R/I
-                CHECK_CONDITION(2);
-                SLEEP(GET_RI * SLEEP_TICKS);
-                break;
-            case CMD_SLX: // slx P
-                CHECK_CONDITION(1);
-                reg = GET_R;
-                // fist two bits of argument encode the XBus port to use
-                if (reg == 0x30) {
-                    xbus_state_0 = XBUS_SLX;
-                } else {
-                    xbus_state_1 = XBUS_SLX;
-                }
-                break;
-            case CMD_TEQ: // teq R/I R/I
-                CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
-                if (ri_1 == ri_2) {
-                    current_condition = true;
-                } else {
-                    current_condition = false;
-                }
-                break;
-            case CMD_TGT: // tgt R/I R/I
-                CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
-                if (ri_1 > ri_2) {
-                    current_condition = true;
-                } else {
-                    current_condition = false;
-                }
-                break;
-            case CMD_TLT: // tlt R/I R/I
-                CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
-                if (ri_1 < ri_2) {
-                    current_condition = true;
-                } else {
-                    current_condition = false;
-                }
-                break;
-            case CMD_TCP: // tcp R/I R/I
-                CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
-                if (ri_1 > ri_2) {
-                    current_condition = true;
-                } else if (ri_1 < ri_2) {
-                    current_condition = false;
-                } else {
-                    current_condition = none;
-                }
-                break;
-            case CMD_ADD: // add R/I
-                CHECK_CONDITION(2);
-                ri_1 = GET_RI;
-                acc_register += ri_1;
-                if (acc_register > 999) {
-                    acc_register = 999;
-                }
-                break;
-            case CMD_SUB: // sub R/I
-                CHECK_CONDITION(2);
-                ri_1 = GET_RI;
-                acc_register -= ri_1;
-                if (acc_register < -999) {
-                    acc_register = -999;
-                }
-                break;
-            case CMD_MUL: // mul R/I
-                CHECK_CONDITION(2);
-                ri_1 = GET_RI;
-                acc_register *= ri_1;
-                if (acc_register > 999) {
-                    acc_register = 999;
-                } else if (acc_register < -999) {
-                    acc_register = -999;
-                }
-                break;
-            case CMD_NOT: // not
-                CHECK_CONDITION(0);
-                if (acc_register == 0) {
-                    acc_register = 100;
-                } else {
-                    acc_register = 0;
-                }
-                break;
-            case CMD_DGT: // dgt R/I
-                CHECK_CONDITION(2);
-                ri_1 = GET_RI;
-                if (ri_1 > 2) ri_1 = 2;
-                else if (ri_1 < 0) ri_1 = 0;
-                
-                acc_register = acc_register < 0 ? -acc_register : acc_register;
-                reg = acc_register/100;
-                if (ri_1 < 2) {
-                    acc_register -= reg*100;
-                    reg = acc_register/10;
-                }
-                if (ri_1 == 0) acc_register -= reg*10;
-                else acc_register = reg;
-
-                break;
-            case CMD_DST: // dst R/I R/I
-                CHECK_CONDITION(4);
-                ri_1 = GET_RI;
-                ri_2 = GET_RI;
-
-                if (ri_1 > 2) ri_1 = 2;
-                else if (ri_1 < 0) ri_1 = 0;
-                if (ri_2 > 9) ri_2 = 9;
-                else if (ri_2 < 0) ri_2 = 0;
-
-                sleep_until = 0; // Reuse sleep_until to mark negative acc
-                if (acc_register < 0) {
-                    acc_register = -acc_register;
-                    sleep_until = 1;
-                }
-
-                if (ri_1 == 0) {
-                    acc_register = ((acc_register / 10) * 10) + ri_2;
-                } else if (ri_1 == 1) {
-                    reg = acc_register - (acc_register / 100 * 100) - (acc_register / 10 * 10);
-                    acc_register = ((acc_register / 100) * 100) + ri_2 * 10 + reg;
-                } else if (ri_1 == 2) {
-                    reg = acc_register - (acc_register / 100 * 100);
-                    acc_register = ri_2 * 100 + reg; 
-                }
-
-                if (sleep_until) {
-                    acc_register = -acc_register;
-                    sleep_until = 0;
-                }
-
-                break;
-            case CMD_LBL: // label L
-                current_pos++; // Label, just jump to next command
-                break;
+        if (ri_1 == 0) {
+            acc_register = ((acc_register / 10) * 10) + ri_2;
+        } else if (ri_1 == 1) {
+            reg = acc_register - (acc_register / 100 * 100) - (acc_register / 10 * 10);
+            acc_register = ((acc_register / 100) * 100) + ri_2 * 10 + reg;
+        } else if (ri_1 == 2) {
+            reg = acc_register - (acc_register / 100 * 100);
+            acc_register = ri_2 * 100 + reg;
         }
-        return 0;
+
+        if (sleep_until) {
+            acc_register = -acc_register;
+            sleep_until = 0;
+        }
+
+        break;
+    case CMD_LBL: // label L
+        current_pos++; // Label, just jump to next command
+        break;
+    }
+    return 0;
 }
 
 #endif //__INTERPRETER_H__

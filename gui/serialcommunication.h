@@ -4,8 +4,7 @@
 #include <QObject>
 #include <QMap>
 
-class SerialCommunication : public QObject
-{
+class SerialCommunication : public QObject {
 Q_OBJECT
 
 Q_PROPERTY(int mcuConnections READ mcuConnections NOTIFY mcuConnectionChanged)
@@ -14,6 +13,10 @@ Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
 Q_PROPERTY(QList<int> accRegisters READ accRegisters NOTIFY accRegistersChanged)
 Q_PROPERTY(QList<int> datRegisters READ datRegisters NOTIFY datRegistersChanged)
 
+const QString LABEL_MARKER = ":";
+const QString COMMENT_MARKER = "#";
+const uint8_t LABEL_HEXCODE = 0x10 << 2;
+const uint8_t SIGNAL_BYTE = 0x7F;
 
 public:
 explicit SerialCommunication(QObject *parent = nullptr);
@@ -24,10 +27,11 @@ QString errorMessage();
 QList<int> datRegisters();
 QList<int> accRegisters();
 
-public slots:     // slots are public methods available in QML
+public slots:         // slots are public methods available in QML
 void connect(QString port);
 void updateRegisters();
 void upload(QStringList);
+void loadPorts();
 
 signals:
 void mcuConnectionChanged();
@@ -43,6 +47,17 @@ QString m_errorMessage = "";
 QStringList m_serialports = {};
 QList<int> m_datRegisters = {0,0,0,0,0};
 QList<int> m_accRegisters = {0,0,0,0,0};
+char encode8BitVal(QString);
+char* encode16BitVal(QString);
+
+const QMap<QString, char> registerEncodings = {
+    {"x0", 0x40},
+    {"x1", 0x48},
+    {"p0", 0x50},
+    {"p1", 0x58},
+    {"dat", 0x60},
+    {"acc", 0x70}
+};
 
 const QMap<QString, QPair<uint8_t, QStringList>> commands = {
     {

@@ -14,7 +14,6 @@ ApplicationWindow {
     minimumHeight: 400
     visible: true
     title: qsTr("MC4000E V0.1")
-    color: "yellow"
 
     property bool upload: false
 
@@ -55,14 +54,11 @@ ApplicationWindow {
                     upload = true;
                     var code_strings = [];
                     for (var i=0; i < editors.count; i++) {
-                        code_strings.push(editors.itemAt(i).children[0].children[0].children[1].text);
+                        code_strings.push(editors.itemAt(i).children[0].children[1].children[1].text);
                     }
-                    console.log(code_strings);
                     serial.upload(code_strings);
                     upload = false;
-                    if (serial.errorMessage) {
-                        messageDialog.visible = true;
-                    }
+                    messageDialog.visible = (serial.errorMessage != "");
                 }
             }
         }
@@ -75,20 +71,41 @@ ApplicationWindow {
         anchors.centerIn: parent
         width: 200
 
+        Column {
+            visible: serial.serialports.length === 0
+            anchors.fill: parent
+            Text {
+                height: 15
+                anchors.horizontalCenterOffset: 0
+                font.pointSize: 18
+                font.bold: true
+                text: "No serial devices found"
+                color: "black"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            Button {
+                width: 200
+                text: "Reload"
+                onClicked: serial.loadPorts()
+            }
+        }
+
         ComboBox {
             id: serial_ports
             width: parent.width
             model: serial.serialports
+            visible: serial.serialports.length > 0
         }
 
         Button {
             width: parent.width
             text: "Connect"
             onClicked: serial.connect(serial_ports.currentText)
+            visible: serial.serialports.length > 0
         }
     }
-
-
 
     Item {
         visible: serial.mcuConnections > 0
@@ -109,6 +126,14 @@ ApplicationWindow {
                         anchors.fill: parent
                         border.color: "lightgrey"
                         color: "white"
+
+                        Rectangle {
+                            color: "lightyellow"
+                            visible: editor.focus
+                            height: editor.cursorRectangle.height
+                            width: editor.width
+                            y: editor.cursorRectangle.y + editor.y
+                        }
 
                         Column {
                             spacing: 2
@@ -222,30 +247,41 @@ ApplicationWindow {
         fileMode: FileDialog.SaveFile
     }
 
-    footer: Row {
+    footer: Item {
             id: messageDialog
+            visible: false
             width: parent.width
             height: 40
-            anchors.margins: 10
-            visible: false
 
-            Text {
-                leftPadding: 5
-                topPadding: 2
-                wrapMode: Text.WordWrap
-                height: parent.height
+            Rectangle {
                 width: parent.width - 80
-                horizontalAlignment: Text.AlignLeft
-                font.pointSize: 14
-                font.bold: true
-                text: serial.errorMessage
-                color: "black"
-            }
-            DialogButtonBox {
                 height: parent.height
-                standardButtons: DialogButtonBox.Ok
-                alignment: Qt.AlignRight
-                onClicked: parent.visible = false
+                color: "yellow"
+            }
+
+            Row {
+                width: parent.width
+                height: parent.height
+                anchors.margins: 10
+
+                Text {
+                    leftPadding: 5
+                    topPadding: 2
+                    wrapMode: Text.WordWrap
+                    height: parent.height
+                    width: parent.width - 80
+                    horizontalAlignment: Text.AlignLeft
+                    font.pointSize: 14
+                    font.bold: true
+                    text: serial.errorMessage
+                    color: "black"
+                }
+                DialogButtonBox {
+                    height: parent.height
+                    standardButtons: DialogButtonBox.Ok
+                    alignment: Qt.AlignRight
+                    onClicked: messageDialog.visible = false
+                }
             }
         }
 }
