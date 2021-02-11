@@ -10,14 +10,17 @@ Q_OBJECT
 
 Q_PROPERTY(int mcuConnections READ mcuConnections NOTIFY mcuConnectionChanged)
 Q_PROPERTY(QStringList serialports READ serialports NOTIFY serialportsChanged)
+Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
 Q_PROPERTY(QList<int> accRegisters READ accRegisters NOTIFY accRegistersChanged)
 Q_PROPERTY(QList<int> datRegisters READ datRegisters NOTIFY datRegistersChanged)
+
 
 public:
 explicit SerialCommunication(QObject *parent = nullptr);
 ~SerialCommunication();
 int mcuConnections() const;
 QStringList serialports();
+QString errorMessage();
 QList<int> datRegisters();
 QList<int> accRegisters();
 
@@ -28,6 +31,7 @@ void upload(QStringList);
 
 signals:
 void mcuConnectionChanged();
+void errorMessageChanged();
 void serialportsChanged();
 void accRegistersChanged();
 void datRegistersChanged();
@@ -35,9 +39,10 @@ void datRegistersChanged();
 private:
 QSerialPort m_serial;
 int m_mcuConnections = 0;
-QStringList m_serialports;
-QList<int> m_datRegisters;
-QList<int> m_accRegisters;
+QString m_errorMessage = "";
+QStringList m_serialports = {};
+QList<int> m_datRegisters = {0,0,0,0,0};
+QList<int> m_accRegisters = {0,0,0,0,0};
 
 const QMap<QString, QPair<uint8_t, QStringList>> commands = {
     {

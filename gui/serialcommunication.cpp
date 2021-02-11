@@ -48,7 +48,8 @@ void SerialCommunication::connect(QString port) {
 }
 
 void SerialCommunication::upload(QStringList) {
-
+    m_errorMessage = "Hello!";
+    emit errorMessageChanged();
 }
 
 void SerialCommunication::updateRegisters() {
@@ -77,6 +78,10 @@ void SerialCommunication::updateRegisters() {
         emit datRegistersChanged();
         emit accRegistersChanged();
     }
+}
+
+QString SerialCommunication::errorMessage() {
+    return m_errorMessage;
 }
 
 QList<int> SerialCommunication::datRegisters() {
