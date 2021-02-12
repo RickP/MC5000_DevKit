@@ -15,8 +15,9 @@ Q_PROPERTY(QList<int> datRegisters READ datRegisters NOTIFY datRegistersChanged)
 
 const QString LABEL_MARKER = ":";
 const QString COMMENT_MARKER = "#";
-const uint8_t LABEL_HEXCODE = 0x10 << 2;
-const uint8_t SIGNAL_BYTE = 0x7F;
+const char LABEL_HEXCODE = 0x10 << 2;
+const char SIGNAL_BYTE = 0x7F;
+const int SERIAL_DELAY = 5;
 
 public:
 explicit SerialCommunication(QObject *parent = nullptr);
@@ -49,6 +50,7 @@ QList<int> m_datRegisters = {0,0,0,0,0};
 QList<int> m_accRegisters = {0,0,0,0,0};
 char encode8BitVal(QString);
 char* encode16BitVal(QString);
+void writeSerialByte(char);
 
 const QMap<QString, char> registerEncodings = {
     {"x0", 0x40},
