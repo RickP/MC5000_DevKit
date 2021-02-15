@@ -5,12 +5,15 @@
 #include "lib/interpreter.h"
 #include "lib/delay.h"
 
+#define DEBUG
+
 // Insert serial number
 EASY_PDK_SERIAL(serial_number);
 
 #define PROGSIZE 70
 
-#define SIGNAL_CHAR 0x7F
+#define START_CHAR 0x7F
+#define END_CHAR 0x7E
 
 uint8_t program_buf[PROGSIZE] = {0};
 uint8_t program_buf_pos = 0;
@@ -40,6 +43,9 @@ void interrupt_routine() __interrupt(0) {
                 INTERPRETER_CLOCK_TICK;
                 INTRQ &= ~INTRQ_TM3;
         }
+        if (INTRQ & INTEN_ADC) {
+            INTRQ &= ~INTEN_ADC;
+        }
 }
 
 void handle_rx() {
@@ -67,7 +73,6 @@ void handle_rx() {
                         dat_register = 6;
                         break;
                 }
-                acc_register = program_buf_pos;
 #endif
 
                 if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) { // serial num char received
@@ -91,7 +96,7 @@ void handle_rx() {
                             }
                         }
                 } else if (state == line_prog) {
-                        if (rx_char == SIGNAL_CHAR) {
+                        if (rx_char == END_CHAR) {
                                 if (program_buf_pos > 2) {
                                         state = prog_ready;
                                         set_program(program_buf, program_buf_pos);
@@ -103,7 +108,7 @@ void handle_rx() {
                         } else {
                                 program_buf[program_buf_pos++] = rx_char;
                         }
-                } else if (rx_char == SIGNAL_CHAR) { // Start char received
+                } else if (rx_char == START_CHAR) { // Start char received
                     if (state == prog_ready) state = retransmission_start;
                     else state = transmission_start;
                 }

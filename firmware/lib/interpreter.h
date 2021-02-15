@@ -18,7 +18,7 @@ uint8_t program_size = 0;
 uint8_t current_pos = 0;
 int16_t ri_1 = 0;
 int16_t ri_2 = 0;
-uint8_t reg;
+uint8_t reg = 0;
 uint16_t xbus_data_0 = 0;
 uint16_t xbus_data_1 = 0;
 uint8_t xbus_state_0 = 0;
@@ -57,7 +57,6 @@ true_or_false current_condition;
 #define CMD_DST 0x3C
 #define CMD_LBL 0x40
 
-
 #define P0_PIN 3
 #define P0_ADC ADCC_CH_AD8_PA3
 #define P0_PWM PWMG2C
@@ -77,11 +76,9 @@ true_or_false current_condition;
 
 inline uint8_t get_p0_value() {
     P0_PWM &= ~P0_PWM_ENABLE; // Disable PWM output on pin
-    PAC &= ~(1 << P0_PIN);  // Enable P0 Pin as input
-    ADCC = P0_ADC;          // Set ADC for pin
-    ADCC |= ADCC_ADC_ENABLE; // Enable ADC
-    delay_us(400);          // wait to settle
-    ADCC |= ADCC_ADC_CONV_START; //start ADC conversion
+    PAC &= ~(1 << P0_PIN); //disable GPIO output
+    PAPH &= ~(1 << P0_PIN); //disable pull up
+    ADCC = ADCC_ADC_ENABLE | P0_ADC | ADCC_ADC_CONV_START; // Enable ADC
     while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
     return ADCR;
 }
@@ -96,21 +93,17 @@ inline void set_p0_value(uint8_t val) {
 
 inline uint8_t get_p1_value() {
     P1_PWM &= ~P1_PWM_ENABLE; // Disable PWM output on pin
-    PAC |= (1 << P1_PIN);   // Enable P1 Pin as input
-    ADCC = P1_ADC;          // Set ADC for pin
-    ADCC |= ADCC_ADC_ENABLE; // Enable ADC
-    delay_us(400);          // wait to settle
-    ADCC |= ADCC_ADC_CONV_START; //start ADC conversion
+    PAC &= ~(1 << P1_PIN); //disable GPIO output
+    PAPH &= ~(1 << P1_PIN); //disable pull up
+    ADCC = ADCC_ADC_ENABLE | P1_ADC | ADCC_ADC_CONV_START; // Enable ADC
     while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
     return ADCR;
 }
 
 inline void set_p1_value(uint8_t val) {
-    if (!(PAC & (1 << P1_PIN))) {
-        ADCC = 0;
-        PAC |= (1 << P1_PIN); // Enable P0 Pin as output
-        P1_PWM |= P1_PWM_ENABLE; // Enable PWN output on Pin
-    }
+    ADCC = 0;
+    PAC |= (1 << P1_PIN); // Enable P0 Pin as output
+    P1_PWM |= P1_PWM_ENABLE; // Enable PWN output on Pin
     P1_PWM_DUTY_H = val;
     P1_PWM_DUTY_L = 0;
 }
@@ -185,6 +178,7 @@ void setup_interpreter_hardware() {
     PWMG2C = PWMG2C_ENABLE;
     PWMGCUBL = 0x00;
     PWMGCUBH = 0x80;
+
 }
 
 void reset_program() {
@@ -235,11 +229,15 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
             // pin -> bit 3 defines p(1) or x(0)
             if (argh & 0x10) {
                 // p pin -> bit 4 defines port num
+                // reusing sleep unitl var here because we don't need it currently
                 if (argh & 0x08) {
-                    return get_p1_value();
+                    sleep_until = get_p1_value();
                 } else {
-                    return get_p0_value();
+                    sleep_until = get_p0_value();
                 }
+                sleep_until *= 100;
+                sleep_until /= 255;
+                return sleep_until;
             } else {
                 // x pin -> bit 4 defines port num
                 if (argh & 0x08) {
@@ -474,10 +472,8 @@ uint8_t run_program_line() {
         if (ri_2 > 9) ri_2 = 9;
         else if (ri_2 < 0) ri_2 = 0;
 
-        sleep_until = 0; // Reuse sleep_until to mark negative acc
         if (acc_register < 0) {
             acc_register = -acc_register;
-            sleep_until = 1;
         }
 
         if (ri_1 == 0) {
@@ -488,11 +484,6 @@ uint8_t run_program_line() {
         } else if (ri_1 == 2) {
             reg = acc_register - (acc_register / 100 * 100);
             acc_register = ri_2 * 100 + reg;
-        }
-
-        if (sleep_until) {
-            acc_register = -acc_register;
-            sleep_until = 0;
         }
 
         break;

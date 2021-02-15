@@ -135,20 +135,17 @@ void SerialCommunication::upload(QStringList codeList) {
         // Write program
         if (m_serial.isOpen()) {
             // header
-            writeSerialByte(SIGNAL_BYTE);
-            writeSerialByte(0x31);
+            writeSerialByte(START_CHAR);
+            writeSerialByte(0x31 + i);
             for (int x=0; x < output.length(); x++) {
                 writeSerialByte(output.at(x));
             }
+            writeSerialByte(END_CHAR);
         } else {
             m_errorMessage = QString("No serial connection!");
             emit errorMessageChanged();
             return;
         }
-    }
-    // Finish up
-    if (m_serial.isOpen()) {
-        writeSerialByte(SIGNAL_BYTE);
     }
 }
 
@@ -171,13 +168,13 @@ char SerialCommunication::encode8BitVal(QString parameter) {
     if (registerEncodings.contains(parameter)) {
         return registerEncodings.value(parameter);
     }
-    return SIGNAL_BYTE; // acc is default register
+    return START_CHAR; // acc is default register
 }
 
 char* SerialCommunication::encode16BitVal(QString parameter) {
     static char ret[2];
     ret[0] = encode8BitVal(parameter);
-    if (ret[0] !=SIGNAL_BYTE) {
+    if (ret[0] != START_CHAR) {
         ret[1] = 0x00;
     }
     else {

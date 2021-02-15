@@ -16,7 +16,8 @@ Q_PROPERTY(QList<int> datRegisters READ datRegisters NOTIFY datRegistersChanged)
 const QString LABEL_MARKER = ":";
 const QString COMMENT_MARKER = "#";
 const char LABEL_HEXCODE = 0x10 << 2;
-const char SIGNAL_BYTE = 0x7F;
+const char START_CHAR = 0x7F;
+const char END_CHAR = 0x7E;
 const int SERIAL_DELAY = 20;
 
 public:
