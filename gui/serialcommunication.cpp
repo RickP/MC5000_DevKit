@@ -3,7 +3,6 @@
 #include <QThread>
 #include <QDebug>
 
-
 SerialCommunication::SerialCommunication(QObject *parent) : QObject(parent)
 {
     loadPorts();
@@ -38,13 +37,11 @@ void SerialCommunication::connect(QString port) {
     // check number of mcus
     for (int i=0;; i++) {
         writeSerialByte(0x31+i);
-        if (m_serial.waitForBytesWritten(100)) {
-            if (m_serial.waitForReadyRead(100)) {
-                m_serial.readAll();
-                m_mcuConnections++;
-            } else {
-                break;
-            }
+        if (m_serial.waitForReadyRead(100)) {
+            m_serial.readAll();
+            m_mcuConnections++;
+        } else {
+            break;
         }
     }
     emit mcuConnectionChanged();
@@ -153,22 +150,21 @@ void SerialCommunication::upload(QStringList codeList) {
     if (m_serial.isOpen()) {
         writeSerialByte(SIGNAL_BYTE);
     }
-
-    m_serial.waitForBytesWritten(500);
 }
 
-void SerialCommunication::writeSerialByte(char byte) {
-    QThread::msleep(SERIAL_DELAY);
+void SerialCommunication::writeSerialByte(char byte, bool debug) {
     m_serial.write(&byte, 1);
+    m_serial.waitForBytesWritten(100);
+    QThread::msleep(SERIAL_DELAY);
 
-#ifdef DEBUG
-    char s[3];
-    const uint8_t hex_lookup[] = "0123456789ABCDEF";
-    s[0] = hex_lookup[byte >> 4];
-    s[1] = hex_lookup[byte & 0x0f];
-    s[2] = '\0';
-    qDebug() << s;
-#endif
+    if (debug) {
+        char s[3];
+        const uint8_t hex_lookup[] = "0123456789ABCDEF";
+        s[0] = hex_lookup[byte >> 4];
+        s[1] = hex_lookup[byte & 0x0f];
+        s[2] = '\0';
+        qDebug() << s;
+    }
 }
 
 char SerialCommunication::encode8BitVal(QString parameter) {
@@ -203,29 +199,31 @@ char* SerialCommunication::encode16BitVal(QString parameter) {
 
 void SerialCommunication::updateRegisters() {
     if (m_mcuConnections && m_serial.isOpen()) {
+        bool updateValues = true;
         m_accRegisters.clear();
         m_datRegisters.clear();
         for (int i=0; i < m_mcuConnections; i++) {
             m_serial.readAll();
-            writeSerialByte(0x31+i);
-            if (m_serial.waitForBytesWritten(100)) {
-                if (m_serial.waitForReadyRead(100)) {
-                    char data[4];
-                    if (m_serial.read(data, 4) == 4) {
-                        int acc = data[0] << 7;
-                        acc |= data[1];
-                        m_accRegisters.append(acc-1000);
-                        int dat = data[2] << 7;
-                        dat |= data[3];
-                        m_datRegisters.append(dat-1000);
-                    }
-                } else {
-                    break;
+            writeSerialByte(0x31+i, false);
+            if (m_serial.waitForReadyRead(100)) {
+                char data[4];
+                if (m_serial.read(data, 4) == 4) {
+                    int acc = data[0] << 7;
+                    acc |= data[1];
+                    m_accRegisters.append(acc-1000);
+                    int dat = data[2] << 7;
+                    dat |= data[3];
+                    m_datRegisters.append(dat-1000);
                 }
+            } else {
+                updateValues = false;
+                break;
             }
         }
-        emit datRegistersChanged();
-        emit accRegistersChanged();
+        if (updateValues) {
+            emit datRegistersChanged();
+            emit accRegistersChanged();
+        }
     }
 }
 

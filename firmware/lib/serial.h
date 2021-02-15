@@ -39,6 +39,7 @@ void serial_setup() {
 
     PAC |= (1 << SERIAL_TX_PIN); // Enable TX Pin as output
     PAPH |= (1 << SERIAL_TX_PIN); // Enable pullup on TX Pin
+    __set1(PA, SERIAL_TX_PIN); // Make TX pin High Z
     //txdata = 0xD55F; // Setup 2 stop bits, 0x55 char for autobaud, 1 start bit, 5 stop bits
     INTEN |= INTEN_TM2; // Enable TM2 interrupt, send out initial stop bits and autobaud char
     INTEN |= INTEN_TM3; // Enable TM3 interrupt

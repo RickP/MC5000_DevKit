@@ -8,7 +8,7 @@
 #define SLEEP_TICKS     500
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
-#define GET_RI get_val(program[current_pos], program[current_pos+1]); current_pos += 2
+#define GET_RI get_val(program[current_pos++], program[current_pos++])
 #define GET_R program[current_pos++]
 #define CHECK_CONDITION(x) if (command_condition != none && current_condition != command_condition) {current_pos += (uint8_t) x; break;}
 #define SLEEP(x) clock_tick = 0; sleep_until = x
@@ -322,7 +322,7 @@ uint8_t run_program_line() {
     }
 
     // Handle end of program buffer
-    if (current_pos >= program_size-1) current_pos = 0;
+    if (current_pos >= program_size) current_pos = 0;
 
     // get current command including current_condition
     uint8_t command = program[current_pos];
@@ -350,10 +350,6 @@ uint8_t run_program_line() {
     case CMD_MOV: // mov R/I R
         CHECK_CONDITION(3);
         ri_1 = GET_RI;
-        if (ri_1 == 0x0FFF) {
-            current_pos -= 3;
-            break;
-        }
         reg = GET_R;
         set_val(ri_1, reg); // set value to register/pin
         break;

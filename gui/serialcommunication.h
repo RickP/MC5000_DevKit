@@ -17,7 +17,7 @@ const QString LABEL_MARKER = ":";
 const QString COMMENT_MARKER = "#";
 const char LABEL_HEXCODE = 0x10 << 2;
 const char SIGNAL_BYTE = 0x7F;
-const int SERIAL_DELAY = 5;
+const int SERIAL_DELAY = 20;
 
 public:
 explicit SerialCommunication(QObject *parent = nullptr);
@@ -50,7 +50,7 @@ QList<int> m_datRegisters = {0,0,0,0,0};
 QList<int> m_accRegisters = {0,0,0,0,0};
 char encode8BitVal(QString);
 char* encode16BitVal(QString);
-void writeSerialByte(char);
+void writeSerialByte(char, bool debug=true);
 
 const QMap<QString, char> registerEncodings = {
     {"x0", 0x40},

@@ -19,6 +19,7 @@ typedef enum {
         faulty_prog,
         empty_prog,
         transmission_start,
+        retransmission_start,
         line_prog,
         prog_ready
 } prog_state;
@@ -41,26 +42,53 @@ void interrupt_routine() __interrupt(0) {
         }
 }
 
-void reset_prog() {
-    state = empty_prog;
-    program_buf_pos = 0;
-    reset_program();
-}
-
 void handle_rx() {
         uint8_t rx_char;
         if (process_serial_rx_byte(&rx_char)) {
-                // Start char received
-                if ((state != transmission_start) && rx_char == *serial_number) {
+
+#ifdef DEBUG
+                switch (state) {
+                    case empty_prog:
+                        dat_register = 1;
+                        break;
+                    case line_prog:
+                        dat_register = 2;
+                        break;
+                    case transmission_start:
+                        dat_register = 3;
+                        break;
+                    case retransmission_start:
+                        dat_register = 4;
+                        break;
+                    case faulty_prog:
+                        dat_register = 5;
+                        break;
+                    case prog_ready:
+                        dat_register = 6;
+                        break;
+                }
+                acc_register = program_buf_pos;
+#endif
+
+                if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) { // serial num char received
                         putchar((acc_register+1000) >> 7);
                         putchar((acc_register+1000) & 0x7F);
                         putchar((dat_register+1000) >> 7);
                         putchar((dat_register+1000) & 0x7F);
-                } else if (state == transmission_start) {
+                } else if (state == transmission_start || state == retransmission_start) {
                         if (rx_char == *serial_number) {
+                                program_buf_pos = 0;
+                                reset_program();
                                 state = line_prog;
                         } else {
-                                reset_prog();
+                            if (state == transmission_start) {
+                                program_buf_pos = 0;
+                                reset_program();
+                                state = empty_prog;
+                            } else {
+                                program_buf_pos = 0;
+                                state = prog_ready;
+                            }
                         }
                 } else if (state == line_prog) {
                         if (rx_char == SIGNAL_CHAR) {
@@ -68,18 +96,16 @@ void handle_rx() {
                                         state = prog_ready;
                                         set_program(program_buf, program_buf_pos);
                                 } else {
-                                        reset_prog();
+                                        program_buf_pos = 0;
+                                        reset_program();
+                                        state = empty_prog;
                                 }
                         } else {
-                                if (program_buf_pos > PROGSIZE-2) {
-                                        reset_prog();
-                                } else {    
-                                        program_buf[program_buf_pos++] = rx_char;
-                                }
+                                program_buf[program_buf_pos++] = rx_char;
                         }
-                } else if (rx_char) {
-                    reset_prog();
-                    state = transmission_start;
+                } else if (rx_char == SIGNAL_CHAR) { // Start char received
+                    if (state == prog_ready) state = retransmission_start;
+                    else state = transmission_start;
                 }
         }
 }
@@ -99,8 +125,10 @@ int main(void) {
         while (1) {
                 handle_rx();
                 if (state == prog_ready) {
-                        if (run_program_line()) {
-                                reset_prog(); // Program failed in interpreter - reset it
+                        if (run_program_line()) { // Program failed in interpreter - reset it
+                                program_buf_pos = 0;
+                                reset_program();
+                                state = empty_prog;
                         }
                 }
         }

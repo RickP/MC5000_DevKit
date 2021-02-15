@@ -1,5 +1,6 @@
 MCxxxx.c
 Makefile
+build/MCxxxx.PFS173.map
 lib/delay.h
 lib/interpreter.h
 lib/lint.h
