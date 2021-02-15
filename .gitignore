@@ -39,38 +39,10 @@ Thumbs.db
 
 # qtcreator generated files
 *.pro.user*
+firmware/Firmware.creator.user*
 
 # xemacs temporary files
 *.flc
 
 # Vim temporary files
 .*.swp
-
-# Visual Studio generated files
-*.ib_pdb_index
-*.idb
-*.ilk
-*.pdb
-*.sln
-*.suo
-*.vcproj
-*vcproj.*.*.user
-*.ncb
-*.sdf
-*.opensdf
-*.vcxproj
-*vcxproj.*
-
-# MinGW generated files
-*.Debug
-*.Release
-
-# Python byte code
-*.pyc
-
-# Binaries
-# --------
-*.dll
-*.exe
-
-firmware/Firmware.creator.user

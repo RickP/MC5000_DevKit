@@ -1,6 +1,8 @@
 #include "serialcommunication.h"
-#include <QDebug>
 #include <QSerialPortInfo>
+#include <QThread>
+#include <QDebug>
+
 
 SerialCommunication::SerialCommunication(QObject *parent) : QObject(parent)
 {
@@ -34,8 +36,8 @@ void SerialCommunication::connect(QString port) {
     if (!m_serial.isOpen()) return;
 
     // check number of mcus
-    for (int i=1;; i++) {
-        m_serial.write(QString::number(i).toLocal8Bit(), 1);
+    for (int i=0;; i++) {
+        writeSerialByte(0x31+i);
         if (m_serial.waitForBytesWritten(100)) {
             if (m_serial.waitForReadyRead(100)) {
                 m_serial.readAll();
@@ -132,8 +134,41 @@ void SerialCommunication::upload(QStringList codeList) {
                 }
             }
         }
-        qDebug() << output.toHex();
+
+        // Write program
+        if (m_serial.isOpen()) {
+            // header
+            writeSerialByte(SIGNAL_BYTE);
+            writeSerialByte(0x31);
+            for (int x=0; x < output.length(); x++) {
+                writeSerialByte(output.at(x));
+            }
+        } else {
+            m_errorMessage = QString("No serial connection!");
+            emit errorMessageChanged();
+            return;
+        }
     }
+    // Finish up
+    if (m_serial.isOpen()) {
+        writeSerialByte(SIGNAL_BYTE);
+    }
+
+    m_serial.waitForBytesWritten(500);
+}
+
+void SerialCommunication::writeSerialByte(char byte) {
+    QThread::msleep(SERIAL_DELAY);
+    m_serial.write(&byte, 1);
+
+#ifdef DEBUG
+    char s[3];
+    const uint8_t hex_lookup[] = "0123456789ABCDEF";
+    s[0] = hex_lookup[byte >> 4];
+    s[1] = hex_lookup[byte & 0x0f];
+    s[2] = '\0';
+    qDebug() << s;
+#endif
 }
 
 char SerialCommunication::encode8BitVal(QString parameter) {
@@ -170,9 +205,9 @@ void SerialCommunication::updateRegisters() {
     if (m_mcuConnections && m_serial.isOpen()) {
         m_accRegisters.clear();
         m_datRegisters.clear();
-        for (int i=1; i <= m_mcuConnections+1; i++) {
+        for (int i=0; i < m_mcuConnections; i++) {
             m_serial.readAll();
-            m_serial.write(QString::number(i).toLocal8Bit(), 1);
+            writeSerialByte(0x31+i);
             if (m_serial.waitForBytesWritten(100)) {
                 if (m_serial.waitForReadyRead(100)) {
                     char data[4];

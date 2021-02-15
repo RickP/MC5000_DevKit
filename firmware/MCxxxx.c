@@ -51,7 +51,7 @@ void handle_rx() {
         uint8_t rx_char;
         if (process_serial_rx_byte(&rx_char)) {
                 // Start char received
-                if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) {
+                if ((state != transmission_start) && rx_char == *serial_number) {
                         putchar((acc_register+1000) >> 7);
                         putchar((acc_register+1000) & 0x7F);
                         putchar((dat_register+1000) >> 7);
@@ -73,11 +73,11 @@ void handle_rx() {
                         } else {
                                 if (program_buf_pos > PROGSIZE-2) {
                                         reset_prog();
-                                } else {
+                                } else {    
                                         program_buf[program_buf_pos++] = rx_char;
                                 }
                         }
-                } else if (rx_char == SIGNAL_CHAR) {
+                } else if (rx_char) {
                     reset_prog();
                     state = transmission_start;
                 }
