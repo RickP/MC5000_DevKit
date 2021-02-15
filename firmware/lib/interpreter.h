@@ -72,15 +72,15 @@ true_or_false current_condition;
 #define P1_PWM_DUTY_H PWMG1DTH
 #define P1_PWM_DUTY_L PWMG1DTL
 
-#define X0_PIN 5
-#define X1_PIN 6
+#define X0_PIN 6
+#define X1_PIN 7
 
 inline uint8_t get_p0_value() {
-    P0_PWM &= ~P0_PWM_ENABLE;   // Disable PWM output on pin
-    PAC &= ~(1 << P0_PIN);      // Enable P0 Pin as input
-    ADCC = P0_ADC;              // Set ADC for pin
-    ADCC |= ADCC_ADC_ENABLE;    // Enable ADC
-    delay_us(400);              // wait to settle
+    P0_PWM &= ~P0_PWM_ENABLE; // Disable PWM output on pin
+    PAC &= ~(1 << P0_PIN);  // Enable P0 Pin as input
+    ADCC = P0_ADC;          // Set ADC for pin
+    ADCC |= ADCC_ADC_ENABLE; // Enable ADC
+    delay_us(400);          // wait to settle
     ADCC |= ADCC_ADC_CONV_START; //start ADC conversion
     while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
     return ADCR;
@@ -95,11 +95,11 @@ inline void set_p0_value(uint8_t val) {
 }
 
 inline uint8_t get_p1_value() {
-    P1_PWM &= ~P1_PWM_ENABLE;   // Disable PWM output on pin
-    PAC |= (1 << P1_PIN);       // Enable P1 Pin as input
-    ADCC = P1_ADC;              // Set ADC for pin
-    ADCC |= ADCC_ADC_ENABLE;    // Enable ADC
-    delay_us(400);              // wait to settle
+    P1_PWM &= ~P1_PWM_ENABLE; // Disable PWM output on pin
+    PAC |= (1 << P1_PIN);   // Enable P1 Pin as input
+    ADCC = P1_ADC;          // Set ADC for pin
+    ADCC |= ADCC_ADC_ENABLE; // Enable ADC
+    delay_us(400);          // wait to settle
     ADCC |= ADCC_ADC_CONV_START; //start ADC conversion
     while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
     return ADCR;

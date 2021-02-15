@@ -72,3 +72,5 @@ Thumbs.db
 # --------
 *.dll
 *.exe
+
+firmware/Firmware.creator.user

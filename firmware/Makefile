@@ -16,8 +16,13 @@ LDFLAGS=-m$(ICTYPE)
 
 OBJS = $(addprefix $(OUTDIR)/, $(SRCS:.c=.$(ICNAME).rel))
 
-all: $(TARGET)
+all: 1
+
+1: $(TARGET)
 	$(PROG) -s 31 -n $(ICNAME) write $(TARGET)
+    
+2: $(TARGET)
+	$(PROG) -s 32 -n $(ICNAME) write $(TARGET)
 
 $(OUTDIR)/%.$(ICNAME).rel: %.c .FORCE
 	$(SDCC) $(CFLAGS) -c $< -o $@
