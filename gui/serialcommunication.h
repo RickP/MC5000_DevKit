@@ -12,13 +12,14 @@ Q_PROPERTY(QStringList serialports READ serialports NOTIFY serialportsChanged)
 Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
 Q_PROPERTY(QList<int> accRegisters READ accRegisters NOTIFY accRegistersChanged)
 Q_PROPERTY(QList<int> datRegisters READ datRegisters NOTIFY datRegistersChanged)
+Q_PROPERTY(QList<bool> isProgrammed READ isProgrammed NOTIFY isProgrammedChanged)
 
 const QString LABEL_MARKER = ":";
 const QString COMMENT_MARKER = "#";
 const char LABEL_HEXCODE = 0x10 << 2;
 const char START_CHAR = 0x7F;
 const char END_CHAR = 0x7E;
-const int SERIAL_DELAY = 20;
+const int SERIAL_DELAY = 30;
 
 public:
 explicit SerialCommunication(QObject *parent = nullptr);
@@ -28,6 +29,7 @@ QStringList serialports();
 QString errorMessage();
 QList<int> datRegisters();
 QList<int> accRegisters();
+QList<bool> isProgrammed();
 
 public slots:         // slots are public methods available in QML
 void connect(QString port);
@@ -41,6 +43,7 @@ void errorMessageChanged();
 void serialportsChanged();
 void accRegistersChanged();
 void datRegistersChanged();
+void isProgrammedChanged();
 
 private:
 QSerialPort m_serial;
@@ -49,6 +52,7 @@ QString m_errorMessage = "";
 QStringList m_serialports = {};
 QList<int> m_datRegisters = {0,0,0,0,0};
 QList<int> m_accRegisters = {0,0,0,0,0};
+QList<bool> m_isProgrammed = {false, false, false, false};
 char encode8BitVal(QString);
 char* encode16BitVal(QString);
 void writeSerialByte(char, bool debug=true);

@@ -23,7 +23,6 @@ const uint8_t hex_lookup[] = "0123456789ABCDEF";
 
 void serial_setup() {
 
-    PADIER |= (1 << SERIAL_RX_PIN); // Enable RX as digital input
     INTEGS = INTEGS_PA0_BOTH; //Trigger PA0 interrupt on both edges
     INTEN |= INTEN_PA0; //Enable PA0 interrupt
 

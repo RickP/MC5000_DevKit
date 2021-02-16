@@ -14,6 +14,8 @@ RESOURCES += \
         qml.qrc \
         font/Roboto-Regular.ttf
 
+ICON = icons/icon.icns
+RC_ICONS = icons/icon.ico
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -30,4 +32,6 @@ HEADERS += \
     serialcommunication.h
 
 DISTFILES += \
-    font/Roboto-Regular.ttf
+    font/Roboto-Regular.ttf \
+    icons/icon.ico \
+    images/icon.ico

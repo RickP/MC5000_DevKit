@@ -174,7 +174,7 @@ ApplicationWindow {
                                     anchors.fill: parent
                                     Rectangle {
                                         height: parent.height
-                                        width: parent.width / 2 - 2
+                                        width: ((parent.width - parent.height) / 2) - 2
                                         color: "white"
                                         RowLayout {
                                             spacing: 0
@@ -198,7 +198,7 @@ ApplicationWindow {
                                     }
                                     Rectangle {
                                         height: parent.height
-                                        width: parent.width / 2
+                                        width: ((parent.width - parent.height) / 2) - 2
                                         color: "white"
                                         RowLayout {
                                             spacing: 0
@@ -219,6 +219,11 @@ ApplicationWindow {
                                                 color: "black"
                                             }
                                         }
+                                    }
+                                    Rectangle {
+                                        height: parent.height
+                                        width: parent.height
+                                        color: serial.isProgrammed[index] ? "green" : "red"
                                     }
                                 }
                             }

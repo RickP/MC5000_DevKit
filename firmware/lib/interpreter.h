@@ -29,14 +29,14 @@ uint16_t sleep_until = 0;
 volatile uint16_t clock_tick = 0;
 
 typedef enum {
-    none=0,
+    false=0,
     true=1,
-    false=2
+    none=2
 } true_or_false;
 
 true_or_false current_condition;
 
-#define XBUS_SLX 0x01
+#define XBUS_SL 0x01
 #define XBUS_RX 0x02
 #define XBUS_TX 0x03
 
@@ -61,8 +61,8 @@ true_or_false current_condition;
 #define P0_ADC ADCC_CH_AD8_PA3
 #define P0_PWM PWMG2C
 #define P0_PWM_ENABLE PWMG2C_OUT_PA3
-#define P0_PWM_DUTY_H PWMG0DTH
-#define P0_PWM_DUTY_L PWMG0DTL
+#define P0_PWM_DUTY_H PWMG2DTH
+#define P0_PWM_DUTY_L PWMG2DTL
 
 #define P1_PIN 4
 #define P1_ADC ADCC_CH_AD9_PA4
@@ -118,17 +118,17 @@ uint8_t get_x0_value(uint8_t pull_up) {
     return PA & (1 << X0_PIN);
 }
 
-inline void set_x0_value(uint8_t pin_state, uint8_t pull_up) {
+void set_x0_value(uint8_t pin_state, uint8_t pull_up) {
     if (pull_up) {
         PAPH |= (1 << X0_PIN); // Enable pullup
     } else {
         PAPH &= ~(1 << X0_PIN); // Disable pullup
     }
-    PAC &= ~(1 << X0_PIN); // Set pin as output
+    PAC |= (1 << X0_PIN); // Set pin as output
     if (pin_state) {
-        PA |= (1 << X0_PIN);
+        __set1(PA, X0_PIN);
     } else {
-        PA &= ~(1 << X0_PIN);
+        __set0(PA, X0_PIN);
     }
 }
 
@@ -142,17 +142,17 @@ uint8_t get_x1_value(uint8_t pull_up) {
     return PA & (1 << X1_PIN);
 }
 
-inline void set_x1_value(uint8_t pin_state, uint8_t pull_up) {
+void set_x1_value(uint8_t pin_state, uint8_t pull_up) {
     if (pull_up) {
         PAPH |= (1 << X1_PIN); // Enable pullup
     } else {
         PAPH &= ~(1 << X1_PIN); // Disable pullup
     }
-    PAC &= ~(1 << X1_PIN); // Set pin as output
+    PAC |= (1 << X1_PIN); // Set pin as output
     if (pin_state) {
-        PA |= (1 << X1_PIN);
+        __set1(PA, X1_PIN);
     } else {
-        PA &= ~(1 << X1_PIN);
+        __set0(PA, X1_PIN);
     }
 }
 
@@ -167,7 +167,7 @@ void setup_interpreter_hardware() {
     PAPH &= ~(1 << X0_PIN); // Disable X0 pullup
 
     PAC &= ~(1 << X1_PIN); // Enable X1 Pin as input
-    PAPH &= ~(1 << P1_PIN); // Disable P1 pullup
+    PAPH &= ~(1 << X1_PIN); // Disable P1 pullup
 
     ADCRGC = ADCRG_ADC_REF_VDD; // VCC reference for ADC
     ADCM = ADCM_CLK_SYSCLK_DIV16; // ADC divider 16
@@ -195,6 +195,8 @@ void reset_program() {
     sleep_until = 0;
     set_p0_value(0);
     set_p1_value(0);
+    get_x0_value(false);
+    get_x1_value(false);
 }
 
 inline void set_program(uint8_t *new_program, uint8_t new_program_size) {
@@ -235,15 +237,26 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
                 } else {
                     sleep_until = get_p0_value();
                 }
-                sleep_until *= 100;
-                sleep_until /= 255;
+                sleep_until = sleep_until >> 1;
+                if (sleep_until > 95) sleep_until = 100;
+                if (sleep_until < 5) sleep_until = 0;
                 return sleep_until;
             } else {
                 // x pin -> bit 4 defines port num
                 if (argh & 0x08) {
-                    // @ToDo: get data from xbus 1
+                    // get data from xbus 1
+                    // pull line down to signal that we want to read
+                    set_x1_value(0, false);
+                    xbus_state_1 = XBUS_RX;
+                    xbus_data_1 = 0;
+                    clock_tick = 0;
                 } else {
-                    // @ToDo: get data from xbus 0
+                    // get data from xbus 0
+                    // pull line down to signal that we want to read
+                    set_x0_value(0, false);
+                    xbus_state_0 = XBUS_RX;
+                    xbus_data_0 = 0;
+                    clock_tick = 0;
                 }
             }
         }
@@ -280,16 +293,24 @@ void set_val(int16_t arg, uint8_t reg) {
             else if (arg > 100) arg = 100;
 
             if (reg & 0x08) {
-                set_p1_value(arg & 0xFF);
+                set_p1_value((arg & 0xFF));
             } else {
-                set_p0_value(arg & 0xFF);
+                set_p0_value((arg & 0xFF));
             }
         } else {
             // x pin -> bit 4 defines port num
             if (reg & 0x08) {
-                // @ToDo: write data on XBus1
+                // put data on xbus 1
+                // activate pullup and wait for the reader to pull the line down
+                get_x1_value(true);
+                xbus_state_1 = XBUS_TX;
+                xbus_data_1 = arg;
             } else {
-                // @ToDo: write data on XBus0
+                // put data on xbus 0
+                // activate pullup and wait for the reader to pull the line d own
+                get_x0_value(true);
+                xbus_state_0 = XBUS_TX;
+                xbus_data_0 = arg;
             }
         }
     }
@@ -303,15 +324,15 @@ uint8_t run_program_line() {
     }
     sleep_until = 0;
 
-    if (xbus_state_0 == XBUS_SLX) {
-        if (get_x0_value(0)) {
+    if (xbus_state_0 == XBUS_SL) {
+        if (get_x0_value(false)) {
             xbus_state_0 = 0;
         } else {
             SLEEP(10);
             return 0;
         }
-    } else if (xbus_state_1 == XBUS_SLX) {
-        if (get_x1_value(0)) {
+    } else if (xbus_state_1 == XBUS_SL) {
+        if (get_x1_value(false)) {
             xbus_state_1 = 0;
         } else {
             SLEEP(10);
@@ -364,10 +385,10 @@ uint8_t run_program_line() {
         CHECK_CONDITION(1);
         reg = GET_R;
         // fist two bits of argument encode the XBus port to use
-        if (reg == 0x30) {
-            xbus_state_0 = XBUS_SLX;
+        if (reg == 0x40) {
+            xbus_state_0 = XBUS_SL;
         } else {
-            xbus_state_1 = XBUS_SLX;
+            xbus_state_1 = XBUS_SL;
         }
         break;
     case CMD_TEQ: // teq R/I R/I

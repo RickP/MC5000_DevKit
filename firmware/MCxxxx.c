@@ -5,7 +5,7 @@
 #include "lib/interpreter.h"
 #include "lib/delay.h"
 
-#define DEBUG
+#define DEBUG_
 
 // Insert serial number
 EASY_PDK_SERIAL(serial_number);
@@ -76,6 +76,7 @@ void handle_rx() {
 #endif
 
                 if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) { // serial num char received
+                        putchar(state == prog_ready ? 0x01 : 0x00);
                         putchar((acc_register+1000) >> 7);
                         putchar((acc_register+1000) & 0x7F);
                         putchar((dat_register+1000) >> 7);
@@ -116,8 +117,8 @@ void handle_rx() {
 }
 
 int main(void) {
-        // Disable wake-up on un-used pins to save power
-        PADIER = 0x00;
+        // Set up padier register (can't be set seperately due to a hardware bug?)
+        PADIER = (1 << SERIAL_RX_PIN) | (1 << X0_PIN) | (1 << X1_PIN);
 
         // Initialize hardware
         serial_setup();
