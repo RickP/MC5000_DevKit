@@ -118,7 +118,7 @@ void handle_rx() {
 
 int main(void) {
         // Set up padier register (can't be set seperately due to a hardware bug?)
-        PADIER = (1 << SERIAL_RX_PIN) | (1 << X0_PIN) | (1 << X1_PIN);
+        PADIER = (1U << SERIAL_RX_PIN) | (1U << X0_PIN) | (1U << X1_PIN);
 
         // Initialize hardware
         serial_setup();
