@@ -84,13 +84,14 @@ jobs:
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.12.2
+        arch: win32_mingw53
 
       - name: compile
         run: |
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cd gui
           qmake
-          nmake
+          make
         shell: cmd
 
       - uses: "marvinpinto/action-automatic-releases@latest"
