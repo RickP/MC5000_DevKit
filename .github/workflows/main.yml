@@ -68,7 +68,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
           prerelease: true
-          title: "Linux GUI"
+          title: "MacOS GUI"
           files: |
             gui/gui.app
 
@@ -96,6 +96,6 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
           prerelease: true
-          title: "Linux GUI"
+          title: "Windows GUI"
           files: |
             gui/gui.exe
