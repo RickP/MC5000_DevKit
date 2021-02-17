@@ -42,4 +42,4 @@ jobs:
           prerelease: true
           title: "Linux GUI"
           files: |
-            gui
+            gui/gui
