@@ -85,7 +85,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.12.2
         with:
-          arch: 'win64_msvc2019_64'
+          arch: 'win64_mingw81'
 
       - name: compile
         run: |
