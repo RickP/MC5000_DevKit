@@ -36,13 +36,14 @@ typedef enum {
 
 true_or_false current_condition;
 
-#define XBUS_SL 0x01
-#define XBUS_TX_READY 0x02
-#define XBUS_TX 0x03
-#define XBUS_RX 0x04
+#define XBUS_SL 0x10
+#define XBUS_TX_READY 0x20
+#define XBUS_TX 0x30
+#define XBUS_TX_DONE 0x40
+#define XBUS_RX 0x50
 
 #define XBUS_BITTIME 10
-#define XBUS_DELAY XBUS_BITTIME/2
+#define XBUS_DELAY 5
 
 #define CMD_NOP 0x04
 #define CMD_MOV 0x08
@@ -249,14 +250,18 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
                 // x pin -> bit 4 defines port num
                 if (argh & 0x08) {
                     // get data from xbus 1
-                    xbus_state_1 = XBUS_RX;
-                    xbus_data_1 = 0;
-                    set_x1_value(0, false); // signal read ready and wait 5 ticks
+                    if (get_x1_value(false)) { // Check if someone's ready to send
+                        xbus_state_1 = XBUS_RX;
+                        xbus_data_1 = 0;
+                        set_x1_value(0, false); // signal read ready and wait 5 ticks
+                    }
                 } else {
                     // get data from xbus 0
-                    xbus_state_0 = XBUS_RX;
-                    xbus_data_0 = 0;
-                    set_x0_value(0, false); // signal read ready and wait 5 ticks
+                    if (get_x0_value(false)) { // Check if someone's ready to send
+                        xbus_state_0 = XBUS_RX;
+                        xbus_data_0 = 0;
+                        set_x0_value(0, false); // signal read ready and wait 5 ticks
+                    }
                 }
                 SLEEP(XBUS_DELAY);
             }
@@ -327,24 +332,23 @@ uint8_t run_program_line() {
             xbus_state_0 = 0;
         } else {
             SLEEP(XBUS_BITTIME);
-            return 0;
         }
+        return 0;
     } else if (xbus_state_1 == XBUS_SL) {
         if (get_x1_value(false)) {
             xbus_state_1 = 0;
         } else {
             SLEEP(XBUS_BITTIME);
-            return 0;
         }
+        return 0;
     }
 
-    // XBUS receive
-    if ((xbus_state_0 & 0x0F) == XBUS_RX) {
-        // current_bit = xbus_state_0 >> 4
-        //@ Todo: receive one bit and wait XBUS_BITTIME ticks
-    } else if ((xbus_state_1 & 0x0F) == XBUS_RX) {
-        // current_bit = xbus_state_1 >> 4
-        //@ Todo: receive one bit and wait XBUS_BITTIME ticks
+    if ((xbus_state_0 & 0xF0) == XBUS_TX_DONE) {
+        get_x0_value(false);
+        xbus_state_0 = 0;
+    } else if ((xbus_state_1 & 0xF0) == XBUS_TX_DONE) {
+        get_x1_value(false);
+        xbus_state_1 = 0;
     }
 
     // XBUS ready to send - wait for receiver ready signal (pull low)
@@ -352,25 +356,49 @@ uint8_t run_program_line() {
     if (xbus_state_0 == XBUS_TX_READY) {
         if (!get_x0_value(true)) {
             xbus_state_0 = XBUS_TX;
-        } else {
-            return 0;
         }
+        return 0;
     } else if (xbus_state_1 == XBUS_TX_READY) {
         if (!get_x1_value(true)) {
             xbus_state_1 = XBUS_TX;
-        } else {
-            return 0;
         }
+        return 0;
     }
 
-    // XBUS sending
-    if ((xbus_state_0 & 0x0F) == XBUS_TX) {
-        // current_bit = xbus_state_0 >> 4
-        //@ Todo: send one bit and wait XBUS_BITTIME ticks
-    } else if ((xbus_state_1 & 0x0F) == XBUS_TX) {
-        // current_bit = xbus_state_1 >> 4
-        //@ Todo: send one bit and wait XBUS_BITTIME ticks
-    }
+//    // XBUS receive
+//    if ((xbus_state_0 & 0xF0) == XBUS_RX) {
+//        // Receive one bit and wait XBUS_BITTIME ticks
+//        if (get_x0_value(false)) {
+//            xbus_data_0 |= 1 << (xbus_state_0 & 0x0F);
+//        }
+//        if (xbus_state_0 == (XBUS_RX | 0x0F)) { // Transmission done
+//            set_val(xbus_data_0, program[current_pos-1]); // set received value
+//            xbus_state_0 = 0; // reset xbus state
+//        } else {
+//            xbus_state_0 += 1; // increase bit counter
+//            SLEEP(XBUS_BITTIME);
+//        }
+//        return 0;
+//    } else if ((xbus_state_1 & 0xF0) == XBUS_RX) {
+//        // current_bit = xbus_state_1 >> 4
+//        //@ Todo: receive one bit and wait XBUS_BITTIME ticks
+//    }
+
+//    // XBUS sending
+//    if ((xbus_state_0 & 0xF0) == XBUS_TX) {
+//        // Send one bit and wait XBUS_BITTIME ticks
+//        set_x0_value(xbus_data_0 & (1 << (xbus_state_0 & 0x0F)), false);
+//        if (xbus_state_0 == (XBUS_TX | 0x0F)) { // Transmission done
+//            xbus_state_0 = XBUS_TX_DONE;
+//        } else {
+//            xbus_state_0 += 1; // increase bit counter
+//        }
+//        SLEEP(XBUS_BITTIME);
+//        return 0;
+//    } else if ((xbus_state_1 & 0xF0) == XBUS_TX) {
+//        // current_bit = xbus_state_1 >> 4
+//        //@ Todo: send one bit and wait XBUS_BITTIME ticks
+//    }
 
     // Handle end of program buffer
     if (current_pos >= program_size) current_pos = 0;
