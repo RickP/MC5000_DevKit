@@ -61,6 +61,7 @@ jobs:
           cd gui
           qmake
           make
+          zip -r gui.zip gui.app
         shell: bash
 
       - uses: "marvinpinto/action-automatic-releases@latest"
@@ -70,7 +71,7 @@ jobs:
           prerelease: true
           title: "MacOS GUI"
           files: |
-            gui/gui.app
+            gui/gui.zip
 
   build_windows:
     # The type of runner that the job will run on
@@ -86,6 +87,7 @@ jobs:
 
       - name: compile
         run: |
+          call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cd gui
           qmake
           make
