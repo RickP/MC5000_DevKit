@@ -35,14 +35,6 @@ jobs:
           make
         shell: bash
 
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
-          title: "Linux GUI"
-          files: |
-            gui/gui
-
   build_osx:
     # The type of runner that the job will run on
     runs-on: macos-10.15
@@ -62,14 +54,6 @@ jobs:
           make
           zip -r gui.zip gui.app
         shell: bash
-
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
-          title: "MacOS GUI"
-          files: |
-            gui/gui.zip
 
   build_windows:
     # The type of runner that the job will run on
@@ -92,11 +76,3 @@ jobs:
           qmake
           make
         shell: cmd
-
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
-          title: "Windows GUI"
-          files: |
-            gui/gui.exe
