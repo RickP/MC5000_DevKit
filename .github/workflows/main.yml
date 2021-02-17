@@ -90,7 +90,7 @@ jobs:
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cd gui
           qmake
-          make
+          nmake
         shell: cmd
 
       - uses: "marvinpinto/action-automatic-releases@latest"
