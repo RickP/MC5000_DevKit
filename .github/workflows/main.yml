@@ -72,7 +72,7 @@ jobs:
           files: |
             gui/gui.app
 
-  build_osx:
+  build_windows:
     # The type of runner that the job will run on
     runs-on: windows-2019
 
