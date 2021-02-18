@@ -5,7 +5,7 @@
 #include "delay.h"
 #include "serial.h"
 
-#define SLEEP_TICKS 500
+#define SLEEP_TICKS 200
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
 #define GET_RI get_val(program[current_pos++], program[current_pos++])
@@ -19,10 +19,11 @@ uint8_t current_pos = 0;
 int16_t ri_1 = 0;
 int16_t ri_2 = 0;
 uint8_t reg = 0;
-int16_t xbus_data_0 = 0;
-int16_t xbus_data_1 = 0;
-uint8_t xbus_state_0 = 0;
-uint8_t xbus_state_1 = 0;
+int16_t xbus0_data = 0;
+uint8_t xbus0_bitcounter = 0;
+int16_t xbus1_data = 0;
+uint8_t xbus1_bitcounter = 0;
+uint8_t xbus_state = 0;
 int16_t acc_register = 0;
 int16_t dat_register = 0;
 uint16_t sleep_until = 0;
@@ -36,14 +37,30 @@ typedef enum {
 
 true_or_false current_condition;
 
-#define XBUS_SL 0x10
-#define XBUS_TX_READY 0x20
-#define XBUS_TX 0x30
-#define XBUS_TX_DONE 0x40
-#define XBUS_RX 0x50
+#define XBUS_DATA 0x7FFF
 
-#define XBUS_BITTIME 10
-#define XBUS_DELAY 5
+#define XBUS_IDLE 0x00
+
+#define XBUS0_SL 0x01
+#define XBUS0_TX_READY 0x02
+#define XBUS0_TX_START 0x03
+#define XBUS0_TX 0x04
+#define XBUS0_TX_DONE 0x05
+#define XBUS0_RX_READY 0x06
+#define XBUS0_RX_START 0x07
+#define XBUS0_RX 0x08
+
+#define XBUS1_SL 0x10
+#define XBUS1_TX_READY 0x20
+#define XBUS1_TX_START 0x30
+#define XBUS1_TX 0x40
+#define XBUS1_TX_DONE 0x50
+#define XBUS1_RX_READY 0x60
+#define XBUS1_RX_START 0x70
+#define XBUS1_RX 0x80
+
+#define XBUS_BITTIME 6
+#define XBUS_DELAY XBUS_BITTIME/2
 
 #define CMD_NOP 0x04
 #define CMD_MOV 0x08
@@ -113,54 +130,6 @@ inline void set_p1_value(uint8_t val) {
     P1_PWM_DUTY_L = 0;
 }
 
-uint8_t get_x0_value(uint8_t pull_up) {
-    if (pull_up) {
-        PAPH |= (1 << X0_PIN); // Enable pullup
-    } else {
-        PAPH &= ~(1 << X0_PIN); // Disable pullup
-    }
-    PAC &= ~(1 << X0_PIN); // Set pin as input
-    return PA & (1 << X0_PIN);
-}
-
-void set_x0_value(uint8_t pin_state, uint8_t pull_up) {
-    if (pull_up) {
-        PAPH |= (1 << X0_PIN); // Enable pullup
-    } else {
-        PAPH &= ~(1 << X0_PIN); // Disable pullup
-    }
-    PAC |= (1 << X0_PIN); // Set pin as output
-    if (pin_state) {
-        __set1(PA, X0_PIN);
-    } else {
-        __set0(PA, X0_PIN);
-    }
-}
-
-uint8_t get_x1_value(uint8_t pull_up) {
-    if (pull_up) {
-        PAPH |= (1 << X1_PIN); // Enable pullup
-    } else {
-        PAPH &= ~(1 << X1_PIN); // Disable pullup
-    }
-    PAC &= ~(1 << X1_PIN); // Set pin as input
-    return PA & (1 << X1_PIN);
-}
-
-void set_x1_value(uint8_t pin_state, uint8_t pull_up) {
-    if (pull_up) {
-        PAPH |= (1 << X1_PIN); // Enable pullup
-    } else {
-        PAPH &= ~(1 << X1_PIN); // Disable pullup
-    }
-    PAC |= (1 << X1_PIN); // Set pin as output
-    if (pin_state) {
-        __set1(PA, X1_PIN);
-    } else {
-        __set0(PA, X1_PIN);
-    }
-}
-
 void setup_interpreter_hardware() {
     PAC &= ~(1 << P0_PIN); // Enable P0 Pin as input
     PAPH &= ~(1 << P0_PIN); // Disable P0 pullup
@@ -193,15 +162,18 @@ void reset_program() {
     acc_register = 0;
     dat_register = 0;
     current_condition = none;
-    xbus_data_0 = 0;
-    xbus_data_1 = 0;
-    xbus_state_0 = 0;
-    xbus_state_1 = 0;
+    xbus0_data = 0;
+    xbus0_bitcounter = 0;
+    xbus1_data = 0;
+    xbus1_bitcounter = 0;
+    xbus_state = XBUS_IDLE;
     sleep_until = 0;
     set_p0_value(0);
     set_p1_value(0);
-    get_x0_value(false);
-    get_x1_value(false);
+    PAPH &= ~(1 << X1_PIN); // Disable pullup
+    PAPH &= ~(1 << X0_PIN); // Disable pullup
+    PAC &= ~(1 << X0_PIN); // Set pin as input
+    PAC &= ~(1 << X1_PIN); // Set pin as input
 }
 
 inline void set_program(uint8_t *new_program, uint8_t new_program_size) {
@@ -250,20 +222,19 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
                 // x pin -> bit 4 defines port num
                 if (argh & 0x08) {
                     // get data from xbus 1
-                    if (get_x1_value(false)) { // Check if someone's ready to send
-                        xbus_state_1 = XBUS_RX;
-                        xbus_data_1 = 0;
-                        set_x1_value(0, false); // signal read ready and wait 5 ticks
-                    }
+                    xbus_state = XBUS1_RX_READY;
+                    PAPH &= ~(1 << X1_PIN); // Disable pullup
+                    PAC &= ~(1 << X1_PIN); // Set pin as input
+                    xbus1_data = 0;
+                    xbus1_bitcounter = 0;
                 } else {
-                    // get data from xbus 0
-                    if (get_x0_value(false)) { // Check if someone's ready to send
-                        xbus_state_0 = XBUS_RX;
-                        xbus_data_0 = 0;
-                        set_x0_value(0, false); // signal read ready and wait 5 ticks
-                    }
+                    xbus_state = XBUS0_RX_READY;
+                    PAPH &= ~(1 << X0_PIN); // Disable pullup
+                    PAC &= ~(1 << X0_PIN); // Set pin as input
+                    xbus0_data = 0;
+                    xbus0_bitcounter = 0;
                 }
-                SLEEP(XBUS_DELAY);
+                return XBUS_DATA;
             }
         }
     }
@@ -307,12 +278,18 @@ void set_val(int16_t arg, uint8_t reg) {
             // x pin -> bit 4 defines port num
             if (reg & 0x08) {
                 // put data on xbus 1
-                xbus_state_1 = XBUS_TX_READY;
-                xbus_data_1 = arg;
+                xbus_state = XBUS1_TX_READY;
+                PAC &= ~(1 << X1_PIN); // Set pin as input
+                PAPH |= (1 << X1_PIN); // Enable pullup
+                xbus1_data = arg;
+                xbus1_bitcounter = 0;
             } else {
                 // put data on xbus 0
-                xbus_state_0 = XBUS_TX_READY;
-                xbus_data_0 = arg;
+                xbus_state = XBUS0_TX_READY;
+                PAC &= ~(1 << X0_PIN); // Set pin as input
+                PAPH |= (1 << X0_PIN); // Enable pullup
+                xbus0_data = arg;
+                xbus0_bitcounter = 0;
             }
         }
     }
@@ -326,79 +303,71 @@ uint8_t run_program_line() {
     }
     sleep_until = 0;
 
-    // XBUS sleep
-    if (xbus_state_0 == XBUS_SL) {
-        if (get_x0_value(false)) {
-            xbus_state_0 = 0;
-        } else {
+    // XBus handling
+    switch (xbus_state) {
+    case XBUS0_SL:
+        if (PA & (1 << X0_PIN)) {
+            xbus_state = XBUS_IDLE;
+        }
+        return 0;
+        break;
+    case XBUS0_TX_READY:
+        if (!(PA & (1 << X0_PIN))) {
+            PAPH &= ~(1 << X0_PIN); // Disable pullup
+            xbus_state = XBUS0_TX_START;
             SLEEP(XBUS_BITTIME);
-        }
+        };
         return 0;
-    } else if (xbus_state_1 == XBUS_SL) {
-        if (get_x1_value(false)) {
-            xbus_state_1 = 0;
-        } else {
-            SLEEP(XBUS_BITTIME);
-        }
+        break;
+    case XBUS0_TX_START:
+        PAC |= (1 << X0_PIN); // Set pin as output
+    // Fallthrough!
+    case XBUS0_TX:
+        // Send one bit and wait XBUS_BITTIME ticks
+        if ((xbus0_data >> xbus0_bitcounter++) & 0x01) __set1(PA, X0_PIN); // Set pin high
+        else __set0(PA, X0_PIN); // Set pin low
+        if (xbus0_bitcounter == 0x0F) { // Transmission done
+            xbus_state = XBUS0_TX_DONE;
+        };
+        SLEEP(XBUS_BITTIME);
         return 0;
+        break;
+    case XBUS0_TX_DONE:
+        PAC &= ~(1 << X0_PIN); // Set pin as input
+        xbus_state = XBUS_IDLE;
+        return 0;
+        break;
+    case XBUS0_RX_READY:
+        if (PA & (1 << X0_PIN)) {
+            PAPH &= ~(1 << X0_PIN); // Disable pullup
+            PAC |= (1 << X0_PIN); // Set pin as output
+            __set0(PA, X0_PIN); // Set pin low
+            xbus_state = XBUS0_RX_START;
+        }
+        SLEEP(XBUS_DELAY);
+        return 0;
+        break;
+    case XBUS0_RX_START:
+        PAC &= ~(1 << X0_PIN); // Set pin as input
+        xbus_state = XBUS0_RX;
+        SLEEP(XBUS_BITTIME);
+        return 0;
+        break;
+    case XBUS0_RX:
+        // Receive one bit and wait XBUS_BITTIME ticks
+        if (PA & (1 << X0_PIN)) {
+            xbus1_data = 1; // Reusing a global var
+            xbus0_data |= (xbus1_data << xbus0_bitcounter);
+        };
+        xbus0_bitcounter++;
+        if (xbus0_bitcounter == 0x0F) {// Transmission done
+            set_val(xbus0_data, program[current_pos-1]); // set received value
+            xbus_state = XBUS_IDLE; // reset xbus state
+        };
+        SLEEP(XBUS_BITTIME);
+        return 0;
+        break;
     }
-
-    if ((xbus_state_0 & 0xF0) == XBUS_TX_DONE) {
-        get_x0_value(false);
-        xbus_state_0 = 0;
-    } else if ((xbus_state_1 & 0xF0) == XBUS_TX_DONE) {
-        get_x1_value(false);
-        xbus_state_1 = 0;
-    }
-
-    // XBUS ready to send - wait for receiver ready signal (pull low)
-    // start sending out data when the signal comes
-    if (xbus_state_0 == XBUS_TX_READY) {
-        if (!get_x0_value(true)) {
-            xbus_state_0 = XBUS_TX;
-        }
-        return 0;
-    } else if (xbus_state_1 == XBUS_TX_READY) {
-        if (!get_x1_value(true)) {
-            xbus_state_1 = XBUS_TX;
-        }
-        return 0;
-    }
-
-//    // XBUS receive
-//    if ((xbus_state_0 & 0xF0) == XBUS_RX) {
-//        // Receive one bit and wait XBUS_BITTIME ticks
-//        if (get_x0_value(false)) {
-//            xbus_data_0 |= 1 << (xbus_state_0 & 0x0F);
-//        }
-//        if (xbus_state_0 == (XBUS_RX | 0x0F)) { // Transmission done
-//            set_val(xbus_data_0, program[current_pos-1]); // set received value
-//            xbus_state_0 = 0; // reset xbus state
-//        } else {
-//            xbus_state_0 += 1; // increase bit counter
-//            SLEEP(XBUS_BITTIME);
-//        }
-//        return 0;
-//    } else if ((xbus_state_1 & 0xF0) == XBUS_RX) {
-//        // current_bit = xbus_state_1 >> 4
-//        //@ Todo: receive one bit and wait XBUS_BITTIME ticks
-//    }
-
-//    // XBUS sending
-//    if ((xbus_state_0 & 0xF0) == XBUS_TX) {
-//        // Send one bit and wait XBUS_BITTIME ticks
-//        set_x0_value(xbus_data_0 & (1 << (xbus_state_0 & 0x0F)), false);
-//        if (xbus_state_0 == (XBUS_TX | 0x0F)) { // Transmission done
-//            xbus_state_0 = XBUS_TX_DONE;
-//        } else {
-//            xbus_state_0 += 1; // increase bit counter
-//        }
-//        SLEEP(XBUS_BITTIME);
-//        return 0;
-//    } else if ((xbus_state_1 & 0xF0) == XBUS_TX) {
-//        // current_bit = xbus_state_1 >> 4
-//        //@ Todo: send one bit and wait XBUS_BITTIME ticks
-//    }
 
     // Handle end of program buffer
     if (current_pos >= program_size) current_pos = 0;
@@ -430,7 +399,7 @@ uint8_t run_program_line() {
         CHECK_CONDITION(3);
         ri_1 = GET_RI;
         reg = GET_R;
-        set_val(ri_1, reg); // set value to register/pin
+        if (ri_1 != XBUS_DATA) set_val(ri_1, reg); // set value to register/pin
         break;
     case CMD_JMP: // jmp L
         CHECK_CONDITION(1);
@@ -446,9 +415,13 @@ uint8_t run_program_line() {
         reg = GET_R;
         // fist two bits of argument encode the XBus port to use
         if (reg == 0x40) {
-            xbus_state_0 = XBUS_SL;
+            PAPH &= ~(1 << X0_PIN); // Disable pullup
+            PAC &= ~(1 << X0_PIN); // Set pin as input
+            xbus_state = XBUS0_SL;
         } else {
-            xbus_state_1 = XBUS_SL;
+            PAPH &= ~(1 << X1_PIN); // Disable pullup
+            PAC &= ~(1 << X1_PIN); // Set pin as input
+            xbus_state = XBUS1_SL;
         }
         break;
     case CMD_TEQ: // teq R/I R/I

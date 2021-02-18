@@ -19,7 +19,7 @@ const QString COMMENT_MARKER = "#";
 const char LABEL_HEXCODE = 0x10 << 2;
 const char START_CHAR = 0x7F;
 const char END_CHAR = 0x7E;
-const int SERIAL_DELAY = 20;
+const int SERIAL_DELAY = 10;
 
 public:
 explicit SerialCommunication(QObject *parent = nullptr);

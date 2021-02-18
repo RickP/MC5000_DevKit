@@ -8,8 +8,8 @@
 #define SERIAL_TX_PIN       5
 #define SERIAL_RX_PIN       0
 
-#define TX_BYTE_CLK_COUNTS 207
-#define RX_BYTE_CLK_COUNTS 142
+#define TX_BYTE_CLK_COUNTS 206
+#define RX_BYTE_CLK_COUNTS 180
 #define RX_INTERVAL 12
 #define CNT_BUF_MAX 11
 
@@ -33,13 +33,13 @@ void serial_setup() {
 
     // Setup timer3 (TM3) interrupt for 19200 baud rx
     TM3C = TM3C_CLK_IHRC; // Use IHRC -> 8 Mhz
-    TM3S = TM3S_PRESCALE_DIV16 | TM2S_SCALE_DIV4; // No prescale, scale 8 ~> 1MHz
+    TM3S = TM3S_PRESCALE_DIV16 | TM3S_SCALE_DIV4; // No prescale, scale 8 ~> 1MHz
     TM3B = RX_BYTE_CLK_COUNTS; // Divide by 138 - serial triggered every 5 clock interrupts ~> 19417 Hz (apx. 19200 baud)
 
     PAC |= (1 << SERIAL_TX_PIN); // Enable TX Pin as output
     PAPH |= (1 << SERIAL_TX_PIN); // Enable pullup on TX Pin
     __set1(PA, SERIAL_TX_PIN); // Make TX pin High Z
-    //txdata = 0xD55F; // Setup 2 stop bits, 0x55 char for autobaud, 1 start bit, 5 stop bits
+    // txdata = 0xD55F; // Setup 2 stop bits, 0x55 char for autobaud, 1 start bit, 5 stop bits
     INTEN |= INTEN_TM2; // Enable TM2 interrupt, send out initial stop bits and autobaud char
     INTEN |= INTEN_TM3; // Enable TM3 interrupt
 

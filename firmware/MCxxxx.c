@@ -76,11 +76,11 @@ void handle_rx() {
 #endif
 
                 if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) { // serial num char received
-                        putchar(state == prog_ready ? 0x01 : 0x00);
                         putchar((acc_register+1000) >> 7);
                         putchar((acc_register+1000) & 0x7F);
                         putchar((dat_register+1000) >> 7);
                         putchar((dat_register+1000) & 0x7F);
+                        putchar(state == prog_ready ? 0x01 : 0x00);
                 } else if (state == transmission_start || state == retransmission_start) {
                         if (rx_char == *serial_number) {
                                 program_buf_pos = 0;

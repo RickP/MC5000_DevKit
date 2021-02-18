@@ -18,7 +18,7 @@ ApplicationWindow {
     property bool upload: false
 
     Timer {
-        interval: 200 + (100 * serial.mcuConnections)
+        interval: 350 + (50 * serial.mcuConnections)
         running: serial.mcuConnections > 0 && !upload
         repeat: true
         onTriggered: serial.updateRegisters()
@@ -191,7 +191,7 @@ ApplicationWindow {
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignRight
                                                 font.pointSize: 18
-                                                text: serial.accRegisters[index]
+                                                text: serial.accRegisters[index] ? serial.accRegisters[index]  : ""
                                                 color: "black"
                                             }
                                         }
@@ -215,7 +215,7 @@ ApplicationWindow {
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignRight
                                                 font.pointSize: 18
-                                                text: serial.datRegisters[index]
+                                                text: serial.datRegisters[index] ? serial.datRegisters[index] : ""
                                                 color: "black"
                                             }
                                         }
