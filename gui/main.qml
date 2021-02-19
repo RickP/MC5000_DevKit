@@ -3,7 +3,6 @@ import QtQuick.Controls 2.12
 import QtQuick.Controls.Material 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Window 2.12
-import QtQuick.Dialogs 1.3
 import Qt.labs.platform 1.1
 
 ApplicationWindow {
@@ -237,19 +236,52 @@ ApplicationWindow {
     FileDialog {
         id: loadDialog
         title: "Load file"
+        nameFilters: ["Text files (*.txt)"]
         onAccepted: {
-            console.log("You chose: " + fileDialog.fileUrls)
+            var request = new XMLHttpRequest();
+            request.open("GET", file);
+            request.onreadystatechange = function() {
+                if (request.readyState === XMLHttpRequest.DONE) {
+                    var response = request.responseText;
+                    response.split(',').forEach(function(editortext, index) {
+                        if (editors.count > index) {
+                            editors.itemAt(index).children[0].children[1].children[1].text = editortext;
+                        }
+                    })
+                }
+            };
+            request.send();
         }
-        onRejected: {
-            console.log("Canceled")
-        }
-        fileMode: FileDialog.OpenFile
     }
 
     FileDialog {
         id: saveDialog
         title: "Save File"
         fileMode: FileDialog.SaveFile
+        defaultSuffix: "txt"
+        onAccepted: {
+            var request = new XMLHttpRequest();
+            request.open("PUT", file, false);
+            var code_strings = [];
+            for (var i=0; i < editors.count; i++) {
+                code_strings.push(editors.itemAt(i).children[0].children[1].children[1].text);
+            }
+            request.send(code_strings);
+        }
+    }
+
+    function openFile(fileUrl) {
+        var request = new XMLHttpRequest();
+        request.open("GET", fileUrl, false);
+        request.send(null);
+        return request.responseText;
+    }
+
+    function saveFile(fileUrl, text) {
+        var request = new XMLHttpRequest();
+        request.open("PUT", fileUrl, false);
+        request.send(text);
+        return request.status;
     }
 
     footer: Item {
