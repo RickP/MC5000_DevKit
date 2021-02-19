@@ -13,12 +13,12 @@ ApplicationWindow {
     minimumWidth: serial.mcuConnections > 0 ? 300 * serial.mcuConnections : 300;
     minimumHeight: 400
     visible: true
-    title: qsTr("MC4000E V0.1")
+    title: qsTr("MC5000 V0.1")
 
     property bool upload: false
 
     Timer {
-        interval: 350 + (50 * serial.mcuConnections)
+        interval: 150 + (50 * serial.mcuConnections)
         running: serial.mcuConnections > 0 && !upload
         repeat: true
         onTriggered: serial.updateRegisters()

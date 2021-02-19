@@ -367,6 +367,68 @@ uint8_t run_program_line() {
         SLEEP(XBUS_BITTIME);
         return 0;
         break;
+    case XBUS1_SL:
+        if (PA & (1 << X1_PIN)) {
+            xbus_state = XBUS_IDLE;
+        }
+        return 0;
+        break;
+    case XBUS1_TX_READY:
+        if (!(PA & (1 << X1_PIN))) {
+            PAPH &= ~(1 << X1_PIN); // Disable pullup
+            xbus_state = XBUS1_TX_START;
+            SLEEP(XBUS_BITTIME);
+        };
+        return 0;
+        break;
+    case XBUS1_TX_START:
+        PAC |= (1 << X1_PIN); // Set pin as output
+    // Fallthrough!
+    case XBUS1_TX:
+        // Send one bit and wait XBUS_BITTIME ticks
+        if ((xbus1_data >> xbus1_bitcounter++) & 0x01) __set1(PA, X1_PIN); // Set pin high
+        else __set0(PA, X1_PIN); // Set pin low
+        if (xbus1_bitcounter == 0x0F) { // Transmission done
+            xbus_state = XBUS1_TX_DONE;
+        };
+        SLEEP(XBUS_BITTIME);
+        return 0;
+        break;
+    case XBUS1_TX_DONE:
+        PAC &= ~(1 << X1_PIN); // Set pin as input
+        xbus_state = XBUS_IDLE;
+        return 0;
+        break;
+    case XBUS1_RX_READY:
+        if (PA & (1 << X1_PIN)) {
+            PAPH &= ~(1 << X1_PIN); // Disable pullup
+            PAC |= (1 << X1_PIN); // Set pin as output
+            __set0(PA, X1_PIN); // Set pin low
+            xbus_state = XBUS1_RX_START;
+        }
+        SLEEP(XBUS_DELAY);
+        return 0;
+        break;
+    case XBUS1_RX_START:
+        PAC &= ~(1 << X1_PIN); // Set pin as input
+        xbus_state = XBUS1_RX;
+        SLEEP(XBUS_BITTIME);
+        return 0;
+        break;
+    case XBUS1_RX:
+        // Receive one bit and wait XBUS_BITTIME ticks
+        if (PA & (1 << X1_PIN)) {
+            xbus0_data = 1; // Reusing a global var
+            xbus1_data |= (xbus0_data << xbus1_bitcounter);
+        };
+        xbus1_bitcounter++;
+        if (xbus1_bitcounter == 0x0F) {// Transmission done
+            set_val(xbus1_data, program[current_pos-1]); // set received value
+            xbus_state = XBUS_IDLE; // reset xbus state
+        };
+        SLEEP(XBUS_BITTIME);
+        return 0;
+        break;
     }
 
     // Handle end of program buffer
