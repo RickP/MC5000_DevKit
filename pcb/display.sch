@@ -1,0 +1,176 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 7 9
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L LCSC_parts:SLS0563DRA1GD DS1
+U 1 1 603088CE
+P 5950 3750
+F 0 "DS1" H 5550 3250 50  0000 C CNN
+F 1 "SLS0563DRA1GD" H 5950 3250 50  0001 C CNN
+F 2 "LCSC_parts:SLS0563DRA1GD" H 5950 3150 50  0001 C CNN
+F 3 "" H 5950 3750 50  0001 C CNN
+	1    5950 3750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Interface_Expansion:PCA9555PW U8
+U 1 1 6031B3F2
+P 7800 3300
+F 0 "U8" H 7800 2119 50  0000 C CNN
+F 1 "PCA9555PW" H 7800 2210 50  0000 C CNN
+F 2 "Package_SO:TSSOP-24_4.4x7.8mm_P0.65mm" H 7800 3300 50  0001 C CNN
+F 3 "https://www.nxp.com/docs/en/data-sheet/PCA9555.pdf" H 7800 3300 50  0001 C CNN
+	1    7800 3300
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R1
+U 1 1 6032973C
+P 6900 3400
+F 0 "R1" V 6900 3450 50  0000 C CNN
+F 1 "200R" V 6900 3350 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" V 6830 3400 50  0001 C CNN
+F 3 "~" H 6900 3400 50  0001 C CNN
+	1    6900 3400
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6750 3400 6500 3400
+Wire Wire Line
+	7050 3400 7300 3400
+$Comp
+L Device:R R2
+U 1 1 6032C759
+P 6900 3500
+F 0 "R2" V 6900 3550 50  0000 C CNN
+F 1 "200R" V 6900 3450 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" V 6830 3500 50  0001 C CNN
+F 3 "~" H 6900 3500 50  0001 C CNN
+	1    6900 3500
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6750 3500 6500 3500
+Wire Wire Line
+	7050 3500 7300 3500
+$Comp
+L Device:R R3
+U 1 1 6032CE90
+P 6900 3600
+F 0 "R3" V 6900 3650 50  0000 C CNN
+F 1 "200R" V 6900 3550 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" V 6830 3600 50  0001 C CNN
+F 3 "~" H 6900 3600 50  0001 C CNN
+	1    6900 3600
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6750 3600 6500 3600
+Wire Wire Line
+	7050 3600 7300 3600
+$Comp
+L Device:R R4
+U 1 1 6032D452
+P 6900 3700
+F 0 "R4" V 6900 3750 50  0000 C CNN
+F 1 "200R" V 6900 3650 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" V 6830 3700 50  0001 C CNN
+F 3 "~" H 6900 3700 50  0001 C CNN
+	1    6900 3700
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6750 3700 6500 3700
+Wire Wire Line
+	7050 3700 7300 3700
+$Comp
+L Device:R R5
+U 1 1 6032D984
+P 6900 3800
+F 0 "R5" V 6900 3850 50  0000 C CNN
+F 1 "200R" V 6900 3750 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" V 6830 3800 50  0001 C CNN
+F 3 "~" H 6900 3800 50  0001 C CNN
+	1    6900 3800
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6750 3800 6500 3800
+Wire Wire Line
+	7050 3800 7300 3800
+$Comp
+L Device:R R6
+U 1 1 6032DD91
+P 6900 3900
+F 0 "R6" V 6900 3950 50  0000 C CNN
+F 1 "200R" V 6900 3850 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" V 6830 3900 50  0001 C CNN
+F 3 "~" H 6900 3900 50  0001 C CNN
+	1    6900 3900
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6750 3900 6500 3900
+Wire Wire Line
+	7050 3900 7300 3900
+$Comp
+L Device:R R7
+U 1 1 6032E390
+P 6900 4000
+F 0 "R7" V 6900 4050 50  0000 C CNN
+F 1 "200R" V 6900 3950 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" V 6830 4000 50  0001 C CNN
+F 3 "~" H 6900 4000 50  0001 C CNN
+	1    6900 4000
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6750 4000 6500 4000
+Wire Wire Line
+	7050 4000 7300 4000
+$Comp
+L Device:R R8
+U 1 1 6032E918
+P 6900 4100
+F 0 "R8" V 6900 4150 50  0000 C CNN
+F 1 "200R" V 6900 4050 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" V 6830 4100 50  0001 C CNN
+F 3 "~" H 6900 4100 50  0001 C CNN
+	1    6900 4100
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6750 4100 6500 4100
+Wire Wire Line
+	7050 4100 7300 4100
+Wire Wire Line
+	5400 3650 5250 3650
+Wire Wire Line
+	5250 3650 5250 3200
+Wire Wire Line
+	5250 3200 7300 3200
+Wire Wire Line
+	5400 3750 5150 3750
+Wire Wire Line
+	5150 3750 5150 3100
+Wire Wire Line
+	5150 3100 7300 3100
+Wire Wire Line
+	5400 3850 5050 3850
+Wire Wire Line
+	5050 3850 5050 3000
+Wire Wire Line
+	5050 3000 7300 3000
+$EndSCHEMATC
