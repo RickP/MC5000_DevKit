@@ -1,4 +1,4 @@
-// QT creator
+# QT creator
 
 build
 build-gui-*
@@ -41,7 +41,7 @@ Thumbs.db
 
 # qtcreator generated files
 *.pro.user*
-firmware/Firmware.creator.user*
+Firmware.creator.user*
 
 # xemacs temporary files
 *.flc
