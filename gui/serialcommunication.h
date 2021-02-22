@@ -1,7 +1,9 @@
 #ifndef SERIALCOMMUNICATION_H
 #define SERIALCOMMUNICATION_H
+
 #include <QSerialPort>
 #include <QObject>
+#include <QDebug>
 #include <QMap>
 
 class SerialCommunication : public QObject {
@@ -19,7 +21,8 @@ const QString COMMENT_MARKER = "#";
 const char LABEL_HEXCODE = 0x10 << 2;
 const char START_CHAR = 0x7F;
 const char END_CHAR = 0x7E;
-const int SERIAL_DELAY = 5;
+const int SERIAL_DELAY = 10;
+const int UPLOAD_RETRIES = 3;
 
 public:
 explicit SerialCommunication(QObject *parent = nullptr);
@@ -146,5 +149,6 @@ const QMap<QString, QPair<uint8_t, QStringList>> commands = {
 
 
 };
+
 
 #endif // SERIALCOMMUNICATION_H

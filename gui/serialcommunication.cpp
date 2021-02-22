@@ -1,7 +1,24 @@
 #include "serialcommunication.h"
 #include <QSerialPortInfo>
 #include <QThread>
-#include <QDebug>
+
+
+static void printHex(uint8_t byte) {
+    char s[3];
+    const uint8_t hex_lookup[] = "0123456789ABCDEF";
+    s[0] = hex_lookup[byte >> 4];
+    s[1] = hex_lookup[byte & 0x0f];
+    s[2] = '\0';
+    qDebug() << s;
+}
+
+static uint8_t checksum (QByteArray bytes, uint8_t size) {
+    unsigned char chk = 0;
+    for (int i=0; i<size; i++) {
+        chk -= bytes.at(i);
+    }
+    return chk >> 2;
+}
 
 SerialCommunication::SerialCommunication(QObject *parent) : QObject(parent)
 {
@@ -9,6 +26,7 @@ SerialCommunication::SerialCommunication(QObject *parent) : QObject(parent)
 }
 
 void SerialCommunication::loadPorts() {
+    m_serialports.clear();
     const auto infos = QSerialPortInfo::availablePorts();
     for (const QSerialPortInfo &info : infos) {
         QString portName = info.portName();
@@ -19,6 +37,7 @@ void SerialCommunication::loadPorts() {
     if (m_serialports.length() == 1) {
         connect(m_serialports.at(0));
     }
+    emit serialportsChanged();
 }
 
 SerialCommunication::~SerialCommunication()
@@ -55,6 +74,8 @@ void SerialCommunication::connect(QString port) {
 void SerialCommunication::upload(QStringList codeList) {
     m_errorMessage = "";
     for (int i = 0; i < codeList.size(); i++) {
+        m_isProgrammed[i] = false;
+        emit isProgrammedChanged();
         QByteArray output;
         if (codeList.at(i) != "") {
             QStringList lines = codeList.at(i).split('\n', Qt::SkipEmptyParts);
@@ -63,6 +84,7 @@ void SerialCommunication::upload(QStringList codeList) {
 
             for (int j = 0; j < lines.size(); j++) {
                 QStringList parts = lines.at(j).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+                if (parts.size() == 0) continue;
                 if (parts.at(0).endsWith(LABEL_MARKER) and !labels.contains(parts.at(0))) {
                     labels.append(parts.at(0));
                 }
@@ -148,20 +170,31 @@ void SerialCommunication::upload(QStringList codeList) {
         // Write program
         if (m_serial.isOpen()) {
             // header
-            m_isProgrammed[i] = false;
-            writeSerialByte(START_CHAR);
-            writeSerialByte(0x31 + i);
-            for (int x=0; x < output.length(); x++) {
-                writeSerialByte(output.at(x));
+            bool program_success = false;
+            int tries = 0;
+            while (!program_success && tries++ <= UPLOAD_RETRIES) {
+                char data = 0;
+                writeSerialByte(START_CHAR);
+                writeSerialByte(0x31 + i);
+                for (int x=0; x < output.length(); x++) {
+                    writeSerialByte(output.at(x));
+                }
+                writeSerialByte(checksum(output, output.length()));
+                writeSerialByte(END_CHAR);
+                // check programming state
+                if (m_serial.waitForReadyRead(500)) {
+                    if (m_serial.read(&data, 1) == 1 && data == 0x31 + i) {
+                        program_success = true;
+                    }
+                    m_serial.readAll();
+                }
             }
-            writeSerialByte(END_CHAR);
         } else {
             m_errorMessage = QString("No serial connection!");
             emit errorMessageChanged();
             return;
         }
     }
-    emit isProgrammedChanged();
 }
 
 void SerialCommunication::writeSerialByte(char byte, bool debug) {
@@ -170,12 +203,7 @@ void SerialCommunication::writeSerialByte(char byte, bool debug) {
     QThread::msleep(SERIAL_DELAY);
 
     if (debug) {
-        char s[3];
-        const uint8_t hex_lookup[] = "0123456789ABCDEF";
-        s[0] = hex_lookup[byte >> 4];
-        s[1] = hex_lookup[byte & 0x0f];
-        s[2] = '\0';
-        qDebug() << s;
+        printHex(byte);
     }
 }
 
@@ -219,14 +247,17 @@ void SerialCommunication::updateRegisters() {
             writeSerialByte(0x31+i, false);
             if (m_serial.waitForReadyRead(100)) {
                 char data[5];
-                if (m_serial.read(data, 5) == 5 && data[4] < 2) {
-                    m_isProgrammed[i] = data[4];
+                int bytes_read = m_serial.read(data, 5);
+                if (bytes_read == 5 && (data[4] & 0x3F) == checksum(QByteArray(data, 4), 4)) {
+                    m_isProgrammed[i] = data[4] & 0x40;
                     int acc = data[0] << 7;
                     acc |= data[1];
                     m_accRegisters.append(acc-1000);
                     int dat = data[2] << 7;
                     dat |= data[3];
                     m_datRegisters.append(dat-1000);
+                } else {
+                    QThread::msleep(SERIAL_DELAY*2);
                 }
             } else {
                 updateValues = false;

@@ -10,7 +10,7 @@
 // Insert serial number
 EASY_PDK_SERIAL(serial_number);
 
-#define PROGSIZE 75
+#define PROGSIZE 60
 
 #define START_CHAR 0x7F
 #define END_CHAR 0x7E
@@ -22,12 +22,12 @@ typedef enum {
         faulty_prog,
         empty_prog,
         transmission_start,
-        retransmission_start,
         line_prog,
         prog_ready
 } prog_state;
 
 prog_state state = empty_prog;
+prog_state prev_state;
 
 void interrupt_routine() __interrupt(0) {
         if (INTRQ & INTRQ_TM2) {  // TM2 interrupt request?
@@ -46,6 +46,13 @@ void interrupt_routine() __interrupt(0) {
         if (INTRQ & INTEN_ADC) {
             INTRQ &= ~INTEN_ADC;
         }
+}
+
+inline uint8_t checksum (uint8_t *ptr, uint8_t size) {
+    unsigned char chk = 0;
+    while (size-- != 0)
+        chk -= *ptr++;
+    return chk >> 2;
 }
 
 void handle_rx() {
@@ -76,42 +83,54 @@ void handle_rx() {
 #endif
 
                 if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) { // serial num char received
-                        putchar((acc_register+1000) >> 7);
-                        putchar((acc_register+1000) & 0x7F);
-                        putchar((dat_register+1000) >> 7);
-                        putchar((dat_register+1000) & 0x7F);
-                        putchar(state == prog_ready ? 0x01 : 0x00);
-                } else if (state == transmission_start || state == retransmission_start) {
+                        uint8_t tx_data[4];
+                        tx_data[0] = (acc_register+1000) >> 7;
+                        tx_data[1] = (acc_register+1000) & 0x7F;
+                        tx_data[2] = (dat_register+1000) >> 7;
+                        tx_data[3] = (dat_register+1000) & 0x7F;
+                        for (int i=0; i<4; i++) {
+                            putchar(tx_data[i]);
+                        }
+                        if (state == prog_ready) {
+                            putchar(checksum(tx_data, 4) | 0x40);
+                        } else {
+                            putchar(checksum(tx_data, 4));
+                        }
+                } else if (rx_char == START_CHAR) { // Start char received
+                        prev_state = state;
+                        state = transmission_start;
+                } else if (state == transmission_start) {
                         if (rx_char == *serial_number) {
                                 program_buf_pos = 0;
-                                reset_program();
                                 state = line_prog;
                         } else {
-                            if (state == transmission_start) {
-                                program_buf_pos = 0;
                                 reset_program();
-                                state = empty_prog;
-                            } else {
-                                program_buf_pos = 0;
-                                state = prog_ready;
-                            }
+                                state = prev_state;
                         }
                 } else if (state == line_prog) {
                         if (rx_char == END_CHAR) {
                                 if (program_buf_pos > 2) {
-                                        state = prog_ready;
-                                        set_program(program_buf, program_buf_pos);
+                                        program_buf_pos--;
+                                        if (checksum(program_buf, program_buf_pos) == program_buf[program_buf_pos]) {
+                                            putchar(serial_number[0]);
+                                            reset_program();
+                                            set_program(program_buf, program_buf_pos);
+                                            state = prog_ready;
+                                        } else {
+                                            program_buf_pos = 0;
+                                            reset_program();
+                                            state = empty_prog;
+                                            putchar(0);
+                                        }
                                 } else {
                                         program_buf_pos = 0;
                                         reset_program();
                                         state = empty_prog;
+                                        putchar(serial_number[0]);
                                 }
                         } else {
                                 program_buf[program_buf_pos++] = rx_char;
                         }
-                } else if (rx_char == START_CHAR) { // Start char received
-                    if (state == prog_ready) state = retransmission_start;
-                    else state = transmission_start;
                 }
         }
 }

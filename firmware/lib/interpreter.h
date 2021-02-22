@@ -61,7 +61,7 @@ true_or_false current_condition;
 #define XBUS1_RX 0x80
 #define XBUS1_GOT_DATA 0x90
 
-#define XBUS_BITTIME 2
+#define XBUS_BITTIME 10
 #define XBUS_DELAY XBUS_BITTIME/2
 
 #define CMD_NOP 0x04
@@ -170,12 +170,21 @@ void reset_program() {
     xbus1_bitcounter = 0;
     xbus_state = XBUS_IDLE;
     sleep_until = 0;
+    ri_1 = 0;
+    ri_2 = 0;
+    reg = 0;
     set_p0_value(0);
     set_p1_value(0);
-    PAPH &= ~(1 << X1_PIN); // Disable pullup
-    PAPH &= ~(1 << X0_PIN); // Disable pullup
+
+    PA &= ~(1 << X0_PIN); // Set low
+    PA &= ~(1 << X1_PIN); // Set low
+
     PAC &= ~(1 << X0_PIN); // Set pin as input
     PAC &= ~(1 << X1_PIN); // Set pin as input
+
+    PAPH &= ~(1 << X0_PIN); // Disable pullup
+    PAPH &= ~(1 << X1_PIN); // Disable pullup
+
 }
 
 inline void set_program(uint8_t *new_program, uint8_t new_program_size) {
@@ -343,6 +352,7 @@ uint8_t run_program_line() {
         break;
     case XBUS0_TX_START:
         PAC |= (1 << X0_PIN); // Set pin as output
+        xbus_state = XBUS0_TX;
     // Fallthrough!
     case XBUS0_TX:
         // Send one bit and wait XBUS_BITTIME ticks
@@ -361,7 +371,6 @@ uint8_t run_program_line() {
         break;
     case XBUS0_RX_READY:
         if (PA & (1 << X0_PIN)) {
-            PAPH &= ~(1 << X0_PIN); // Disable pullup
             PAC |= (1 << X0_PIN); // Set pin as output
             __set0(PA, X0_PIN); // Set pin low
             xbus_state = XBUS0_RX_START;
@@ -383,12 +392,12 @@ uint8_t run_program_line() {
         };
         xbus0_bitcounter++;
         if (xbus0_bitcounter == 0x0F) {// Transmission done
-            xbus_state = XBUS0_GOT_DATA; // reset xbus state
+            xbus_state = XBUS0_GOT_DATA; // set xbus state
+            current_pos -= 1; // replay command - this time with xbus data
         } else {
             SLEEP(XBUS_BITTIME);
+            return 0;
         }
-        SLEEP(XBUS_BITTIME);
-        return 0;
         break;
     case XBUS1_SL:
         if (PA & (1 << X1_PIN)) {
@@ -406,6 +415,7 @@ uint8_t run_program_line() {
         break;
     case XBUS1_TX_START:
         PAC |= (1 << X1_PIN); // Set pin as output
+        xbus_state = XBUS1_TX;
     // Fallthrough!
     case XBUS1_TX:
         // Send one bit and wait XBUS_BITTIME ticks
@@ -424,7 +434,6 @@ uint8_t run_program_line() {
         break;
     case XBUS1_RX_READY:
         if (PA & (1 << X1_PIN)) {
-            PAPH &= ~(1 << X1_PIN); // Disable pullup
             PAC |= (1 << X1_PIN); // Set pin as output
             __set0(PA, X1_PIN); // Set pin low
             xbus_state = XBUS1_RX_START;
@@ -446,11 +455,12 @@ uint8_t run_program_line() {
         };
         xbus1_bitcounter++;
         if (xbus1_bitcounter == 0x0F) {// Transmission done
-            xbus_state = XBUS1_GOT_DATA; // reset xbus state
+            xbus_state = XBUS1_GOT_DATA; // set xbus state
+            current_pos -= 1; // replay command - this time with xbus data
         } else {
             SLEEP(XBUS_BITTIME);
+            return 0;
         }
-        return 0;
         break;
     }
 
@@ -503,14 +513,15 @@ uint8_t run_program_line() {
         reg = GET_R;
         // fist two bits of argument encode the XBus port to use
         if (reg == 0x40) {
-            PAPH &= ~(1 << X0_PIN); // Disable pullup
             PAC &= ~(1 << X0_PIN); // Set pin as input
+            PAPH &= ~(1 << X0_PIN); // Disable pullup
             xbus_state = XBUS0_SL;
         } else {
-            PAPH &= ~(1 << X1_PIN); // Disable pullup
             PAC &= ~(1 << X1_PIN); // Set pin as input
+            PAPH &= ~(1 << X1_PIN); // Disable pullup
             xbus_state = XBUS1_SL;
         }
+        SLEEP(XBUS_DELAY);
         break;
     case CMD_TEQ: // teq R/I R/I
         CHECK_CONDITION(4);

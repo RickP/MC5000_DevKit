@@ -70,25 +70,16 @@ ApplicationWindow {
         anchors.centerIn: parent
         width: 200
 
-        Column {
+        Text {
             visible: serial.serialports.length === 0
-            anchors.fill: parent
-            Text {
-                height: 15
-                anchors.horizontalCenterOffset: 0
-                font.pointSize: 18
-                font.bold: true
-                text: "No serial devices found"
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-
-            Button {
-                width: 200
-                text: "Reload"
-                onClicked: serial.loadPorts()
-            }
+            height: 15
+            anchors.horizontalCenterOffset: 0
+            font.pointSize: 18
+            font.bold: true
+            text: "No serial devices found"
+            color: "black"
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
         }
 
         ComboBox {
@@ -103,6 +94,12 @@ ApplicationWindow {
             text: "Connect"
             onClicked: serial.connect(serial_ports.currentText)
             visible: serial.serialports.length > 0
+        }
+
+        Button {
+            width: 200
+            text: "Reload"
+            onClicked: serial.loadPorts()
         }
     }
 
@@ -190,7 +187,7 @@ ApplicationWindow {
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignRight
                                                 font.pointSize: 18
-                                                text: serial.accRegisters[index] ? serial.accRegisters[index]  : ""
+                                                text: serial.accRegisters[index]
                                                 color: "black"
                                             }
                                         }
@@ -214,7 +211,7 @@ ApplicationWindow {
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignRight
                                                 font.pointSize: 18
-                                                text: serial.datRegisters[index] ? serial.datRegisters[index] : ""
+                                                text: serial.datRegisters[index]
                                                 color: "black"
                                             }
                                         }
