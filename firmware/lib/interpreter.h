@@ -153,7 +153,7 @@ void setup_interpreter_hardware() {
     PWMG1C = PWMG1C_ENABLE;
     PWMG2C = PWMG2C_ENABLE;
     PWMGCUBL = 0x00;
-    PWMGCUBH = 0x80;
+    PWMGCUBH = 0x64;
 
 }
 
