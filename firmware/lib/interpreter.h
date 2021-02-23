@@ -5,7 +5,7 @@
 #include "delay.h"
 #include "serial.h"
 
-#define SLEEP_TICKS 200
+#define SLEEP_TICKS 275
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
 #define GET_RI(x) x = get_val(program[current_pos], program[current_pos+1]); if (x == XBUS_WAIT) return 0
@@ -19,10 +19,8 @@ uint8_t current_pos = 0;
 int16_t ri_1 = 0;
 int16_t ri_2 = 0;
 uint8_t reg = 0;
-int16_t xbus0_data = 0;
-uint8_t xbus0_bitcounter = 0;
-int16_t xbus1_data = 0;
-uint8_t xbus1_bitcounter = 0;
+int16_t xbus_data = 0;
+uint8_t xbus_bitcounter = 0;
 uint8_t xbus_state = 0;
 int16_t acc_register = 0;
 int16_t dat_register = 0;
@@ -61,7 +59,7 @@ true_or_false current_condition;
 #define XBUS1_RX 0x80
 #define XBUS1_GOT_DATA 0x90
 
-#define XBUS_BITTIME 4
+#define XBUS_BITTIME 12
 #define XBUS_DELAY XBUS_BITTIME/2
 
 #define CMD_NOP 0x04
@@ -102,8 +100,13 @@ inline uint8_t get_p0_value() {
     P0_PWM &= ~P0_PWM_ENABLE; // Disable PWM output on pin
     PAC &= ~(1 << P0_PIN); //disable GPIO output
     PAPH &= ~(1 << P0_PIN); //disable pull up
-    ADCC = ADCC_ADC_ENABLE | P0_ADC | ADCC_ADC_CONV_START; // Enable ADC
-    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
+    if (!(ADCC & ADCC_ADC_ENABLE)) {
+        ADCC = ADCC_ADC_ENABLE; // Enable ADC
+        sleep_until = 0xC800;
+        for( ; sleep_until>0; sleep_until-- ); // wait 400 us
+    }
+    ADCC = ADCC_ADC_ENABLE | P0_ADC | ADCC_ADC_CONV_START; // Start ADC
+    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish
     return ADCR;
 }
 
@@ -119,8 +122,13 @@ inline uint8_t get_p1_value() {
     P1_PWM &= ~P1_PWM_ENABLE; // Disable PWM output on pin
     PAC &= ~(1 << P1_PIN); //disable GPIO output
     PAPH &= ~(1 << P1_PIN); //disable pull up
-    ADCC = ADCC_ADC_ENABLE | P1_ADC | ADCC_ADC_CONV_START; // Enable ADC
-    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish (we also could use the ADC interrupt...)
+    if (!(ADCC & ADCC_ADC_ENABLE)) {
+        ADCC = ADCC_ADC_ENABLE; // Enable ADC
+        sleep_until = 0xC800;
+        for( ; sleep_until>0; sleep_until-- ); // wait 400 us
+    }
+    ADCC = ADCC_ADC_ENABLE | P1_ADC | ADCC_ADC_CONV_START; // Start ADC
+    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish
     return ADCR;
 }
 
@@ -149,11 +157,11 @@ void setup_interpreter_hardware() {
     ADCM = ADCM_CLK_SYSCLK_DIV16; // ADC divider 16
 
     // Enable PWMG1 and PWMG2 for p port output
-    PWMGCLK = PWMGCLK_PWMG_ENABLE;
+    PWMGCLK = PWMGCLK_PWMG_ENABLE | PWMGCLK_CLK_IHRC;
     PWMG1C = PWMG1C_ENABLE;
     PWMG2C = PWMG2C_ENABLE;
     PWMGCUBL = 0x00;
-    PWMGCUBH = 0x64;
+    PWMGCUBH = 0x67;
 
 }
 
@@ -164,10 +172,8 @@ void reset_program() {
     acc_register = 0;
     dat_register = 0;
     current_condition = none;
-    xbus0_data = 0;
-    xbus0_bitcounter = 0;
-    xbus1_data = 0;
-    xbus1_bitcounter = 0;
+    xbus_data = 0;
+    xbus_bitcounter = 0;
     xbus_state = XBUS_IDLE;
     sleep_until = 0;
     ri_1 = 0;
@@ -220,17 +226,16 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
             // pin -> bit 3 defines p(1) or x(0)
             if (argh & 0x10) {
                 current_pos += 2;
-                // p pin -> bit 4 defines port num
                 uint8_t value;
                 if (argh & 0x08) {
-                    value = get_p1_value();
+                    xbus_bitcounter = get_p1_value();
                 } else {
-                    value = get_p0_value();
+                    xbus_bitcounter = get_p0_value();
                 }
-                value = value >> 1; // Divide by 2
+                value = ((xbus_bitcounter >> 1) + (xbus_bitcounter >> 5)) - (xbus_bitcounter >> 3);
+                xbus_bitcounter = 0;
                 // Compensate for analog incorrectness
-                if (value > 95) value = 100;
-                if (value < 5) value = 0;
+                if (value > 100) value = 100;
                 return value;
             } else {
                 // x pin -> bit 4 defines port num
@@ -238,27 +243,27 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
                     if (xbus_state == XBUS1_GOT_DATA) {
                         xbus_state = XBUS_IDLE;
                         current_pos += 2;
-                        return xbus1_data;
+                        return xbus_data;
                     } else {
                         // get data from xbus 1
                         xbus_state = XBUS1_RX_READY;
                         PAPH &= ~(1 << X1_PIN); // Disable pullup
                         PAC &= ~(1 << X1_PIN); // Set pin as input
-                        xbus1_data = 0;
-                        xbus1_bitcounter = 0;
+                        xbus_data = 0;
+                        xbus_bitcounter = 0;
                         return XBUS_WAIT;
                     }
                 } else {
                     if (xbus_state == XBUS0_GOT_DATA) {
                         xbus_state = XBUS_IDLE;
                         current_pos += 2;
-                        return xbus0_data;
+                        return xbus_data;
                     } else {
                         xbus_state = XBUS0_RX_READY;
                         PAPH &= ~(1 << X0_PIN); // Disable pullup
                         PAC &= ~(1 << X0_PIN); // Set pin as input
-                        xbus0_data = 0;
-                        xbus0_bitcounter = 0;
+                        xbus_data = 0;
+                        xbus_bitcounter = 0;
                         return XBUS_WAIT;
                     }
                 }
@@ -309,15 +314,15 @@ void set_val(int16_t arg, uint8_t reg) {
                 xbus_state = XBUS1_TX_READY;
                 PAC &= ~(1 << X1_PIN); // Set pin as input
                 PAPH |= (1 << X1_PIN); // Enable pullup
-                xbus1_data = arg;
-                xbus1_bitcounter = 0;
+                xbus_data = arg;
+                xbus_bitcounter = 0;
             } else {
                 // put data on xbus 0
                 xbus_state = XBUS0_TX_READY;
                 PAC &= ~(1 << X0_PIN); // Set pin as input
                 PAPH |= (1 << X0_PIN); // Enable pullup
-                xbus0_data = arg;
-                xbus0_bitcounter = 0;
+                xbus_data = arg;
+                xbus_bitcounter = 0;
             }
         }
     }
@@ -353,9 +358,9 @@ uint8_t run_program_line() {
     // Fallthrough!
     case XBUS0_TX:
         // Send one bit and wait XBUS_BITTIME ticks
-        if ((xbus0_data >> xbus0_bitcounter++) & 0x01) __set1(PA, X0_PIN); // Set pin high
+        if ((xbus_data >> xbus_bitcounter++) & 0x01) __set1(PA, X0_PIN); // Set pin high
         else __set0(PA, X0_PIN); // Set pin low
-        if (xbus0_bitcounter == 0x0F) { // Transmission done
+        if (xbus_bitcounter == 0x0F) { // Transmission done
             xbus_state = XBUS0_TX_DONE;
         };
         SLEEP(XBUS_BITTIME);
@@ -384,11 +389,12 @@ uint8_t run_program_line() {
     case XBUS0_RX:
         // Receive one bit and wait XBUS_BITTIME ticks
         if (PA & (1 << X0_PIN)) {
-            xbus1_data = 1; // Reusing a global var
-            xbus0_data |= (xbus1_data << xbus0_bitcounter);
+            sleep_until = 1; // Reusing a global var
+            xbus_data |= (sleep_until << xbus_bitcounter);
+            sleep_until = 0;
         };
-        xbus0_bitcounter++;
-        if (xbus0_bitcounter == 0x0F) {// Transmission done
+        xbus_bitcounter++;
+        if (xbus_bitcounter == 0x0F) {// Transmission done
             xbus_state = XBUS0_GOT_DATA; // set xbus state
             current_pos -= 1; // replay command - this time with xbus data
         } else {
@@ -416,9 +422,9 @@ uint8_t run_program_line() {
     // Fallthrough!
     case XBUS1_TX:
         // Send one bit and wait XBUS_BITTIME ticks
-        if ((xbus1_data >> xbus1_bitcounter++) & 0x01) __set1(PA, X1_PIN); // Set pin high
+        if ((xbus_data >> xbus_bitcounter++) & 0x01) __set1(PA, X1_PIN); // Set pin high
         else __set0(PA, X1_PIN); // Set pin low
-        if (xbus1_bitcounter == 0x0F) { // Transmission done
+        if (xbus_bitcounter == 0x0F) { // Transmission done
             xbus_state = XBUS1_TX_DONE;
         };
         SLEEP(XBUS_BITTIME);
@@ -447,11 +453,12 @@ uint8_t run_program_line() {
     case XBUS1_RX:
         // Receive one bit and wait XBUS_BITTIME ticks
         if (PA & (1 << X1_PIN)) {
-            xbus0_data = 1; // Reusing a global var
-            xbus1_data |= (xbus0_data << xbus1_bitcounter);
+            sleep_until = 1; // Reusing a global var
+            xbus_data |= (sleep_until << xbus_bitcounter);
+            sleep_until = 0;
         };
-        xbus1_bitcounter++;
-        if (xbus1_bitcounter == 0x0F) {// Transmission done
+        xbus_bitcounter++;
+        if (xbus_bitcounter == 0x0F) {// Transmission done
             xbus_state = XBUS1_GOT_DATA; // set xbus state
             current_pos -= 1; // replay command - this time with xbus data
         } else {
