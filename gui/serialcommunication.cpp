@@ -198,9 +198,9 @@ void SerialCommunication::upload(QStringList codeList) {
 }
 
 void SerialCommunication::writeSerialByte(char byte, bool debug) {
+    QThread::msleep(SERIAL_DELAY);
     m_serial.write(&byte, 1);
     m_serial.waitForBytesWritten(100);
-    QThread::msleep(SERIAL_DELAY);
 
     if (debug) {
         printHex(byte);

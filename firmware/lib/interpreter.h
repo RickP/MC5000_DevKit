@@ -8,7 +8,7 @@
 #define SLEEP_TICKS 200
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
-#define GET_RI get_val()
+#define GET_RI(x) x = get_val(program[current_pos], program[current_pos+1]); if (x == XBUS_WAIT) return 0
 #define GET_R program[current_pos++]
 #define CHECK_CONDITION(x) if (command_condition != none && current_condition != command_condition) {current_pos += (uint8_t) x; break;}
 #define SLEEP(x) clock_tick = 0; sleep_until = x
@@ -202,10 +202,7 @@ uint8_t find_label(uint8_t label) {
 }
 
 // Get value for an R/I type parameter
-int16_t get_val() {
-
-    uint8_t argh = program[current_pos];
-    uint8_t argl = program[current_pos+1];
+int16_t get_val(uint8_t argh, uint8_t argl) {
 
     // analyze first byte
     // Bit 1 of argh defines register (1) or scalar (0)
@@ -396,8 +393,8 @@ uint8_t run_program_line() {
             current_pos -= 1; // replay command - this time with xbus data
         } else {
             SLEEP(XBUS_BITTIME);
-            return 0;
         }
+        return 0;
         break;
     case XBUS1_SL:
         if (PA & (1 << X1_PIN)) {
@@ -459,8 +456,8 @@ uint8_t run_program_line() {
             current_pos -= 1; // replay command - this time with xbus data
         } else {
             SLEEP(XBUS_BITTIME);
-            return 0;
         }
+        return 0;
         break;
     }
 
@@ -492,8 +489,7 @@ uint8_t run_program_line() {
         break;
     case CMD_MOV: // mov R/I R
         CHECK_CONDITION(3);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
         reg = GET_R;
         set_val(ri_1, reg); // set value to register/pin
         break;
@@ -504,8 +500,7 @@ uint8_t run_program_line() {
         break;
     case CMD_SLP: // slp R/I
         CHECK_CONDITION(2);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
         SLEEP(ri_1 * SLEEP_TICKS);
         break;
     case CMD_SLX: // slx P
@@ -525,10 +520,8 @@ uint8_t run_program_line() {
         break;
     case CMD_TEQ: // teq R/I R/I
         CHECK_CONDITION(4);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
-        ri_2 = GET_RI;
-        if (ri_2 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
+        GET_RI(ri_2);
         if (ri_1 == ri_2) {
             current_condition = true;
         } else {
@@ -537,10 +530,8 @@ uint8_t run_program_line() {
         break;
     case CMD_TGT: // tgt R/I R/I
         CHECK_CONDITION(4);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
-        ri_2 = GET_RI;
-        if (ri_2 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
+        GET_RI(ri_2);
         if (ri_1 > ri_2) {
             current_condition = true;
         } else {
@@ -549,10 +540,8 @@ uint8_t run_program_line() {
         break;
     case CMD_TLT: // tlt R/I R/I
         CHECK_CONDITION(4);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
-        ri_2 = GET_RI;
-        if (ri_2 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
+        GET_RI(ri_2);
         if (ri_1 < ri_2) {
             current_condition = true;
         } else {
@@ -561,10 +550,8 @@ uint8_t run_program_line() {
         break;
     case CMD_TCP: // tcp R/I R/I
         CHECK_CONDITION(4);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
-        ri_2 = GET_RI;
-        if (ri_2 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
+        GET_RI(ri_2);
         if (ri_1 > ri_2) {
             current_condition = true;
         } else if (ri_1 < ri_2) {
@@ -575,8 +562,7 @@ uint8_t run_program_line() {
         break;
     case CMD_ADD: // add R/I
         CHECK_CONDITION(2);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
         acc_register += ri_1;
         if (acc_register > 999) {
             acc_register = 999;
@@ -584,8 +570,7 @@ uint8_t run_program_line() {
         break;
     case CMD_SUB: // sub R/I
         CHECK_CONDITION(2);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
         acc_register -= ri_1;
         if (acc_register < -999) {
             acc_register = -999;
@@ -593,8 +578,7 @@ uint8_t run_program_line() {
         break;
     case CMD_MUL: // mul R/I
         CHECK_CONDITION(2);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
         acc_register *= ri_1;
         if (acc_register > 999) {
             acc_register = 999;
@@ -612,32 +596,42 @@ uint8_t run_program_line() {
         break;
     case CMD_DGT: // dgt R/I
         CHECK_CONDITION(2);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
-        if (ri_1 > 2) ri_1 = 2;
-        else if (ri_1 < 0) ri_1 = 0;
+        GET_RI(ri_1);
 
-        acc_register = acc_register < 0 ? -acc_register : acc_register;
+        if (ri_1 > 2) {
+            ri_1 = 2;
+        } else if (ri_1 < 0) {
+            ri_1 = 0;
+        }
+
         reg = acc_register/100;
         if (ri_1 < 2) {
             acc_register -= reg*100;
             reg = acc_register/10;
         }
-        if (ri_1 == 0) acc_register -= reg*10;
-        else acc_register = reg;
+        if (ri_1 == 0) {
+            acc_register -= reg*10;
+        } else {
+            acc_register = reg;
+        }
 
         break;
     case CMD_DST: // dst R/I R/I
         CHECK_CONDITION(4);
-        ri_1 = GET_RI;
-        if (ri_1 == XBUS_WAIT) return 0;
-        ri_2 = GET_RI;
-        if (ri_2 == XBUS_WAIT) return 0;
+        GET_RI(ri_1);
+        GET_RI(ri_2);
 
-        if (ri_1 > 2) ri_1 = 2;
-        else if (ri_1 < 0) ri_1 = 0;
-        if (ri_2 > 9) ri_2 = 9;
-        else if (ri_2 < 0) ri_2 = 0;
+        if (ri_1 > 2) {
+            ri_1 = 2;
+        } else if (ri_1 < 0) {
+            ri_1 = 0;
+        }
+
+        if (ri_2 > 9) {
+            ri_2 = 9;
+        } else if (ri_2 < 0) {
+            ri_2 = 0;
+        }
 
         if (acc_register < 0) {
             acc_register = -acc_register;
