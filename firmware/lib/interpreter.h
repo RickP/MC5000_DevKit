@@ -61,7 +61,7 @@ true_or_false current_condition;
 #define XBUS1_RX 0x80
 #define XBUS1_GOT_DATA 0x90
 
-#define XBUS_BITTIME 10
+#define XBUS_BITTIME 4
 #define XBUS_DELAY XBUS_BITTIME/2
 
 #define CMD_NOP 0x04
