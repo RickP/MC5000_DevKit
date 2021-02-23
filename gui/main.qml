@@ -17,7 +17,7 @@ ApplicationWindow {
     property bool upload: false
 
     Timer {
-        interval: 150 + (50 * serial.mcuConnections)
+        interval: 100 * serial.mcuConnections
         running: serial.mcuConnections > 0 && !upload
         repeat: true
         onTriggered: serial.updateRegisters()

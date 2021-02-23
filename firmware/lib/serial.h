@@ -104,22 +104,4 @@ void putchar(uint8_t c)
     INTEN |= INTEN_TM2; // Enable TM2
 }
 
-/*
-   void serial_printhex(uint8_t i) {
-    uint8_t s[2];
-    s[0] = hex_lookup[i >> 4];
-    s[1] = hex_lookup[i & 0x0f];
-    putchar(s[0]);
-    putchar(s[1]);
-    putchar('\n');
-   }
-
-   void serial_println(uint8_t *s, uint8_t length) {
-    for (int i; i < length; i++) {
-        putchar(s[i]);
-    }
-    putchar('\n');
-   }
- */
-
 #endif //__SERIAL_H__
