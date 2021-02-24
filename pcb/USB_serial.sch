@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 2 12
+Sheet 2 13
 Title ""
 Date ""
 Rev ""
@@ -14,7 +14,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L Connector:USB_B_Micro J?
+L MC5000_Board-rescue:USB_B_Micro-Connector J?
 U 1 1 602FFA24
 P 3600 3550
 AR Path="/602FFA24" Ref="J?"  Part="1" 

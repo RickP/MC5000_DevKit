@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 7 12
+Sheet 7 13
 Title ""
 Date ""
 Rev ""
@@ -25,9 +25,11 @@ F 3 "" H 2950 4250 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Interface_Expansion:PCA9555PW U8
+L MC5000_Board-rescue:PCA9555PW-Interface_Expansion U8
 U 1 1 6031B3F2
 P 4800 3800
+AR Path="/6031B3F2" Ref="U8"  Part="1" 
+AR Path="/60308700/6031B3F2" Ref="U8"  Part="1" 
 F 0 "U8" H 4800 2619 50  0000 C CNN
 F 1 "PCA9555PW" H 4800 2710 50  0000 C CNN
 F 2 "Package_SO:TSSOP-24_4.4x7.8mm_P0.65mm" H 4800 3800 50  0001 C CNN
