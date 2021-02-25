@@ -14,7 +14,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L MC5000_Board-rescue:USB_B_Micro-Connector J?
+L LCSC_parts:USB_B_Micro-Connector J?
 U 1 1 602FFA24
 P 3600 3550
 AR Path="/602FFA24" Ref="J?"  Part="1" 

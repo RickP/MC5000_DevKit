@@ -25,7 +25,7 @@ F 3 "~" H 3300 3650 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L JLC_Parts:S9013 Q?
+L LCSC_parts:S9013 Q?
 U 1 1 60377CC9
 P 3200 4150
 AR Path="/603632C9/60377CC9" Ref="Q?"  Part="1" 
@@ -114,7 +114,7 @@ F 3 "~" H 5400 3650 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L JLC_Parts:S9013 Q?
+L LCSC_parts:S9013 Q?
 U 1 1 60383DF4
 P 5300 4150
 AR Path="/603632C9/60383DF4" Ref="Q?"  Part="1" 
@@ -203,7 +203,7 @@ F 3 "~" H 7500 3650 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L JLC_Parts:S9013 Q?
+L LCSC_parts:S9013 Q?
 U 1 1 60387BD9
 P 7400 4150
 AR Path="/603632C9/60387BD9" Ref="Q?"  Part="1" 

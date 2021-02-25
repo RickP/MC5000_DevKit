@@ -1,6 +1,4 @@
 (sym_lib_table
   (lib (name Padauk)(type Legacy)(uri ${KIPRJMOD}/Padauk.lib)(options "")(descr ""))
   (lib (name LCSC_parts)(type Legacy)(uri ${KIPRJMOD}/LCSC_parts.lib)(options "")(descr ""))
-  (lib (name JLC_Parts)(type Legacy)(uri ${KIPRJMOD}/JLC_Parts.lib)(options "")(descr ""))
-  (lib (name MC5000_Board-rescue)(type Legacy)(uri ${KIPRJMOD}/MC5000_Board-rescue.lib)(options "")(descr ""))
 )

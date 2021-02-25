@@ -14,7 +14,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L JLC_Parts:MLT-7525 BZ1
+L LCSC_parts:MLT-7525 BZ1
 U 1 1 60044231
 P 5950 3500
 F 0 "BZ1" H 6102 3529 50  0000 L CNN
@@ -36,7 +36,7 @@ F 3 " 1903051030_MDD-Jiangsu-Yutai-Elec-SM4007PL_C64898.pdf ~" H 5400 3500 50  0
 	0    1    1    0   
 $EndComp
 $Comp
-L JLC_Parts:S9013 Q1
+L LCSC_parts:S9013 Q1
 U 1 1 600481C3
 P 5650 4000
 F 0 "Q1" H 5840 4046 50  0000 L CNN

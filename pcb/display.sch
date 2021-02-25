@@ -25,7 +25,7 @@ F 3 "" H 2950 4250 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L MC5000_Board-rescue:PCA9555PW-Interface_Expansion U8
+L Interface_Expansion:PCA9555PW U8
 U 1 1 6031B3F2
 P 4800 3800
 AR Path="/6031B3F2" Ref="U8"  Part="1" 
