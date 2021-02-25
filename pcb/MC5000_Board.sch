@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 13
+Sheet 1 15
 Title ""
 Date ""
 Rev ""
@@ -84,5 +84,17 @@ S 750  5250 1600 1000
 U 6036720E
 F0 "LEDs" 50
 F1 "LEDs.sch" 50
+$EndSheet
+$Sheet
+S 9100 2200 1600 1000
+U 603926D8
+F0 "Switch #2" 50
+F1 "switch.sch" 50
+$EndSheet
+$Sheet
+S 7150 2200 1600 1000
+U 6037B4F8
+F0 "Switches" 50
+F1 "switches.sch" 50
 $EndSheet
 $EndSCHEMATC
