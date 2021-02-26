@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 7 14
+Sheet 7 17
 Title ""
 Date ""
 Rev ""
@@ -479,7 +479,7 @@ Wire Wire Line
 	6250 5050 6250 5200
 Connection ~ 6250 4600
 Text GLabel 7650 4350 0    50   Input ~ 0
-XBUS_Display
+DISPLAY
 Wire Wire Line
 	7650 4350 7800 4350
 Wire Wire Line

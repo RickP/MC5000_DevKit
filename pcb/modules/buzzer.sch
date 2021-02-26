@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 12 14
+Sheet 12 17
 Title ""
 Date ""
 Rev ""
@@ -186,7 +186,7 @@ $EndComp
 NoConn ~ 3300 3500
 NoConn ~ 3300 3300
 Text GLabel 3600 3750 0    50   Input ~ 0
-XBUS_Buzzer
+BUZZER
 Wire Wire Line
 	3600 3750 3750 3750
 Wire Wire Line
