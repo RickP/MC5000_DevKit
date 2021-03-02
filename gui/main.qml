@@ -15,6 +15,7 @@ ApplicationWindow {
     title: qsTr("MC5000 V0.1")
 
     property bool upload: false
+    property int maxLines: 14
 
     Timer {
         interval: 100 + (50 * serial.mcuConnections)
@@ -158,6 +159,9 @@ ApplicationWindow {
                                 font.pointSize: 16
                                 wrapMode: TextEdit.NoWrap
                                 clip: true
+                                onTextChanged: {
+                                    if (lineCount > maxLines) undo();
+                                }
                             }
 
                             Rectangle {

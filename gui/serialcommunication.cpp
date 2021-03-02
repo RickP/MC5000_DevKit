@@ -169,24 +169,30 @@ void SerialCommunication::upload(QStringList codeList) {
 
         // Write program
         if (m_serial.isOpen()) {
-            // header
-            bool program_success = false;
-            int tries = 0;
-            while (!program_success && tries++ <= UPLOAD_RETRIES) {
-                char data = 0;
-                writeSerialByte(START_CHAR);
-                writeSerialByte(0x31 + i);
-                for (int x=0; x < output.length(); x++) {
-                    writeSerialByte(output.at(x));
-                }
-                writeSerialByte(checksum(output, output.length()));
-                writeSerialByte(END_CHAR);
-                // check programming state
-                if (m_serial.waitForReadyRead(500)) {
-                    if (m_serial.read(&data, 1) == 1 && data == 0x31 + i) {
-                        program_success = true;
+            if (output.length() > MAX_PROGRAM_LENGTH) {
+                m_errorMessage = QString("Program is too large!");
+                emit errorMessageChanged();
+                return;
+            } else {
+                // header
+                bool program_success = false;
+                int tries = 0;
+                while (!program_success && tries++ <= UPLOAD_RETRIES) {
+                    char data = 0;
+                    writeSerialByte(START_CHAR);
+                    writeSerialByte(0x31 + i);
+                    for (int x=0; x < output.length(); x++) {
+                        writeSerialByte(output.at(x));
                     }
-                    m_serial.readAll();
+                    writeSerialByte(checksum(output, output.length()));
+                    writeSerialByte(END_CHAR);
+                    // check programming state
+                    if (m_serial.waitForReadyRead(500)) {
+                        if (m_serial.read(&data, 1) == 1 && data == 0x31 + i) {
+                            program_success = true;
+                        }
+                        m_serial.readAll();
+                    }
                 }
             }
         } else {

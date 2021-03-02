@@ -6,4 +6,6 @@ lib/interpreter.h
 lib/lint.h
 lib/pdkcommon.h
 lib/pfs173.h
+lib/ppins.h
 lib/serial.h
+lib/xbus.h
