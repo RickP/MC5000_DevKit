@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define SLEEP_TICKS 275U
+#define SLEEP_TICKS 136U
 
 #define INTERPRETER_CLOCK_TICK clock_tick++
 #define SLEEP(x) clock_tick = 0; sleep_until = x
