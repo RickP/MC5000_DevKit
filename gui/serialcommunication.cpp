@@ -177,7 +177,7 @@ void SerialCommunication::upload(QStringList codeList) {
                 // header
                 bool program_success = false;
                 int tries = 0;
-                while (!program_success && tries++ <= UPLOAD_RETRIES) {
+                while (!program_success && tries++ < UPLOAD_RETRIES) {
                     char data = 0;
                     writeSerialByte(START_CHAR);
                     writeSerialByte(0x31 + i);
@@ -194,6 +194,7 @@ void SerialCommunication::upload(QStringList codeList) {
                         m_serial.readAll();
                     }
                 }
+                qDebug() << "MCU " << i << " " << tries;
             }
         } else {
             m_errorMessage = QString("No serial connection!");
@@ -263,6 +264,7 @@ void SerialCommunication::updateRegisters() {
                     dat |= data[3];
                     m_datRegisters.append(dat-1000);
                 } else {
+                    updateValues = false;
                     QThread::msleep(SERIAL_DELAY*2);
                 }
             } else {

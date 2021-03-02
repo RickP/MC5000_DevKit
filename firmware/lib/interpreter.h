@@ -188,11 +188,11 @@ uint8_t run_program_line() {
     // XBus handling
     uint8_t xbus_result = xbus_handler();
     switch (xbus_result) {
-        case 1:
-            current_pos -= 1; // rewind program counter
-            // Fallthrough!
-        case 0:
-            return 0;
+    case 1:
+        current_pos -= 1; // rewind program counter
+    // Fallthrough!
+    case 0:
+        return 0;
     }
 
     // Handle end of program buffer

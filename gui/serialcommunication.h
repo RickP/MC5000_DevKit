@@ -21,7 +21,7 @@ const QString COMMENT_MARKER = "#";
 const char LABEL_HEXCODE = 0x10 << 2;
 const char START_CHAR = 0x7F;
 const char END_CHAR = 0x7E;
-const int SERIAL_DELAY = 6;
+const int SERIAL_DELAY = 12;
 const int UPLOAD_RETRIES = 3;
 const int MAX_PROGRAM_LENGTH = 64;
 
@@ -59,7 +59,7 @@ QList<int> m_accRegisters = {0,0,0,0,0};
 QList<bool> m_isProgrammed = {false, false, false, false};
 char encode8BitVal(QString);
 char* encode16BitVal(QString);
-void writeSerialByte(char, bool debug=true);
+void writeSerialByte(char, bool debug=false);
 
 const QMap<QString, char> registerEncodings = {
     {"x0", 0x40},

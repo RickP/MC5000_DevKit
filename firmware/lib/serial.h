@@ -85,11 +85,7 @@ void serial_rx_irq_handler() {
 }
 
 void serial_rx_pin_irq_handler() {
-    bit_counter++;
-    if(bit_counter>=CNT_BUF_MAX) {
-        bit_counter = 0;
-    }
-    cnt_buf[bit_counter] = TM3CT;
+    cnt_buf[++bit_counter] = TM3CT;
     TM3CT = 0;
     if(PA & (1 << SERIAL_RX_PIN))
         rxdata |= 1 << bit_counter;
