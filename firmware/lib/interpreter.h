@@ -242,12 +242,12 @@ uint8_t run_program_line() {
         reg = GET_R;
         // fist two bits of argument encode the XBus port to use
         if (reg == 0x40) {
-            PAC &= ~(1 << X0_PIN); // Set pin as input
-            PAPH &= ~(1 << X0_PIN); // Disable pullup
+            PAC &= ~(1 << XBUS0_PIN); // Set pin as input
+            PAPH &= ~(1 << XBUS0_PIN); // Disable pullup
             xbus_state = XBUS0_SL;
         } else {
-            PAC &= ~(1 << X1_PIN); // Set pin as input
-            PAPH &= ~(1 << X1_PIN); // Disable pullup
+            PAC &= ~(1 << XBUS1_PIN); // Set pin as input
+            PAPH &= ~(1 << XBUS1_PIN); // Disable pullup
             xbus_state = XBUS1_SL;
         }
         SLEEP(XBUS_DELAY);

@@ -5,23 +5,23 @@ PROG        ?= easypdkprog
 ICTYPE      = pdk15
 ICNAME      = PFS173
 
-OUTDIR=build
+OUTDIR=../build
 $(shell mkdir -p $(OUTDIR))
 
-TARGET=$(OUTDIR)/MCxxxx.$(ICNAME).ihx
-SRCS := MCxxxx.c
+TARGET=$(OUTDIR)/MC5000.$(ICNAME).ihx
+SRCS := MC5000.c
 
-CFLAGS =-m$(ICTYPE) -D$(ICNAME)
+CFLAGS =-m$(ICTYPE) -D$(ICNAME) -I ../lib 
 LDFLAGS=-m$(ICTYPE)
 
 OBJS = $(addprefix $(OUTDIR)/, $(SRCS:.c=.$(ICNAME).rel))
 
-all: 1
+all: $(TARGET)
 
-1: $(TARGET)
+flash1: $(TARGET)
 	$(PROG) -s 31 -n $(ICNAME) write $(TARGET)
     
-2: $(TARGET)
+flash2: $(TARGET)
 	$(PROG) -s 32 -n $(ICNAME) write $(TARGET)
 
 $(OUTDIR)/%.$(ICNAME).rel: %.c .FORCE
@@ -35,4 +35,4 @@ clean:
 
 .FORCE:
 
-.PHONY: all clean flash
+.PHONY: all clean flash1 flash2

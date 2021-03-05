@@ -1,6 +1,5 @@
-MCxxxx.c
-Makefile
-build/MCxxxx.PFS173.map
+MC5000/MCxxxx.c
+MC5000/Makefile
 lib/delay.h
 lib/interpreter.h
 lib/lint.h

@@ -1,9 +1,9 @@
 #include <stdint.h>
-#include "lib/pfs173.h"
-#include "lib/pdkcommon.h"
-#include "lib/serial.h"
-#include "lib/interpreter.h"
-#include "lib/delay.h"
+#include "pfs173.h"
+#include "pdkcommon.h"
+#include "serial.h"
+#include "interpreter.h"
+#include "delay.h"
 
 #define DEBUG_
 
@@ -40,7 +40,7 @@ void interrupt_routine() __interrupt(0) {
         }
         if (INTRQ & INTRQ_TM3) {  // TM3 interrupt request?
                 serial_rx_irq_handler();     // Assemble RXed byte
-                INTERPRETER_CLOCK_TICK;
+                CLOCK_TICK;
                 INTRQ &= ~INTRQ_TM3;
         }
         if (INTRQ & INTEN_ADC) {
@@ -137,7 +137,7 @@ void handle_rx() {
 
 int main(void) {
         // Set up padier register (can't be set seperately due to a hardware bug?)
-        PADIER = (1U << SERIAL_RX_PIN) | (1U << X0_PIN) | (1U << X1_PIN);
+        PADIER = (1U << SERIAL_RX_PIN) | (1U << XBUS0_PIN) | (1U << XBUS1_PIN);
 
         // Initialize hardware
         serial_setup();
