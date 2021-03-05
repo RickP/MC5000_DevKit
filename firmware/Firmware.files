@@ -1,5 +1,9 @@
-MC5000/MCxxxx.c
+MC5000/MC5000.c
 MC5000/Makefile
+BUZZER/buzzer.c
+BUZZER/Makefile
+DISPLAY/display.c
+DISPLAY/Makefile
 lib/delay.h
 lib/interpreter.h
 lib/lint.h
