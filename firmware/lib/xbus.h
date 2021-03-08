@@ -5,8 +5,8 @@
 #include "pfs173.h"
 #include "delay.h"
 
-#define XBUS0_PIN 6
-#define XBUS1_PIN 7
+#define XBUS0_PIN 7
+#define XBUS1_PIN 6
 
 #define XBUS_WAIT 0x7FFF
 
