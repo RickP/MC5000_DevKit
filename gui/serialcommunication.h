@@ -21,7 +21,7 @@ const QString COMMENT_MARKER = "#";
 const char LABEL_HEXCODE = 0x10 << 2;
 const char START_CHAR = 0x7F;
 const char END_CHAR = 0x7E;
-const int SERIAL_DELAY = 15;
+const int SERIAL_DELAY = 22;
 const int UPLOAD_RETRIES = 3;
 const int MAX_PROGRAM_LENGTH = 64;
 
