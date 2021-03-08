@@ -74,8 +74,9 @@ ApplicationWindow {
         Text {
             visible: serial.serialports.length === 0
             height: 15
+            width: parent.width
             anchors.horizontalCenterOffset: 0
-            font.pointSize: 18
+            font.pixelSize: 18
             font.bold: true
             text: "No serial devices found"
             color: "black"
@@ -142,7 +143,7 @@ ApplicationWindow {
                                 color: "black"
                                 Text {
                                     anchors.fill: parent
-                                    font.pointSize: 18
+                                    font.pixelSize: 18
                                     text: "MCU " + (index + 1)
                                     color: "white"
                                     horizontalAlignment: Text.AlignHCenter
@@ -156,7 +157,7 @@ ApplicationWindow {
                                 textMargin: 10
                                 width: parent.width
                                 height: parent.height - 55
-                                font.pointSize: 16
+                                font.pixelSize: 16
                                 wrapMode: TextEdit.NoWrap
                                 clip: true
                                 onTextChanged: {
@@ -181,7 +182,7 @@ ApplicationWindow {
                                             Text {
                                                 height: parent.height
                                                 verticalAlignment: Text.AlignVCenter
-                                                font.pointSize: 18
+                                                font.pixelSize: 18
                                                 text: " ACC "
                                                 color: "black"
                                             }
@@ -190,7 +191,7 @@ ApplicationWindow {
                                                 height: parent.height
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignRight
-                                                font.pointSize: 18
+                                                font.pixelSize: 18
                                                 text: serial.accRegisters[index]
                                                 color: "black"
                                             }
@@ -205,7 +206,7 @@ ApplicationWindow {
                                             Text {
                                                 height: parent.height
                                                 verticalAlignment: Text.AlignVCenter
-                                                font.pointSize: 18
+                                                font.pixelSize: 18
                                                 text: " DAT "
                                                 color: "black"
                                             }
@@ -214,7 +215,7 @@ ApplicationWindow {
                                                 height: parent.height
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignRight
-                                                font.pointSize: 18
+                                                font.pixelSize: 18
                                                 text: serial.datRegisters[index]
                                                 color: "black"
                                             }
@@ -309,7 +310,7 @@ ApplicationWindow {
                     height: parent.height
                     width: parent.width - 80
                     horizontalAlignment: Text.AlignLeft
-                    font.pointSize: 14
+                    font.pixelSize: 14
                     font.bold: true
                     text: serial.errorMessage
                     color: "black"
