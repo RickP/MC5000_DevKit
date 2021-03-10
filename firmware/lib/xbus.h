@@ -30,10 +30,10 @@
 #define XBUS1_RX 0x80
 #define XBUS1_GOT_DATA 0x90
 
-#define XBUS_BITTIME 8U
+#define XBUS_BITTIME 16U
 #define XBUS_DELAY XBUS_BITTIME/2U
 
-int16_t xbus_data = 0;
+uint16_t xbus_data = 0;
 uint8_t xbus_bitcounter = 0;
 uint8_t xbus_state = 0;
 
@@ -63,7 +63,7 @@ inline void setup_xbus_hardware() {
 inline int16_t get_x0_value() {
     if (xbus_state == XBUS0_GOT_DATA) {
         xbus_state = XBUS_IDLE;
-        return xbus_data;
+        return xbus_data - 1000;
     } else {
         xbus_state = XBUS0_RX_READY;
         PAPH &= ~(1 << XBUS0_PIN); // Disable pullup
@@ -77,7 +77,7 @@ inline int16_t get_x0_value() {
 inline int16_t get_x1_value() {
     if (xbus_state == XBUS1_GOT_DATA) {
         xbus_state = XBUS_IDLE;
-        return xbus_data;
+        return xbus_data - 1000;
     } else {
         // get data from xbus 1
         xbus_state = XBUS1_RX_READY;
@@ -89,19 +89,19 @@ inline int16_t get_x1_value() {
     }
 }
 
-inline void set_x0_value(uint16_t arg) {
+inline void set_x0_value(int16_t arg) {
     xbus_state = XBUS0_TX_READY;
     PAC &= ~(1 << XBUS0_PIN); // Set pin as input
     PAPH |= (1 << XBUS0_PIN); // Enable pullup
-    xbus_data = arg;
+    xbus_data = arg + 1000;
     xbus_bitcounter = 0;
 }
 
-inline void set_x1_value(uint16_t arg) {
+inline void set_x1_value(int16_t arg) {
     xbus_state = XBUS1_TX_READY;
     PAC &= ~(1 << XBUS1_PIN); // Set pin as input
     PAPH |= (1 << XBUS1_PIN); // Enable pullup
-    xbus_data = arg;
+    xbus_data = arg + 1000;
     xbus_bitcounter = 0;
 }
 
@@ -129,7 +129,7 @@ uint8_t xbus_handler() {
         // Send one bit and wait XBUS_BITTIME ticks
         if ((xbus_data >> xbus_bitcounter++) & 0x01) __set1(PA, XBUS0_PIN); // Set pin high
         else __set0(PA, XBUS0_PIN); // Set pin low
-        if (xbus_bitcounter > 0x0F) { // Transmission done
+        if (xbus_bitcounter > 11) { // Transmission done
             PAC &= ~(1 << XBUS0_PIN); // Set pin as input
             xbus_state = XBUS_IDLE;
         };
@@ -160,7 +160,7 @@ uint8_t xbus_handler() {
         };
         xbus_bitcounter++;
         SLEEP(XBUS_BITTIME);
-        if (xbus_bitcounter == 0x0F) {// Transmission done
+        if (xbus_bitcounter == 11) {// Transmission done
             xbus_state = XBUS0_GOT_DATA; // set xbus state
             return 1; // roll back program counter
         } else {
@@ -189,7 +189,7 @@ uint8_t xbus_handler() {
         // Send one bit and wait XBUS_BITTIME ticks
         if ((xbus_data >> xbus_bitcounter++) & 0x01) __set1(PA, XBUS1_PIN); // Set pin high
         else __set0(PA, XBUS1_PIN); // Set pin low
-        if (xbus_bitcounter > 0x0F) { // Transmission done
+        if (xbus_bitcounter > 11) { // Transmission done
             PAC &= ~(1 << XBUS1_PIN); // Set pin as input
             xbus_state = XBUS_IDLE;
         };
@@ -220,7 +220,7 @@ uint8_t xbus_handler() {
         };
         xbus_bitcounter++;
         SLEEP(XBUS_BITTIME);
-        if (xbus_bitcounter == 0x0F) {// Transmission done
+        if (xbus_bitcounter == 11) {// Transmission done
             xbus_state = XBUS1_GOT_DATA; // set xbus state
             return 1; // roll back program counter
         } else {

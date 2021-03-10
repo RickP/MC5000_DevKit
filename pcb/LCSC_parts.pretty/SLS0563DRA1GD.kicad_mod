@@ -1,4 +1,4 @@
-(module SLS0563DRA1GD (layer F.Cu) (tedit 6031087F)
+(module SLS0563DRA1GD (layer F.Cu) (tedit 6047E744)
   (descr "3x 7-segment display")
   (fp_text reference REF** (at -17 -10.5) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.15)))

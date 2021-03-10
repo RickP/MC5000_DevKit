@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 8 17
+Sheet 3 17
 Title ""
 Date ""
 Rev ""
@@ -23,10 +23,11 @@ AR Path="/6030344A/602FDA9E" Ref="U3"  Part="1"
 AR Path="/603034BC/602FDA9E" Ref="U4"  Part="1" 
 AR Path="/60318BF9/602FDA9E" Ref="U6"  Part="1" 
 AR Path="/60318BFB/602FDA9E" Ref="U7"  Part="1" 
-F 0 "U6" H 5200 3665 50  0000 C CNN
+F 0 "U1" H 5200 3665 50  0000 C CNN
 F 1 "PFS173-S08" H 5200 3574 50  0000 C CNN
 F 2 "Package_SO:SOP-8_3.9x4.9mm_P1.27mm" H 5200 2850 50  0001 C CNN
 F 3 "" H 5200 3250 50  0001 C CNN
+F 4 "C337970" H 5200 3250 50  0001 C CNN "LCSC"
 	1    5200 3250
 	1    0    0    -1  
 $EndComp
@@ -40,10 +41,11 @@ AR Path="/6030344A/60300751" Ref="J7"  Part="1"
 AR Path="/603034BC/60300751" Ref="J9"  Part="1" 
 AR Path="/60318BF9/60300751" Ref="J11"  Part="1" 
 AR Path="/60318BFB/60300751" Ref="J13"  Part="1" 
-F 0 "J11" H 6022 3182 50  0000 R CNN
+F 0 "J3" H 6022 3182 50  0000 R CNN
 F 1 "Conn_01x04_Male" H 6022 3273 50  0000 R CNN
 F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 6050 3300 50  0001 C CNN
 F 3 "~" H 6050 3300 50  0001 C CNN
+F 4 "C124378" H 6050 3300 50  0001 C CNN "LCSC"
 	1    6050 3300
 	-1   0    0    1   
 $EndComp
@@ -57,10 +59,11 @@ AR Path="/6030344A/6030287E" Ref="J6"  Part="1"
 AR Path="/603034BC/6030287E" Ref="J8"  Part="1" 
 AR Path="/60318BF9/6030287E" Ref="J10"  Part="1" 
 AR Path="/60318BFB/6030287E" Ref="J12"  Part="1" 
-F 0 "J10" H 4458 3481 50  0000 C CNN
+F 0 "J2" H 4458 3481 50  0000 C CNN
 F 1 "Conn_01x04_Male" H 4458 3390 50  0000 C CNN
 F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 4350 3200 50  0001 C CNN
 F 3 "~" H 4350 3200 50  0001 C CNN
+F 4 "C124378" H 4350 3200 50  0001 C CNN "LCSC"
 	1    4350 3200
 	1    0    0    -1  
 $EndComp

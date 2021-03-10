@@ -4,6 +4,16 @@
 #include "delay.h"
 #include "xbus.h"
 
+#define C2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV30
+#define D2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV27
+#define E2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV24
+#define F2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV22
+#define G2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV20
+#define A2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV18
+#define H2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV16
+
+
+int16_t playval = 0;
 
 void interrupt_routine() __interrupt(0) {
         if (INTRQ & INTRQ_TM3) {  // TM3 interrupt request?
@@ -20,11 +30,51 @@ int main(void) {
         // Initialize hardware
         setup_xbus_hardware();
 
+        // Set up Timer2 PWM
+        PAC |= (1 << 3); // Enable P0 Pin as output
+        TM2C = TM2C_CLK_SYSCLK | TM2C_OUT_PA3 | TM2C_MODE_PWM;
+        TM2B = 5;
+
+        // Set up timer 3 for systick
+        TM3C = TM3C_CLK_IHRC; // Use IHRC -> 8 Mhz
+        TM3S = TM3S_PRESCALE_DIV16 | TM3S_SCALE_DIV4;
+        TM3B = 180;
+        INTEN |= INTEN_TM3; // Enable TM3 interrupt
+
         INTRQ = 0;
         __engint();                 // Enable global interrupts
 
         // Main processing loop
         while (1) {
+            // Sleep if we need to
+            if (clock_tick < sleep_until) {
+                continue;
+            }
+            SLEEP(0);
+            TM2S = 0;
+
+            switch (xbus_handler()) {
+                 case 1:
+                    playval = get_x1_value();
+                    uint8_t length = (playval/100)+1;
+                    if (length < 10) {
+                        playval -= (playval/100*100);
+                        if (playval < 1) {
+                            playval = 1;
+                        }
+                        if (playval > 28) {
+                            playval = 29;
+                        }
+                        TM2S = C2 - playval;
+                        SLEEP(length * SLEEP_TICKS);
+                    }
+                    break;
+                 case 2:
+                    get_x1_value();
+                    break;
+            }
+
+
         }
 }
 
