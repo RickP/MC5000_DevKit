@@ -30,9 +30,7 @@ void SerialCommunication::loadPorts() {
     const auto infos = QSerialPortInfo::availablePorts();
     for (const QSerialPortInfo &info : infos) {
         QString portName = info.portName();
-        if (portName.contains("tty", Qt::CaseInsensitive) && portName.contains("usb", Qt::CaseInsensitive)) {
-            m_serialports.append(portName);
-        }
+        m_serialports.append(portName);
     }
     if (m_serialports.length() == 1) {
         connect(m_serialports.at(0));
