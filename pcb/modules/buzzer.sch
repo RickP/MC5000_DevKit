@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 12 17
+Sheet 6 11
 Title ""
 Date ""
 Rev ""
@@ -21,7 +21,7 @@ F 0 "BZ1" H 6102 3529 50  0000 L CNN
 F 1 "MLT-7525" H 6102 3438 50  0000 L CNN
 F 2 "Buzzer_Beeper:MagneticBuzzer_CUI_CMT-8504-100-SMT" H 5950 3250 50  0001 C CNN
 F 3 "https://datasheet.lcsc.com/szlcsc/1811141116_Jiangsu-Huaneng-Elec-MLT-7525_C95299.pdf" V 5925 3600 50  0001 C CNN
-F 4 "C95299" H 5950 3500 50  0001 C CNN "LCSC"
+F 4 "C94599" H 5950 3500 50  0001 C CNN "LCSC"
 	1    5950 3500
 	1    0    0    -1  
 $EndComp
@@ -95,8 +95,6 @@ F 3 "" H 5300 4550 50  0001 C CNN
 	1    5300 4550
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3300 3200 3600 3200
 $Comp
 L power:VCC #PWR?
 U 1 1 6037FE8F
@@ -161,36 +159,6 @@ F 3 "" H 4300 2750 50  0001 C CNN
 	1    4300 2750
 	-1   0    0    1   
 $EndComp
-$Comp
-L Connector:Conn_01x04_Female J?
-U 1 1 6037FEAE
-P 4800 3400
-AR Path="/60308700/6037FEAE" Ref="J?"  Part="1" 
-AR Path="/603632C9/6037FEAE" Ref="J23"  Part="1" 
-F 0 "J23" H 4750 3650 50  0000 L CNN
-F 1 "Conn_01x04_Female" H 4450 3100 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical" H 4800 3400 50  0001 C CNN
-F 3 "~" H 4800 3400 50  0001 C CNN
-F 4 "C124413" H 4800 3400 50  0001 C CNN "LCSC"
-	1    4800 3400
-	1    0    0    1   
-$EndComp
-Wire Wire Line
-	4300 3200 4600 3200
-$Comp
-L Connector:Conn_01x04_Female J?
-U 1 1 6037FEB6
-P 3100 3300
-AR Path="/60308700/6037FEB6" Ref="J?"  Part="1" 
-AR Path="/603632C9/6037FEB6" Ref="J22"  Part="1" 
-F 0 "J22" H 3100 3000 50  0000 C CNN
-F 1 "Conn_01x04_Female" H 3100 3500 50  0000 C CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical" H 3100 3300 50  0001 C CNN
-F 3 "~" H 3100 3300 50  0001 C CNN
-F 4 "C124413" H 3100 3300 50  0001 C CNN "LCSC"
-	1    3100 3300
-	-1   0    0    -1  
-$EndComp
 NoConn ~ 3300 3500
 NoConn ~ 3300 3300
 Text GLabel 3600 3750 0    50   Input ~ 0
@@ -200,11 +168,7 @@ Wire Wire Line
 Wire Wire Line
 	4200 3500 4200 4000
 Wire Wire Line
-	4200 3500 4600 3500
-Wire Wire Line
 	3750 3400 3750 3750
-Wire Wire Line
-	3300 3400 3750 3400
 NoConn ~ 4600 3300
 NoConn ~ 4600 3400
 $Comp
@@ -282,4 +246,72 @@ F 3 "" H 3750 4350 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	3750 4250 3750 4350
+Wire Wire Line
+	4200 1700 5250 1700
+Wire Wire Line
+	5250 1700 5250 3500
+Wire Wire Line
+	4200 1800 5100 1800
+Wire Wire Line
+	5100 3400 5100 1800
+Wire Wire Line
+	4200 1900 4950 1900
+Wire Wire Line
+	4950 1900 4950 3300
+Wire Wire Line
+	4200 2000 4800 2000
+Wire Wire Line
+	4800 2000 4800 3200
+Wire Wire Line
+	2300 1700 3500 1700
+Wire Wire Line
+	2300 3500 2300 1700
+Wire Wire Line
+	2400 1800 3500 1800
+Wire Wire Line
+	2400 1800 2400 3400
+Wire Wire Line
+	2500 1900 3500 1900
+Wire Wire Line
+	2500 3300 2500 1900
+Wire Wire Line
+	2600 2000 3500 2000
+Wire Wire Line
+	2600 2000 2600 3200
+$Comp
+L Padauk:PFS173-S08 U?
+U 1 1 604CA47D
+P 3850 1850
+AR Path="/602FB936/604CA47D" Ref="U?"  Part="1" 
+AR Path="/60303416/604CA47D" Ref="U?"  Part="1" 
+AR Path="/6030344A/604CA47D" Ref="U?"  Part="1" 
+AR Path="/603034BC/604CA47D" Ref="U?"  Part="1" 
+AR Path="/60318BF9/604CA47D" Ref="U?"  Part="1" 
+AR Path="/60318BFB/604CA47D" Ref="U?"  Part="1" 
+AR Path="/6034DF24/604CA47D" Ref="U?"  Part="1" 
+AR Path="/603632C9/604CA47D" Ref="U4"  Part="1" 
+F 0 "U4" H 3850 2265 50  0000 C CNN
+F 1 "PFS173-S08" H 3850 2174 50  0000 C CNN
+F 2 "Package_SO:SOP-8_3.9x4.9mm_P1.27mm" H 3850 1450 50  0001 C CNN
+F 3 "" H 3850 1850 50  0001 C CNN
+F 4 "C337970" H 3850 1850 50  0001 C CNN "LCSC"
+	1    3850 1850
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	4300 3200 4800 3200
+Wire Wire Line
+	4600 3300 4950 3300
+Wire Wire Line
+	5100 3400 4600 3400
+Wire Wire Line
+	4200 3500 5250 3500
+Wire Wire Line
+	2600 3200 3600 3200
+Wire Wire Line
+	2500 3300 3300 3300
+Wire Wire Line
+	2400 3400 3750 3400
+Wire Wire Line
+	2300 3500 3300 3500
 $EndSCHEMATC

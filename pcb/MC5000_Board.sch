@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 17
+Sheet 1 11
 Title ""
 Date ""
 Rev ""
@@ -20,46 +20,10 @@ F0 "USB serial" 50
 F1 "modules/USB_serial.sch" 50
 $EndSheet
 $Sheet
-S 2650 3700 1600 1050
-U 602FB936
-F0 "PFS172 breakout - Display Ctrl" 50
-F1 "modules/PFS172_breakout.sch" 50
-$EndSheet
-$Sheet
-S 750  750  1600 1100
-U 60303416
-F0 "PFS172 breakout - MCU1" 50
-F1 "modules/PFS172_breakout.sch" 50
-$EndSheet
-$Sheet
-S 2650 800  1600 1050
-U 6030344A
-F0 "PFS172 breakout - MCU2" 50
-F1 "modules/PFS172_breakout.sch" 50
-$EndSheet
-$Sheet
-S 750  2200 1600 1050
-U 603034BC
-F0 "PFS172 breakout - Extra1" 50
-F1 "modules/PFS172_breakout.sch" 50
-$EndSheet
-$Sheet
 S 9050 800  1600 1000
 U 60308700
 F0 "Display" 50
 F1 "modules/display.sch" 50
-$EndSheet
-$Sheet
-S 750  3700 1600 1050
-U 60318BF9
-F0 "PFS172 Buzzer Ctrl" 50
-F1 "modules/PFS172_breakout.sch" 50
-$EndSheet
-$Sheet
-S 2650 2200 1600 1050
-U 60318BFB
-F0 "PFS172 Extra2" 50
-F1 "modules/PFS172_breakout.sch" 50
 $EndSheet
 $Sheet
 S 700  6450 1600 1050
@@ -104,7 +68,7 @@ F0 "Light sensor" 50
 F1 "modules/light_sensor.sch" 50
 $EndSheet
 $Sheet
-S 5000 3700 1600 1050
+S 900  850  1600 1050
 U 603839E8
 F0 "Connection block" 50
 F1 "connection_block.sch" 50

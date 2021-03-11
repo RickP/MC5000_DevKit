@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 2 17
+Sheet 2 11
 Title ""
 Date ""
 Rev ""
@@ -146,9 +146,9 @@ Wire Wire Line
 	5950 4100 5800 4100
 Wire Wire Line
 	5200 3650 6050 3650
-Text GLabel 6050 3650 2    50   Input ~ 0
+Text GLabel 6050 3650 2    50   BiDi ~ 0
 RXD
-Text GLabel 5850 3750 2    50   Input ~ 0
+Text GLabel 5850 3750 2    50   BiDi ~ 0
 TXD
 Wire Wire Line
 	5850 3750 5200 3750

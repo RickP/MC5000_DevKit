@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 17 17
+Sheet 17 11
 Title ""
 Date ""
 Rev ""
@@ -19,7 +19,7 @@ U 1 1 60383D01
 P 5800 3550
 F 0 "J24" H 5828 3526 50  0000 L CNN
 F 1 "Conn_01x04_Female" H 5828 3435 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical" H 5800 3550 50  0001 C CNN
+F 2 "LCSC_parts:PinSocket_1x04_P2.54mm_Vertical_centered" H 5800 3550 50  0001 C CNN
 F 3 "~" H 5800 3550 50  0001 C CNN
 F 4 "C124413" H 5800 3550 50  0001 C CNN "LCSC"
 	1    5800 3550
@@ -31,7 +31,7 @@ U 1 1 6038543F
 P 5800 2900
 F 0 "J25" H 5828 2926 50  0000 L CNN
 F 1 "Conn_01x05_Female" H 5828 2835 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x05_P2.54mm_Vertical" H 5800 2900 50  0001 C CNN
+F 2 "LCSC_parts:PinSocket_1x05_P2.54mm_Vertical_centered" H 5800 2900 50  0001 C CNN
 F 3 "~" H 5800 2900 50  0001 C CNN
 F 4 "C718240" H 5800 2900 50  0001 C CNN "LCSC"
 	1    5800 2900
