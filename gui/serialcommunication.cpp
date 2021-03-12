@@ -62,10 +62,10 @@ void SerialCommunication::readData()
             m_isProgrammed[mcuId] = data.at(5) & 0x40;
             int acc = data.at(1) << 7;
             acc |= data.at(2);
-            m_accRegisters.append(acc-1000);
+            m_accRegisters[mcuId] = acc-1000;
             int dat = data.at(3) << 7;
             dat |= data.at(4);
-            m_datRegisters.append(dat-1000);
+            m_datRegisters[mcuId] = dat-1000;
             emit datRegistersChanged();
             emit accRegistersChanged();
             emit isProgrammedChanged();

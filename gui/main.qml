@@ -56,7 +56,7 @@ ApplicationWindow {
                     for (var i=0; i < editors.count; i++) {
                         code_strings.push(editors.itemAt(i).children[0].children[1].children[1].text);
                     }
-                    serial.upload(code_strings);
+                    serial.startUpload(code_strings);
                     upload = false;
                     messageDialog.visible = (serial.errorMessage != "");
                 }
