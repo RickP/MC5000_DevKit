@@ -47,8 +47,29 @@ SerialCommunication::~SerialCommunication()
 
 void SerialCommunication::readData()
 {
-    // const QByteArray data = m_serial->readAll();
-    qDebug() << "Got data " << m_serialports;
+    const QByteArray data = m_serial->readAll();
+    if (data.length() == 3 && data.at(0) == 0x7F) {
+        int mcuId = data.at(1) - 0x31;
+        if (data.at(2)) {
+            if (mcuId < (m_mcuConnections-1)) {
+                upload(mcuId+1);
+            }
+        } else if (++m_tries[mcuId] < UPLOAD_RETRIES) {
+            upload(mcuId);
+        }
+    } else if (data.length() == 6 && (data.at(5) & 0x3F) == checksum(data.right(5), 4)) {
+            int mcuId = data.at(0) - 0x31;
+            m_isProgrammed[mcuId] = data.at(5) & 0x40;
+            int acc = data.at(1) << 7;
+            acc |= data.at(2);
+            m_accRegisters.append(acc-1000);
+            int dat = data.at(3) << 7;
+            dat |= data.at(4);
+            m_datRegisters.append(dat-1000);
+            emit datRegistersChanged();
+            emit accRegistersChanged();
+            emit isProgrammedChanged();
+    }
 }
 
 void SerialCommunication::connectPort(QString port) {
@@ -73,140 +94,132 @@ void SerialCommunication::connectPort(QString port) {
     for (int i=0; i < m_mcuConnections; i++) {
         emptyList.append("");
     };
-    upload(emptyList);
+    startUpload(emptyList);
     emit mcuConnectionChanged();
 }
 
-void SerialCommunication::upload(QStringList codeList) {
+void SerialCommunication::startUpload(QStringList codeList) {
+    for (int i = 0; i < 3; i++) m_tries[i] = 0;
+    m_codeList = codeList;
+    upload();
+}
+
+void SerialCommunication::upload(int mcuNum) {
     m_errorMessage = "";
-    for (int i = 0; i < codeList.size(); i++) {
-        m_isProgrammed[i] = false;
-        emit isProgrammedChanged();
-        QByteArray output;
-        if (codeList.at(i) != "") {
-            QStringList lines = codeList.at(i).split('\n', Qt::SkipEmptyParts);
-            QStringList labels;
+    m_isProgrammed[mcuNum] = false;
+    emit isProgrammedChanged();
+    QByteArray output;
+    if (m_codeList.at(mcuNum) != "") {
+        QStringList lines = m_codeList.at(mcuNum).split('\n', Qt::SkipEmptyParts);
+        QStringList labels;
 
 
-            for (int j = 0; j < lines.size(); j++) {
-                QStringList parts = lines.at(j).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
-                if (parts.size() == 0) continue;
-                if (parts.at(0).endsWith(LABEL_MARKER) and !labels.contains(parts.at(0))) {
-                    labels.append(parts.at(0));
-                }
+        for (int j = 0; j < lines.size(); j++) {
+            QStringList parts = lines.at(j).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+            if (parts.size() == 0) continue;
+            if (parts.at(0).endsWith(LABEL_MARKER) and !labels.contains(parts.at(0))) {
+                labels.append(parts.at(0));
             }
+        }
 
-            for (int j = 0; j < lines.size(); j++) {
-                QStringList parts = lines.at(j).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
-                char addToCommand = 0;
-                for (int k = 0; k < parts.size(); k++) {
-                    QString part = parts.at(k);
+        for (int j = 0; j < lines.size(); j++) {
+            QStringList parts = lines.at(j).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+            char addToCommand = 0;
+            for (int k = 0; k < parts.size(); k++) {
+                QString part = parts.at(k);
 
-                    if (part.startsWith(COMMENT_MARKER)) {
-                        break;
-                    }
+                if (part.startsWith(COMMENT_MARKER)) {
+                    break;
+                }
 
-                    if (part.endsWith(LABEL_MARKER)) {
-                        if (k != 0) {
-                            m_errorMessage = QString("A label has to be in front (Line %1)").arg(j+1);
-                            emit errorMessageChanged();
-                            return;
-                        } else {
-                            output.append(LABEL_HEXCODE);
-                            output.append(labels.lastIndexOf(part));
-                            part = parts.at(++k);
-                        }
-                    }
-
-                    if (part == '+' || part == '-') {
-                        if (k != 0) {
-                            m_errorMessage = QString("+/- has to be in front (Line %1)").arg(j+1);
-                            emit errorMessageChanged();
-                            return;
-                        } else {
-                            addToCommand = (part == '+') ? 0x01 : 0x02;
-                        }
-                    } else if (commands.contains(part)) {
-                        const auto commandConfig = commands.value(part);
-                        const char command = commandConfig.first;
-                        const QStringList parameters = commandConfig.second;
-
-                        if (parts.length() < k + 1 + parameters.length()) {
-                            m_errorMessage = QString("Command %1 needs %2 parameters (Line %3)").arg(part).arg(parameters.length()).arg(j+1);
-                            emit errorMessageChanged();
-                            return;
-                        }
-
-                        output.append(command | addToCommand);
-
-                        for (int l=0; l < parameters.length(); l++) {
-                            if (parameters.at(l) == "ri") {
-                                char* value16 = encode16BitVal(parts.at(k+l+1));
-                                if (value16[0] == 0x7F) {
-                                    m_errorMessage = QString("Unknown register %1 (Line %2)").arg(parts.at(k+l+1)).arg(j+1);
-                                    emit errorMessageChanged();
-                                    return;
-                                }
-                                output.append(value16, 2);
-                            }
-                            else if (parameters.at(l) == "r") {
-                                char value8 = encode8BitVal(parts.at(k+l+1));
-                                if (value8 == 0x7F) {
-                                    m_errorMessage = QString("Unknown register %1 (Line %2)").arg(parts.at(k+l+1)).arg(j+1);
-                                    emit errorMessageChanged();
-                                    return;
-                                }
-                                output.append(value8);
-                            }
-                            else if (parameters.at(l) == "l") {
-                                QString label = parts.at(k+l+1) + ":";
-                                output.append(labels.indexOf(label));
-                            }
-                        }
-                        break;
+                if (part.endsWith(LABEL_MARKER)) {
+                    if (k != 0) {
+                        m_errorMessage = QString("A label has to be in front (Line %1)").arg(j+1);
+                        emit errorMessageChanged();
+                        return;
                     } else {
-                        m_errorMessage = QString("Unknown command %1 (Line %2)").arg(part).arg(j+1);
+                        output.append(LABEL_HEXCODE);
+                        output.append(labels.lastIndexOf(part));
+                        part = parts.at(++k);
+                    }
+                }
+
+                if (part == '+' || part == '-') {
+                    if (k != 0) {
+                        m_errorMessage = QString("+/- has to be in front (Line %1)").arg(j+1);
+                        emit errorMessageChanged();
+                        return;
+                    } else {
+                        addToCommand = (part == '+') ? 0x01 : 0x02;
+                    }
+                } else if (commands.contains(part)) {
+                    const auto commandConfig = commands.value(part);
+                    const char command = commandConfig.first;
+                    const QStringList parameters = commandConfig.second;
+
+                    if (parts.length() < k + 1 + parameters.length()) {
+                        m_errorMessage = QString("Command %1 needs %2 parameters (Line %3)").arg(part).arg(parameters.length()).arg(j+1);
                         emit errorMessageChanged();
                         return;
                     }
+
+                    output.append(command | addToCommand);
+
+                    for (int l=0; l < parameters.length(); l++) {
+                        if (parameters.at(l) == "ri") {
+                            char* value16 = encode16BitVal(parts.at(k+l+1));
+                            if (value16[0] == 0x7F) {
+                                m_errorMessage = QString("Unknown register %1 (Line %2)").arg(parts.at(k+l+1)).arg(j+1);
+                                emit errorMessageChanged();
+                                return;
+                            }
+                            output.append(value16, 2);
+                        }
+                        else if (parameters.at(l) == "r") {
+                            char value8 = encode8BitVal(parts.at(k+l+1));
+                            if (value8 == 0x7F) {
+                                m_errorMessage = QString("Unknown register %1 (Line %2)").arg(parts.at(k+l+1)).arg(j+1);
+                                emit errorMessageChanged();
+                                return;
+                            }
+                            output.append(value8);
+                        }
+                        else if (parameters.at(l) == "l") {
+                            QString label = parts.at(k+l+1) + ":";
+                            output.append(labels.indexOf(label));
+                        }
+                    }
+                    break;
+                } else {
+                    m_errorMessage = QString("Unknown command %1 (Line %2)").arg(part).arg(j+1);
+                    emit errorMessageChanged();
+                    return;
                 }
             }
         }
+    }
 
-        // Write program
-        if (m_serial->isOpen()) {
-            if (output.length() > MAX_PROGRAM_LENGTH) {
-                m_errorMessage = QString("Program is too large!");
-                emit errorMessageChanged();
-                return;
-            } else {
-                // header
-                bool program_success = false;
-                int tries = 0;
-                while (!program_success && tries++ < UPLOAD_RETRIES) {
-                    char data = 0;
-                    writeSerialByte(START_CHAR);
-                    writeSerialByte(0x31 + i);
-                    for (int x=0; x < output.length(); x++) {
-                        writeSerialByte(output.at(x));
-                    }
-                    writeSerialByte(checksum(output, output.length()));
-                    writeSerialByte(END_CHAR);
-                    // check programming state
-                    if (m_serial->waitForReadyRead(500)) {
-                        if (m_serial->read(&data, 1) == 1 && data == 0x31 + i) {
-                            program_success = true;
-                        }
-                        m_serial->readAll();
-                    }
-                }
-                qDebug() << "MCU " << i << " " << tries;
-            }
-        } else {
-            m_errorMessage = QString("No serial connection!");
+    // Write program
+    if (m_serial->isOpen()) {
+        if (output.length() > MAX_PROGRAM_LENGTH) {
+            m_errorMessage = QString("Program is too large!");
             emit errorMessageChanged();
             return;
+        } else {
+            // header
+            writeSerialByte(START_CHAR);
+            writeSerialByte(0x31 + mcuNum);
+            for (int x=0; x < output.length(); x++) {
+                writeSerialByte(output.at(x));
+            }
+            writeSerialByte(checksum(output, output.length()));
+            writeSerialByte(END_CHAR);
+            return;
         }
+    } else {
+        m_errorMessage = QString("No serial connection!");
+        emit errorMessageChanged();
+        return;
     }
 }
 
@@ -252,36 +265,8 @@ char* SerialCommunication::encode16BitVal(QString parameter) {
 
 void SerialCommunication::updateRegisters() {
     if (m_mcuConnections && m_serial->isOpen()) {
-        bool updateValues = true;
-        m_accRegisters.clear();
-        m_datRegisters.clear();
         for (int i=0; i < m_mcuConnections; i++) {
-            m_serial->readAll();
             writeSerialByte(0x31+i, false);
-            if (m_serial->waitForReadyRead(100)) {
-                char data[5];
-                int bytes_read = m_serial->read(data, 5);
-                if (bytes_read == 5 && (data[4] & 0x3F) == checksum(QByteArray(data, 4), 4)) {
-                    m_isProgrammed[i] = data[4] & 0x40;
-                    int acc = data[0] << 7;
-                    acc |= data[1];
-                    m_accRegisters.append(acc-1000);
-                    int dat = data[2] << 7;
-                    dat |= data[3];
-                    m_datRegisters.append(dat-1000);
-                } else {
-                    updateValues = false;
-                    QThread::msleep(SERIAL_DELAY*2);
-                }
-            } else {
-                updateValues = false;
-                break;
-            }
-        }
-        if (updateValues) {
-            emit datRegistersChanged();
-            emit accRegistersChanged();
-            emit isProgrammedChanged();
         }
     }
 }

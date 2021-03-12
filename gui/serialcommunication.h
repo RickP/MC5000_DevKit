@@ -38,7 +38,7 @@ QList<bool> isProgrammed();
 public slots:         // slots are public methods available in QML
 void connectPort(QString port);
 void updateRegisters();
-void upload(QStringList);
+void startUpload(QStringList codeList);
 void loadPorts();
 void readData();
 
@@ -53,14 +53,17 @@ void isProgrammedChanged();
 private:
 QSerialPort *m_serial = nullptr;
 int m_mcuConnections = 0;
+int m_tries[3] = {0};
 QString m_errorMessage = "";
 QStringList m_serialports = {};
+QStringList m_codeList = {};
 QList<int> m_datRegisters = {0,0,0,0,0};
 QList<int> m_accRegisters = {0,0,0,0,0};
 QList<bool> m_isProgrammed = {false, false, false, false};
 char encode8BitVal(QString);
 char* encode16BitVal(QString);
 void writeSerialByte(char, bool debug=false);
+void upload(int mcuNum = 0);
 
 const QMap<QString, char> registerEncodings = {
     {"x0", 0x40},

@@ -84,6 +84,7 @@ void handle_rx() {
 
                 if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) { // serial num char received
                         uint8_t tx_data[4];
+                        putchar(serial_number[0]);
                         tx_data[0] = (acc_register+1000) >> 7;
                         tx_data[1] = (acc_register+1000) & 0x7F;
                         tx_data[2] = (dat_register+1000) >> 7;
@@ -109,10 +110,12 @@ void handle_rx() {
                         }
                 } else if (state == line_prog) {
                         if (rx_char == END_CHAR) {
+                                putchar(0x7F); // signal programming done
+                                putchar(serial_number[0]);
                                 if (program_buf_pos > 2) {
                                         program_buf_pos--;
                                         if (checksum(program_buf, program_buf_pos) == program_buf[program_buf_pos]) {
-                                            putchar(serial_number[0]);
+                                            putchar(1); // programming success
                                             reset_program();
                                             set_program(program_buf, program_buf_pos);
                                             state = prog_ready;
@@ -120,13 +123,13 @@ void handle_rx() {
                                             program_buf_pos = 0;
                                             reset_program();
                                             state = empty_prog;
-                                            putchar(0);
+                                            putchar(0); // checksum fail
                                         }
                                 } else {
                                         program_buf_pos = 0;
                                         reset_program();
                                         state = empty_prog;
-                                        putchar(serial_number[0]);
+                                        putchar(1); // programming success
                                 }
                         } else {
                                 program_buf[program_buf_pos++] = rx_char;
