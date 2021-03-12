@@ -94,7 +94,7 @@ ApplicationWindow {
         Button {
             width: parent.width
             text: "Connect"
-            onClicked: serial.connect(serial_ports.currentText)
+            onClicked: serial.connectPort(serial_ports.currentText)
             visible: serial.serialports.length > 0
         }
 

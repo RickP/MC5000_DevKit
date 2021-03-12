@@ -20,42 +20,50 @@ static uint8_t checksum (QByteArray bytes, uint8_t size) {
     return chk >> 2;
 }
 
-SerialCommunication::SerialCommunication(QObject *parent) : QObject(parent)
+SerialCommunication::SerialCommunication(QObject *parent) :
+    QObject(parent),
+    m_serial(new QSerialPort(this))
 {
     loadPorts();
+    connect(m_serial, &QSerialPort::readyRead, this, &SerialCommunication::readData);
 }
 
 void SerialCommunication::loadPorts() {
     m_serialports.clear();
     const auto infos = QSerialPortInfo::availablePorts();
     for (const QSerialPortInfo &info : infos) {
-        QString portName = info.portName();
-        m_serialports.append(portName);
+        m_serialports.append(info.portName());
     }
     if (m_serialports.length() == 1) {
-        connect(m_serialports.at(0));
+        connectPort(m_serialports.at(0));
     }
     emit serialportsChanged();
 }
 
 SerialCommunication::~SerialCommunication()
 {
-    m_serial.close();
+    m_serial->close();
 }
 
-void SerialCommunication::connect(QString port) {
-    m_serial.close();
-    m_serial.setPortName(port);
-    m_serial.setBaudRate(19200);
-    m_serial.open(QIODevice::ReadWrite);
+void SerialCommunication::readData()
+{
+    // const QByteArray data = m_serial->readAll();
+    qDebug() << "Got data " << m_serialports;
+}
 
-    if (!m_serial.isOpen()) return;
+void SerialCommunication::connectPort(QString port) {
+    m_serial->close();
+    m_serial->setPortName(port);
+    m_serial->setBaudRate(19200);
+    m_serial->open(QIODevice::ReadWrite);
+
+    if (!m_serial->isOpen()) return;
 
     // check number of mcus
     for (int i=0;; i++) {
         writeSerialByte(0x31+i);
-        if (m_serial.waitForReadyRead(500)) {
-            m_serial.readAll();
+        if (m_serial->waitForReadyRead(500)) {
+            m_serial->readAll();
             m_mcuConnections++;
         } else {
             break;
@@ -166,7 +174,7 @@ void SerialCommunication::upload(QStringList codeList) {
         }
 
         // Write program
-        if (m_serial.isOpen()) {
+        if (m_serial->isOpen()) {
             if (output.length() > MAX_PROGRAM_LENGTH) {
                 m_errorMessage = QString("Program is too large!");
                 emit errorMessageChanged();
@@ -185,11 +193,11 @@ void SerialCommunication::upload(QStringList codeList) {
                     writeSerialByte(checksum(output, output.length()));
                     writeSerialByte(END_CHAR);
                     // check programming state
-                    if (m_serial.waitForReadyRead(500)) {
-                        if (m_serial.read(&data, 1) == 1 && data == 0x31 + i) {
+                    if (m_serial->waitForReadyRead(500)) {
+                        if (m_serial->read(&data, 1) == 1 && data == 0x31 + i) {
                             program_success = true;
                         }
-                        m_serial.readAll();
+                        m_serial->readAll();
                     }
                 }
                 qDebug() << "MCU " << i << " " << tries;
@@ -204,8 +212,8 @@ void SerialCommunication::upload(QStringList codeList) {
 
 void SerialCommunication::writeSerialByte(char byte, bool debug) {
     QThread::msleep(SERIAL_DELAY);
-    m_serial.write(&byte, 1);
-    m_serial.waitForBytesWritten(100);
+    m_serial->write(&byte, 1);
+    m_serial->waitForBytesWritten(100);
 
     if (debug) {
         printHex(byte);
@@ -243,16 +251,16 @@ char* SerialCommunication::encode16BitVal(QString parameter) {
 }
 
 void SerialCommunication::updateRegisters() {
-    if (m_mcuConnections && m_serial.isOpen()) {
+    if (m_mcuConnections && m_serial->isOpen()) {
         bool updateValues = true;
         m_accRegisters.clear();
         m_datRegisters.clear();
         for (int i=0; i < m_mcuConnections; i++) {
-            m_serial.readAll();
+            m_serial->readAll();
             writeSerialByte(0x31+i, false);
-            if (m_serial.waitForReadyRead(100)) {
+            if (m_serial->waitForReadyRead(100)) {
                 char data[5];
-                int bytes_read = m_serial.read(data, 5);
+                int bytes_read = m_serial->read(data, 5);
                 if (bytes_read == 5 && (data[4] & 0x3F) == checksum(QByteArray(data, 4), 4)) {
                     m_isProgrammed[i] = data[4] & 0x40;
                     int acc = data[0] << 7;

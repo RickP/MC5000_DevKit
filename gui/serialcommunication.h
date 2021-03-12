@@ -36,10 +36,11 @@ QList<int> accRegisters();
 QList<bool> isProgrammed();
 
 public slots:         // slots are public methods available in QML
-void connect(QString port);
+void connectPort(QString port);
 void updateRegisters();
 void upload(QStringList);
 void loadPorts();
+void readData();
 
 signals:
 void mcuConnectionChanged();
@@ -50,7 +51,7 @@ void datRegistersChanged();
 void isProgrammedChanged();
 
 private:
-QSerialPort m_serial;
+QSerialPort *m_serial = nullptr;
 int m_mcuConnections = 0;
 QString m_errorMessage = "";
 QStringList m_serialports = {};
