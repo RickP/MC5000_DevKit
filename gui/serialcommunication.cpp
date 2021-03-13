@@ -57,16 +57,15 @@ void SerialCommunication::readData()
         }
     } else if (data.length() == 6 && (data.at(5) & 0x3F) == checksum(data.right(5), 4)) {
         int mcuId = data.at(0) - 0x31;
-        if (m_mcuConnections < (mcuId + 1)) {
-            m_mcuConnections++;
-            emit mcuConnectionChanged();
-            if (m_mcuConnections > 1) {
-                QStringList emptyList;
-                for (int i=0; i<m_mcuConnections; i++) {
-                    emptyList.append("");
-                }
-                startUpload(emptyList);
+        if (m_mcuConnections < 2) {
+            m_mcuConnections = 2;
+            m_codeList.empty();
+            for (int i=0; i<m_mcuConnections; i++) {
+                m_codeList.append("");
             }
+            emit mcuConnectionChanged();
+            upload(0);
+            return;
         }
         m_isProgrammed[mcuId] = data.at(5) & 0x40;
         int acc = data.at(1) << 7;
@@ -89,10 +88,8 @@ void SerialCommunication::connectPort(QString port) {
 
     if (!m_serial->isOpen()) return;
 
-    // check number of mcus
-    for (int i = 0; i < 2; i++) {
-        writeSerialByte(0x31+i, true);
-    }
+    // check mcu connection
+    writeSerialByte(0x31);
 }
 
 void SerialCommunication::startUpload(QStringList codeList) {
@@ -263,7 +260,7 @@ char* SerialCommunication::encode16BitVal(QString parameter) {
 void SerialCommunication::updateRegisters() {
     if (m_mcuConnections && m_serial->isOpen()) {
         for (int i=0; i < m_mcuConnections; i++) {
-            writeSerialByte(0x31+i, false);
+            writeSerialByte(0x31+i);
         }
     }
 }
