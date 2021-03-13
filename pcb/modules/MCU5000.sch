@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 4 11
+Sheet 6 15
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Wire Wire Line
+	5100 4350 5400 4350
 $Comp
 L power:VCC #PWR?
 U 1 1 60350349
@@ -81,12 +83,52 @@ F 3 "" H 6100 3900 50  0001 C CNN
 	1    6100 3900
 	-1   0    0    1   
 $EndComp
+$Comp
+L Connector:Conn_01x04_Female J?
+U 1 1 60350368
+P 6600 4550
+AR Path="/60308700/60350368" Ref="J?"  Part="1" 
+AR Path="/6034DF24/60350368" Ref="J18"  Part="1" 
+AR Path="/603599D1/60350368" Ref="J21"  Part="1" 
+F 0 "J18" H 6550 4800 50  0000 L CNN
+F 1 "Conn_01x04_Female" H 6250 4250 50  0000 L CNN
+F 2 "LCSC_parts:PinSocket_1x04_P2.54mm_Vertical_centered" H 6600 4550 50  0001 C CNN
+F 3 "~" H 6600 4550 50  0001 C CNN
+F 4 "C124413" H 6600 4550 50  0001 C CNN "LCSC"
+	1    6600 4550
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	6100 4350 6400 4350
+$Comp
+L Connector:Conn_01x04_Female J?
+U 1 1 60350370
+P 4900 4450
+AR Path="/60308700/60350370" Ref="J?"  Part="1" 
+AR Path="/6034DF24/60350370" Ref="J16"  Part="1" 
+AR Path="/603599D1/60350370" Ref="J19"  Part="1" 
+F 0 "J16" H 4900 4150 50  0000 C CNN
+F 1 "Conn_01x04_Female" H 4900 4650 50  0000 C CNN
+F 2 "LCSC_parts:PinSocket_1x04_P2.54mm_Vertical_centered" H 4900 4450 50  0001 C CNN
+F 3 "~" H 4900 4450 50  0001 C CNN
+F 4 "C124413" H 4900 4450 50  0001 C CNN "LCSC"
+	1    4900 4450
+	-1   0    0    -1  
+$EndComp
 Text GLabel 5250 4800 3    50   Input ~ 0
 RXD
-Text GLabel 6400 3050 2    50   Input ~ 0
+Text GLabel 5950 4350 1    50   Input ~ 0
 TXD
 Wire Wire Line
+	5950 4350 5950 4450
+Wire Wire Line
+	5950 4450 6400 4450
+Wire Wire Line
+	5100 4650 5250 4650
+Wire Wire Line
 	5250 4650 5250 4800
+Wire Wire Line
+	5100 4450 5600 4450
 Wire Wire Line
 	5600 4450 5600 5400
 $Comp
@@ -106,6 +148,8 @@ F 4 "C124413" H 5600 5600 50  0001 C CNN "LCSC"
 $EndComp
 Wire Wire Line
 	5500 5400 5500 5300
+Wire Wire Line
+	5100 4550 5500 4550
 $Comp
 L Device:R R14
 U 1 1 603553A1
@@ -174,6 +218,8 @@ F 3 "" H 4950 5300 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	4950 5300 5100 5300
+Wire Wire Line
+	6250 4650 6400 4650
 $Comp
 L Device:C C6
 U 1 1 60358F4E
@@ -271,6 +317,8 @@ F 3 "" H 6250 5550 50  0001 C CNN
 	1    6250 5550
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	6000 4550 6400 4550
 Connection ~ 5700 4950
 Wire Wire Line
 	5700 4950 5700 5400
@@ -280,68 +328,4 @@ Wire Wire Line
 	6000 4950 6050 4950
 Wire Wire Line
 	6050 4800 6050 4950
-Wire Wire Line
-	4500 4350 5400 4350
-Wire Wire Line
-	4400 4450 5600 4450
-Wire Wire Line
-	4300 4550 5500 4550
-Wire Wire Line
-	4200 4650 5250 4650
-Wire Wire Line
-	6100 4350 6700 4350
-Wire Wire Line
-	6000 4550 7000 4550
-Wire Wire Line
-	6250 4650 7150 4650
-Wire Wire Line
-	6100 2850 7150 2850
-Wire Wire Line
-	7150 2850 7150 4650
-Wire Wire Line
-	6100 2950 7000 2950
-Wire Wire Line
-	7000 4550 7000 2950
-Wire Wire Line
-	6100 3150 6700 3150
-Wire Wire Line
-	6700 3150 6700 4350
-Wire Wire Line
-	4200 2850 5400 2850
-Wire Wire Line
-	4200 4650 4200 2850
-Wire Wire Line
-	4300 2950 5400 2950
-Wire Wire Line
-	4300 2950 4300 4550
-Wire Wire Line
-	4400 3050 5400 3050
-Wire Wire Line
-	4400 4450 4400 3050
-Wire Wire Line
-	4500 3150 5400 3150
-Wire Wire Line
-	4500 3150 4500 4350
-$Comp
-L Padauk:PFS173-S08 U?
-U 1 1 604B9714
-P 5750 3000
-AR Path="/602FB936/604B9714" Ref="U?"  Part="1" 
-AR Path="/60303416/604B9714" Ref="U?"  Part="1" 
-AR Path="/6030344A/604B9714" Ref="U?"  Part="1" 
-AR Path="/603034BC/604B9714" Ref="U?"  Part="1" 
-AR Path="/60318BF9/604B9714" Ref="U?"  Part="1" 
-AR Path="/60318BFB/604B9714" Ref="U?"  Part="1" 
-AR Path="/6034DF24/604B9714" Ref="U2"  Part="1" 
-AR Path="/603599D1/604B9714" Ref="U3"  Part="1" 
-F 0 "U2" H 5750 3415 50  0000 C CNN
-F 1 "PFS173-S08" H 5750 3324 50  0000 C CNN
-F 2 "Package_SO:SOP-8_3.9x4.9mm_P1.27mm" H 5750 2600 50  0001 C CNN
-F 3 "" H 5750 3000 50  0001 C CNN
-F 4 "C337970" H 5750 3000 50  0001 C CNN "LCSC"
-	1    5750 3000
-	1    0    0    1   
-$EndComp
-Wire Wire Line
-	6400 3050 6100 3050
 $EndSCHEMATC

@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 2 11
+Sheet 2 15
 Title ""
 Date ""
 Rev ""
@@ -146,9 +146,9 @@ Wire Wire Line
 	5950 4100 5800 4100
 Wire Wire Line
 	5200 3650 6050 3650
-Text GLabel 6050 3650 2    50   BiDi ~ 0
+Text GLabel 6050 3650 2    50   Input ~ 0
 RXD
-Text GLabel 5850 3750 2    50   BiDi ~ 0
+Text GLabel 5850 3750 2    50   Input ~ 0
 TXD
 Wire Wire Line
 	5850 3750 5200 3750
@@ -158,7 +158,7 @@ U 1 1 604E644E
 P 4750 3750
 F 0 "U5" H 4750 4305 50  0000 C CNN
 F 1 "CH340E" H 4750 4214 50  0000 C CNN
-F 2 "Package_SO:MSOP-10_3x3mm_P0.5mm" H 4750 3300 50  0001 C CNN
+F 2 "LCSC_parts:MSOP-10_3x3mm_P0.5mm_rotated" H 4750 3300 50  0001 C CNN
 F 3 "" H 4750 3750 50  0001 C CNN
 F 4 "C99652" H 4750 4123 50  0000 C CNN "LCSC"
 	1    4750 3750

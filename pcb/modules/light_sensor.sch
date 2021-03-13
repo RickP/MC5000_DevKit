@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 16 11
+Sheet 12 15
 Title ""
 Date ""
 Rev ""
@@ -16,14 +16,14 @@ $EndDescr
 $Comp
 L LCSC_parts:SMD3528C-50 D6
 U 1 1 6038FAE2
-P 5550 3550
-F 0 "D6" H 5500 3333 50  0000 C CNN
-F 1 "SMD3528C-50" H 5500 3424 50  0000 C CNN
-F 2 "LED_SMD:LED_1210_3225Metric" H 5550 3350 50  0001 C CNN
-F 3 "https://datasheet.lcsc.com/szlcsc/1809172049_Senba-Sensing-Tech-SMD3528C-50_C250859.pdf" H 5500 3550 50  0001 C CNN
-F 4 "C242256" H 5550 3550 50  0001 C CNN "LCSC"
-	1    5550 3550
-	1    0    0    -1  
+P 5450 3550
+F 0 "D6" H 5400 3333 50  0000 C CNN
+F 1 "SMD3528C-50" H 5400 3424 50  0000 C CNN
+F 2 "LCSC_parts:LED_1210_3225Metric_Pad1.42x2.65mm_rotated" H 5450 3350 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/1809172049_Senba-Sensing-Tech-SMD3528C-50_C250859.pdf" H 5400 3550 50  0001 C CNN
+F 4 "C242256" H 5450 3550 50  0001 C CNN "LCSC"
+	1    5450 3550
+	-1   0    0    1   
 $EndComp
 $Comp
 L power:VCC #PWR025
@@ -36,6 +36,8 @@ F 3 "" H 4850 3550 50  0001 C CNN
 	1    4850 3550
 	0    -1   -1   0   
 $EndComp
+Wire Wire Line
+	4850 3550 5350 3550
 $Comp
 L Device:R R26
 U 1 1 603912E1
@@ -70,6 +72,4 @@ Wire Wire Line
 	6300 3550 6550 3550
 Text GLabel 5800 4100 3    50   Input ~ 0
 LIGHT_SENSOR
-Wire Wire Line
-	4850 3550 5350 3550
 $EndSCHEMATC
