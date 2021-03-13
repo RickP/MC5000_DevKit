@@ -28,14 +28,12 @@ SerialCommunication::SerialCommunication(QObject *parent) :
     connect(m_serial, &QSerialPort::readyRead, this, &SerialCommunication::readData);
 }
 
+
 void SerialCommunication::loadPorts() {
     m_serialports.clear();
     const auto infos = QSerialPortInfo::availablePorts();
     for (const QSerialPortInfo &info : infos) {
         m_serialports.append(info.portName());
-    }
-    if (m_serialports.length() == 1) {
-        connectPort(m_serialports.at(0));
     }
     emit serialportsChanged();
 }
@@ -50,7 +48,7 @@ void SerialCommunication::readData()
     const QByteArray data = m_serial->readAll();
     if (data.length() == 3 && data.at(0) == 0x7F) {
         int mcuId = data.at(1) - 0x31;
-        if (data.at(2)) {
+        if (data.at(2) == 1) {
             if (mcuId < (m_mcuConnections-1)) {
                 upload(mcuId+1);
             }
@@ -58,17 +56,28 @@ void SerialCommunication::readData()
             upload(mcuId);
         }
     } else if (data.length() == 6 && (data.at(5) & 0x3F) == checksum(data.right(5), 4)) {
-            int mcuId = data.at(0) - 0x31;
-            m_isProgrammed[mcuId] = data.at(5) & 0x40;
-            int acc = data.at(1) << 7;
-            acc |= data.at(2);
-            m_accRegisters[mcuId] = acc-1000;
-            int dat = data.at(3) << 7;
-            dat |= data.at(4);
-            m_datRegisters[mcuId] = dat-1000;
-            emit datRegistersChanged();
-            emit accRegistersChanged();
-            emit isProgrammedChanged();
+        int mcuId = data.at(0) - 0x31;
+        if (m_mcuConnections < (mcuId + 1)) {
+            m_mcuConnections++;
+            emit mcuConnectionChanged();
+            if (m_mcuConnections > 1) {
+                QStringList emptyList;
+                for (int i=0; i<m_mcuConnections; i++) {
+                    emptyList.append("");
+                }
+                startUpload(emptyList);
+            }
+        }
+        m_isProgrammed[mcuId] = data.at(5) & 0x40;
+        int acc = data.at(1) << 7;
+        acc |= data.at(2);
+        m_accRegisters[mcuId] = acc-1000;
+        int dat = data.at(3) << 7;
+        dat |= data.at(4);
+        m_datRegisters[mcuId] = dat-1000;
+        emit datRegistersChanged();
+        emit accRegistersChanged();
+        emit isProgrammedChanged();
     }
 }
 
@@ -81,21 +90,9 @@ void SerialCommunication::connectPort(QString port) {
     if (!m_serial->isOpen()) return;
 
     // check number of mcus
-    for (int i=0;; i++) {
-        writeSerialByte(0x31+i);
-        if (m_serial->waitForReadyRead(500)) {
-            m_serial->readAll();
-            m_mcuConnections++;
-        } else {
-            break;
-        }
+    for (int i = 0; i < 2; i++) {
+        writeSerialByte(0x31+i, true);
     }
-    QStringList emptyList;
-    for (int i=0; i < m_mcuConnections; i++) {
-        emptyList.append("");
-    };
-    startUpload(emptyList);
-    emit mcuConnectionChanged();
 }
 
 void SerialCommunication::startUpload(QStringList codeList) {
@@ -109,7 +106,7 @@ void SerialCommunication::upload(int mcuNum) {
     m_isProgrammed[mcuNum] = false;
     emit isProgrammedChanged();
     QByteArray output;
-    if (m_codeList.at(mcuNum) != "") {
+    if (m_codeList.length() > mcuNum && m_codeList.at(mcuNum) != "") {
         QStringList lines = m_codeList.at(mcuNum).split('\n', Qt::SkipEmptyParts);
         QStringList labels;
 

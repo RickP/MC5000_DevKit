@@ -96,6 +96,12 @@ ApplicationWindow {
             text: "Connect"
             onClicked: serial.connectPort(serial_ports.currentText)
             visible: serial.serialports.length > 0
+
+            Component.onCompleted: {
+                if (serial.serialports.length === 1) {
+                    clicked();
+                }
+            }
         }
 
         Button {
