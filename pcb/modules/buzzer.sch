@@ -169,7 +169,7 @@ AR Path="/60308700/6037FEAE" Ref="J?"  Part="1"
 AR Path="/603632C9/6037FEAE" Ref="J23"  Part="1" 
 F 0 "J23" H 4750 3650 50  0000 L CNN
 F 1 "Conn_01x04_Female" H 4450 3100 50  0000 L CNN
-F 2 "LCSC_parts:PinSocket_1x04_P2.54mm_Vertical_centered" H 4800 3400 50  0001 C CNN
+F 2 "LCSC_parts:PinHeader_1x04_P2.54mm_Vertical_centered" H 4800 3400 50  0001 C CNN
 F 3 "~" H 4800 3400 50  0001 C CNN
 F 4 "C124413" H 4800 3400 50  0001 C CNN "LCSC"
 	1    4800 3400
@@ -185,7 +185,7 @@ AR Path="/60308700/6037FEB6" Ref="J?"  Part="1"
 AR Path="/603632C9/6037FEB6" Ref="J22"  Part="1" 
 F 0 "J22" H 3100 3000 50  0000 C CNN
 F 1 "Conn_01x04_Female" H 3100 3500 50  0000 C CNN
-F 2 "LCSC_parts:PinSocket_1x04_P2.54mm_Vertical_centered" H 3100 3300 50  0001 C CNN
+F 2 "LCSC_parts:PinHeader_1x04_P2.54mm_Vertical_centered" H 3100 3300 50  0001 C CNN
 F 3 "~" H 3100 3300 50  0001 C CNN
 F 4 "C124413" H 3100 3300 50  0001 C CNN "LCSC"
 	1    3100 3300
