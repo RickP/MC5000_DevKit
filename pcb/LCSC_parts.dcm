@@ -4,6 +4,10 @@ $CMP CH340E
 D USB serial interface
 $ENDCMP
 #
+$CMP CH340G
+D USB serial interface
+$ENDCMP
+#
 $CMP CH340K
 D USB serial interface
 $ENDCMP
