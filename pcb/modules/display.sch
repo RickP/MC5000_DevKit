@@ -519,4 +519,8 @@ F 4 "C225932" H 2950 4250 50  0001 C CNN "LCSC"
 	1    2950 4250
 	1    0    0    -1  
 $EndComp
+NoConn ~ 4300 3000
+NoConn ~ 4300 3100
+NoConn ~ 4300 3200
+NoConn ~ 4300 3300
 $EndSCHEMATC
