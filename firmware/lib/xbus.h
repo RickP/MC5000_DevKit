@@ -30,7 +30,7 @@
 #define XBUS1_RX 0x80
 #define XBUS1_GOT_DATA 0x90
 
-#define XBUS_BITTIME 16U
+#define XBUS_BITTIME 18U
 #define XBUS_DELAY XBUS_BITTIME/2U
 
 uint16_t xbus_data = 0;
@@ -117,7 +117,7 @@ uint8_t xbus_handler() {
         if (!(PA & (1 << XBUS0_PIN))) {
             PAPH &= ~(1 << XBUS0_PIN); // Disable pullup
             xbus_state = XBUS0_TX_START;
-            SLEEP(XBUS_BITTIME);
+            SLEEP(XBUS_DELAY);
         };
         return 0; // skip futher execution this cycle
         break;
@@ -148,7 +148,7 @@ uint8_t xbus_handler() {
     case XBUS0_RX_START:
         PAC &= ~(1 << XBUS0_PIN); // Set pin as input
         xbus_state = XBUS0_RX;
-        SLEEP(XBUS_BITTIME);
+        SLEEP(XBUS_DELAY);
         return 0; // skip futher execution this cycle
         break;
     case XBUS0_RX:
@@ -177,7 +177,7 @@ uint8_t xbus_handler() {
         if (!(PA & (1 << XBUS1_PIN))) {
             PAPH &= ~(1 << XBUS1_PIN); // Disable pullup
             xbus_state = XBUS1_TX_START;
-            SLEEP(XBUS_BITTIME);
+            SLEEP(XBUS_DELAY);
         };
         return 0; // skip futher execution this cycle
         break;
@@ -208,7 +208,7 @@ uint8_t xbus_handler() {
     case XBUS1_RX_START:
         PAC &= ~(1 << XBUS1_PIN); // Set pin as input
         xbus_state = XBUS1_RX;
-        SLEEP(XBUS_BITTIME);
+        SLEEP(XBUS_DELAY);
         return 0; // skip futher execution this cycle
         break;
     case XBUS1_RX:
