@@ -15,7 +15,7 @@ jobs:
   # This workflow contains a single job called "build"
   build_linux:
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -25,12 +25,26 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.12.2
 
-      - name: compile
+      - name: compile & package
         run: |
           cd gui
           qmake
           make
+		  wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+		  wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+		  wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+		  QML_SOURCES_PATHS=. linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/
+		  appimagetool AppDir
         shell: bash
+	
+      - name: release			
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: true
+          title: "GUI for Linux - amd64"
+          files: |
+            gui/*.AppImage
 
   build_windows:
     # The type of runner that the job will run on
@@ -52,4 +66,20 @@ jobs:
           cd gui
           qmake
           make
+		      windeployqt --qmldir . MC5000-GUI.exe
         shell: cmd
+		
+      - name: pack
+      - uses: papeloto/action-zip@v1
+	        with:
+	          files: gui/MC5000-GUI/
+	          dest: MC5000-GUI_Windows_amd64.zip
+            
+      - name: release			
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: true
+          title: "GUI for Windows - amd64"
+          files: |
+            gui/*.AppImage
