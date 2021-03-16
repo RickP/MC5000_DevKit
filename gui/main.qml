@@ -8,14 +8,14 @@ import Qt.labs.platform 1.1
 ApplicationWindow {
     id: window
     width: serial.mcuConnections > 0 ? 300 * serial.mcuConnections : 300;
-    height: 400
+    height: 420
     minimumWidth: serial.mcuConnections > 0 ? 300 * serial.mcuConnections : 300;
     minimumHeight: 400
     visible: true
     title: qsTr("MC5000 V0.1")
 
     property bool upload: false
-    property int maxLines: 14
+    property int maxLines: 16
 
     Timer {
         interval: 100 + (50 * serial.mcuConnections)

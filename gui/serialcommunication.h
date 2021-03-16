@@ -23,7 +23,7 @@ const char START_CHAR = 0x7F;
 const char END_CHAR = 0x7E;
 const int SERIAL_DELAY = 6;
 const int UPLOAD_RETRIES = 3;
-const int MAX_PROGRAM_LENGTH = 64;
+const int MAX_PROGRAM_LENGTH = 74;
 
 public:
 explicit SerialCommunication(QObject *parent = nullptr);
