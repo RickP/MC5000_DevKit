@@ -72,8 +72,8 @@ jobs:
       - name: pack
         uses: papeloto/action-zip@v1
         with:
-	        files: gui/MC5000-GUI/
-	        dest: MC5000-GUI_Windows_amd64.zip
+          files: gui/MC5000-GUI/
+          dest: MC5000-GUI_Windows_amd64.zip
             
       - name: release			
         uses: "marvinpinto/action-automatic-releases@latest"
