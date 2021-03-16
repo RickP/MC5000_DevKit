@@ -21,8 +21,11 @@ jobs:
           qmake
           make
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod 755 linuxdeploy-x86_64.AppImage
           wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod 755 linuxdeploy-plugin-qt-x86_64.AppImage
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod 755 appimagetool-x86_64.AppImage
           QML_SOURCES_PATHS=. ./linuxdeploy-x86_64.AppImage --plugin qt --appdir AppDir -d imagebuilder/
           ./appimagetool-x86_64.AppImage AppDir
         shell: bash
@@ -53,7 +56,7 @@ jobs:
           cd gui
           qmake
           make
-          windeployqt --qmldir . MC5000-GUI.exe
+          windeployqt --qmldir . release/MC5000-GUI.exe
         shell: cmd
 
       - name: pack
