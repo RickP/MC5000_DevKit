@@ -56,8 +56,8 @@ inline uint8_t checksum (uint8_t *ptr, uint8_t size) {
 }
 
 void handle_rx() {
-        uint8_t rx_char;
-        if (process_serial_rx_byte(&rx_char)) {
+
+        if (process_serial_rx_byte()) {
 
 #ifdef DEBUG
                 switch (state) {

@@ -18,6 +18,7 @@ volatile uint16_t rxdata = 0;  // Serial data bit array
 volatile uint16_t txdata = 0; // Serial data shift register
 volatile uint16_t bit_counter = 0;  // bit counter
 volatile uint8_t byte_needs_processing = 0;
+uint8_t rx_char;
 
 const uint8_t hex_lookup[] = "0123456789ABCDEF";
 
@@ -45,17 +46,17 @@ void serial_setup() {
 
 }
 
-uint8_t process_serial_rx_byte(uint8_t *c) {
+uint8_t process_serial_rx_byte() {
     uint8_t ret = 0;
     if (byte_needs_processing && rxdata) {
-        *c = 0;
+       rx_char = 0;
 
         for (uint8_t i = 2; i < CNT_BUF_MAX; ++i) {
             uint8_t bit = (rxdata & (1 << i)) !=0;
 
             for (uint8_t j = 0; j < cnt_buf[i]/RX_INTERVAL; ++j) {
-                *c = (*c >> 1);
-                if (bit == 0) *c |= 0x80;
+                rx_char = (rx_char >> 1);
+                if (bit == 0) rx_char |= 0x80;
             }
         }
 
