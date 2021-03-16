@@ -30,13 +30,13 @@ jobs:
           cd gui
           qmake
           make
-		      wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           QML_SOURCES_PATHS=. linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/
           appimagetool AppDir
         shell: bash
-	
+
       - name: release			
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -66,14 +66,14 @@ jobs:
           cd gui
           qmake
           make
-		      windeployqt --qmldir . MC5000-GUI.exe
+          windeployqt --qmldir . MC5000-GUI.exe
         shell: cmd
-		
+
       - name: pack
-      - uses: papeloto/action-zip@v1
-	        with:
-	          files: gui/MC5000-GUI/
-	          dest: MC5000-GUI_Windows_amd64.zip
+        uses: papeloto/action-zip@v1
+        with:
+	        files: gui/MC5000-GUI/
+	        dest: MC5000-GUI_Windows_amd64.zip
             
       - name: release			
         uses: "marvinpinto/action-automatic-releases@latest"
