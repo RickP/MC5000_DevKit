@@ -82,4 +82,4 @@ jobs:
           prerelease: true
           title: "GUI for Windows - amd64"
           files: |
-            gui/*.AppImage
+            MC5000-GUI_Windows_amd64.zip
