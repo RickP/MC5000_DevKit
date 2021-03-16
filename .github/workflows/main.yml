@@ -23,8 +23,8 @@ jobs:
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-          QML_SOURCES_PATHS=. linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/
-          appimagetool AppDir
+          QML_SOURCES_PATHS=. ./linuxdeploy-x86_64.AppImage --plugin qt --appdir AppDir -d imagebuilder/
+          ./appimagetool-x86_64.AppImage AppDir
         shell: bash
 
       - name: release
