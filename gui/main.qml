@@ -1,6 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Controls.Material 2.12
+import QtQuick.LocalStorage 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Window 2.12
 import Qt.labs.platform 1.1
@@ -46,19 +47,29 @@ ApplicationWindow {
                 }
             }
 
-            ToolButton {
+            Row {
                 Layout.rightMargin: 10
-                text: qsTr("Upload")
+                spacing: 10
                 Layout.alignment: Qt.AlignRight
-                onClicked: {
-                    upload = true;
-                    var code_strings = [];
-                    for (var i=0; i < editors.count; i++) {
-                        code_strings.push(editors.itemAt(i).children[0].children[1].children[1].text);
+
+                ToolButton {
+                    text: qsTr("Manual")
+                    onClicked: Qt.openUrlExternally(manualUrl)
+                }
+
+                ToolButton {
+                    text: qsTr("Upload")
+                    Layout.alignment: Qt.AlignRight
+                    onClicked: {
+                        upload = true;
+                        var code_strings = [];
+                        for (var i=0; i < editors.count; i++) {
+                            code_strings.push(editors.itemAt(i).children[0].children[1].children[1].text);
+                        }
+                        serial.startUpload(code_strings);
+                        upload = false;
+                        messageDialog.visible = (serial.errorMessage != "");
                     }
-                    serial.startUpload(code_strings);
-                    upload = false;
-                    messageDialog.visible = (serial.errorMessage != "");
                 }
             }
         }

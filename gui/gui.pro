@@ -13,8 +13,8 @@ SOURCES += \
         serialcommunication.cpp
 
 RESOURCES += \
-        qml.qrc \
-        font/Roboto-Regular.ttf
+    font/Roboto-Regular.ttf \
+    qml.qrc
 
 ICON = icons/icon.icns
 RC_ICONS = icons/icon.ico
@@ -34,6 +34,5 @@ HEADERS += \
     serialcommunication.h
 
 DISTFILES += \
-    font/Roboto-Regular.ttf \
     icons/icon.ico \
-    images/icon.ico
+    icons/icon.icns
