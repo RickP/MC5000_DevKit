@@ -30,11 +30,11 @@ jobs:
           cd gui
           qmake
           make
-		  wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-		  wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
-		  wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-		  QML_SOURCES_PATHS=. linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/
-		  appimagetool AppDir
+		      wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          QML_SOURCES_PATHS=. linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/
+          appimagetool AppDir
         shell: bash
 	
       - name: release			
