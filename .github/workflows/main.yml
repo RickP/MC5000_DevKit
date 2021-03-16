@@ -1,25 +1,15 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Build_App
 
-# Controls when the action will run.
 on:
-  # Triggers the workflow on tagging a version
   push:
     tags:
-        - "v*"
+      - v*
 
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build_linux:
-    # The type of runner that the job will run on
     runs-on: ubuntu-18.04
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+
       - uses: actions/checkout@v2
 
       - name: Install Qt
@@ -37,28 +27,25 @@ jobs:
           appimagetool AppDir
         shell: bash
 
-      - name: release			
-        uses: "marvinpinto/action-automatic-releases@latest"
+      - name: release
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
           prerelease: true
-          title: "GUI for Linux - amd64"
+          title: GUI for Linux - amd64
           files: |
             gui/*.AppImage
 
   build_windows:
-    # The type of runner that the job will run on
     runs-on: windows-2019
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+
       - uses: actions/checkout@v2
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.12.2
         with:
-          arch: 'win64_mingw81'
+          arch: win64_mingw81
 
       - name: compile
         run: |
@@ -74,12 +61,12 @@ jobs:
         with:
           files: gui/MC5000-GUI/
           dest: MC5000-GUI_Windows_amd64.zip
-            
-      - name: release			
-        uses: "marvinpinto/action-automatic-releases@latest"
+
+      - name: release
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
           prerelease: true
-          title: "GUI for Windows - amd64"
+          title: GUI for Windows - amd64
           files: |
             MC5000-GUI_Windows_amd64.zip
