@@ -130,7 +130,7 @@ jobs:
             cd .. && \
             rm -r linuxdeploy-plugin-qt
           run: |
-            apt install -y qml-module-qt-labs-platform qtquickcontrols2-5-dev
+            apt install -y qml-module-qt-labs-platform qtquick*
             cd gui
             qmake
             make
