@@ -1,9 +1,11 @@
 name: Build_App
 
-on:
-  push:
-    tags:
-      - v*
+on: push
+
+#on:
+#  push:
+#    tags:
+#      - v*
 
 jobs:
   
@@ -24,8 +26,8 @@ jobs:
             draft: true
             prerelease: true
   
-  build_gui_linux:
-    name: Create Linux GUI
+  build_gui_linux_x64:
+    name: Create Linux GUI for x86_64
     runs-on: ubuntu-18.04
     if: ${{ false }}  # disable for now
     needs: once
@@ -67,6 +69,56 @@ jobs:
           asset_name: MC5000-GUI_Linux_x86_64.AppImage
           asset_content_type: application/octet-stream
 
+  build_gui_linux_arm:
+    name: Create Linux GUI for armhf and arm64
+    runs-on: ubuntu-latest
+    needs: once
+    strategy:
+      matrix:
+        include:
+          - arch: aarch64
+            distro: ubuntu18.04
+          - arch: armv7
+            distro: ubuntu18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: uraimo/run-on-arch-action@v2.0.5
+        name: Build GUI 
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+          # Not required, but speeds up builds
+          githubToken: ${{ github.token }} 
+          # Create an artifacts directory
+          setup: |
+            mkdir -p "${PWD}/artifacts" 
+          # Mount the artifacts directory as /artifacts in the container
+          dockerRunArgs: |
+            --volume "${PWD}:${PWD}"
+            --workdir "${PWD}"
+            --device /dev/fuse
+            --cap-add SYS_ADMIN 
+            --security-opt apparmor:unconfined
+          # The shell to run commands with in the container
+          shell: /bin/sh
+          install: |
+            apt-get update
+            apt-get install -y build-essential qtbase5-dev qt5-default qtdeclarative5-dev libqt5serialport5-dev wget git cmake zip unzip libfuse2
+            case "${{ matrix.arch }}" in
+              aarch64)
+                wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -O /usr/local/bin/appimagetool
+                ;;
+              armv7)
+                wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-armhf.AppImage -O /usr/local/bin/appimagetool
+                ;;
+            esac
+            chmod +x /usr/local/bin/appimagetool
+          run: |
+            cd gui
+            qmake
+            make
+            appimagetool    
+
   build_gui_windows:
     name: Create Windows GUI
     runs-on: windows-2019
@@ -105,6 +157,7 @@ jobs:
   build_firmware:
     name: Build microcontroller firmware
     runs-on: ubuntu-latest
+    if: ${{ false }}  # disable for now
     needs: once
     steps:
       - uses: actions/checkout@v2
