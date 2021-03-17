@@ -132,24 +132,24 @@ jobs:
             QML_SOURCES_PATHS=. linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
             appimagetool AppDir      
       - uses: actions/upload-release-asset@v1
-        name: Upload release assets
+        name: Upload release assets for arm64
         if: matrix.arch == 'aarch64' 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.once.outputs.upload_url }}
-          asset_path: gui/MC5000-GUI_Linux-aarm64.AppImage
-          asset_name: MC5000-GUI-Linux_aarm64.AppImage
+          asset_path: gui/MC5000-GUI_Linux-aarch64.AppImage
+          asset_name: MC5000-GUI_Linux-arm64.AppImage
           asset_content_type: application/octet-stream
       - uses: actions/upload-release-asset@v1
-        name: Upload release assets
+        name: Upload release assets for arm32
         if: matrix.arch == 'armv7' 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.once.outputs.upload_url }}
           asset_path: gui/MC5000-GUI_Linux-armhf.AppImage
-          asset_name: MC5000-GUI-Linux_armhf.AppImage
+          asset_name: MC5000-GUI_Linux-arm32.AppImage
           asset_content_type: application/octet-stream
 
   build_gui_windows:
@@ -177,15 +177,15 @@ jobs:
         name: Zip files
         with:
           files: gui/MC5000-GUI/
-          dest: MC5000-GUI-Windows_x86_64.zip
+          dest: MC5000-GUI-Windows-x86_64.zip
       - uses: actions/upload-release-asset@v1
         name: Upload release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.once.outputs.upload_url }}
-          asset_path: MC5000-GUI-Windows_x86_64.zip
-          asset_name: MC5000-GUI-Windows_x86_64.zip
+          asset_path: MC5000-GUI_Windows-x86_64.zip
+          asset_name: MC5000-GUI_Windows-x86_64.zip
           asset_content_type: application/octet-stream
           
   build_firmware:
