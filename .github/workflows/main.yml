@@ -106,10 +106,10 @@ jobs:
             apt-get install -y build-essential qtbase5-dev qt5-default qtdeclarative5-dev libqt5serialport5-dev wget git cmake zip unzip libfuse2
             case "${{ matrix.arch }}" in
               aarch64)
-                wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -O /usr/local/bin/appimagetool
+                wget --no-check-certificate https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -O /usr/local/bin/appimagetool
                 ;;
               armv7)
-                wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-armhf.AppImage -O /usr/local/bin/appimagetool
+                wget --no-check-certificate https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-armhf.AppImage -O /usr/local/bin/appimagetool
                 ;;
             esac
             chmod +x /usr/local/bin/appimagetool
