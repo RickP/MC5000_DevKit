@@ -79,7 +79,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: aarch64
+          - arch: armv7
             distro: ubuntu20.04
     steps:
       - uses: actions/checkout@v2
@@ -101,6 +101,8 @@ jobs:
           shell: /bin/sh
           env: | # YAML, but pipe character is necessary
             QML_SOURCES_PATHS: .
+            CFLAGS: "-D_FILE_OFFSET_BITS=64"
+            CXXFLAGS: "-D_FILE_OFFSET_BITS=64"
           install: |
             apt-get update
             apt-get install -y --no-install-recommends build-essential qtbase5-dev qt5-default qtdeclarative5-dev \
@@ -108,6 +110,14 @@ jobs:
                       unzip libfuse-dev autotools-dev patchelf automake libtool xxd desktop-file-utils pkg-config \
                       libglib2.0-dev libcairo2-dev libssl-dev libjpeg-dev libpng-dev cimg-dev ca-certificates
             apt-get clean
+            wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.19.7/cmake-3.19.7.tar.gz
+            tar xzf cmake-3.19.7.tar.gz
+            cd cmake-3.19.7
+            ./bootstrap
+            make
+            make install
+            cd ..
+            rm -r cmake-3.19.7
             git clone https://github.com/AppImage/AppImageKit.git --recursive --depth 1 && \
             cd AppImageKit && \
             cmake . && \
