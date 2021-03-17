@@ -79,8 +79,6 @@ jobs:
         include:
           - arch: aarch64
             distro: ubuntu20.04
-          - arch: armv7
-            distro: ubuntu20.04
     steps:
       - uses: actions/checkout@v2
       - uses: uraimo/run-on-arch-action@v2.0.5
