@@ -24,8 +24,10 @@ jobs:
             draft: true
             prerelease: true
   
-  build_linux:
+  build_gui_linux:
+    name: Create Linux GUI
     runs-on: ubuntu-18.04
+    if: ${{ false }}  # disable for now
     needs: once
     steps:
       - uses: actions/checkout@v2
@@ -42,13 +44,13 @@ jobs:
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod 755 appimagetool-x86_64.AppImage
         shell: bash
-      - name: compile
+      - name: Compile QT app
         run: |
           cd gui
           qmake
           make
         shell: bash
-      - name: package 
+      - name: Make AppImage 
         run: |
           cd gui
           QML_SOURCES_PATHS=. ./linuxdeploy-x86_64.AppImage --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
@@ -65,8 +67,10 @@ jobs:
           asset_name: MC5000-GUI_Linux_x86_64.AppImage
           asset_content_type: application/octet-stream
 
-  build_windows:
+  build_gui_windows:
+    name: Create Windows GUI
     runs-on: windows-2019
+    if: ${{ false }}  # disable for now
     needs: once
     steps:
       - uses: actions/checkout@v2
@@ -74,7 +78,7 @@ jobs:
         uses: jurplel/install-qt-action@v2.12.2
         with:
           arch: win64_mingw81
-      - name: compile
+      - name: Compile QT app
         run: |
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cd gui
@@ -83,7 +87,7 @@ jobs:
           windeployqt --qmldir . release/MC5000-GUI.exe
           rename release MC5000-GUI
         shell: cmd
-      - name: pack
+      - name: Zip files
         uses: papeloto/action-zip@v1
         with:
           files: gui/MC5000-GUI/
@@ -97,3 +101,41 @@ jobs:
           asset_path: MC5000-GUI_Windows_x86_64.zip
           asset_name: MC5000-GUI_Windows_x86_64.zip
           asset_content_type: application/octet-stream
+          
+  build_firmware:
+    name: Build microcontroller firmware
+    runs-on: ubuntu-latest
+    needs: once
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install SDCC compiler
+        run: |
+          wget https://qa.debian.org/watch/sf.php/sdcc/sdcc-4.1.0-amd64-unknown-linux2.5.tar.bz2
+          tar xjvf sdcc-src-4.1.0.tar.bz2 
+          echo "$HOME/sdcc/bin" >> $GITHUB_PATH
+      - name: Compile firmware
+        run: |
+          mkdir MC5000_firmware
+          cd firmware/MC5000
+          make
+          cd ../BUZZER
+          make
+          cd ../DISPLAY
+          make
+          cd ../build
+          cp *.ihx ../../MC5000_firmware
+      - name: Zip files
+        uses: papeloto/action-zip@v1
+        with:
+          files: MC5000_firmware
+          dest: firmware.zip   
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.once.outputs.upload_url }}
+          asset_path: firmware.zip
+          asset_name: MC5000-Padauk_PFS173_firmware.zip
+          asset_content_type: application/octet-stream
+    
