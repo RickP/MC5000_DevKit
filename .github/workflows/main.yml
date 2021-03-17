@@ -6,15 +6,31 @@ on:
       - v*
 
 jobs:
+  
+  once:
+      name: Create GitHub release
+      runs-on: ubuntu-latest
+      outputs:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+      steps:
+        - name: Create a release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ github.ref }}
+            release_name: Release ${{ github.ref }}
+            draft: true
+            prerelease: true
+  
   build_linux:
     runs-on: ubuntu-18.04
+    needs: once
     steps:
-
       - uses: actions/checkout@v2
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.12.2
-        
       - name: Install dependencies
         run: |
           sudo apt-get install -y libxcb* patchelf libgl1-mesa-dev
@@ -26,43 +42,38 @@ jobs:
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod 755 appimagetool-x86_64.AppImage
         shell: bash
-
       - name: compile
         run: |
           cd gui
           qmake
           make
         shell: bash
-        
       - name: package 
         run: |
           cd gui
           QML_SOURCES_PATHS=. ./linuxdeploy-x86_64.AppImage --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
           ./appimagetool-x86_64.AppImage AppDir
           mv MC5000-GUI-x86_64.AppImage MC5000-GUI_Linux_x86_64.AppImage
-
         shell: bash
-
-      - name: release
-        uses: marvinpinto/action-automatic-releases@latest
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          automatic_release_tag: "latest_linux"
-          title: "Linux Desktop App"
-          files: |
-            gui/MC5000-GUI_Linux_x86_64.AppImage
+          upload_url: ${{ needs.once.outputs.upload_url }}
+          asset_path: gui/MC5000-GUI_Linux_x86_64.AppImage
+          asset_name: MC5000-GUI_Linux_x86_64.AppImage
+          asset_content_type: application/octet-stream
 
   build_windows:
     runs-on: windows-2019
+    needs: once
     steps:
-
       - uses: actions/checkout@v2
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.12.2
         with:
           arch: win64_mingw81
-
       - name: compile
         run: |
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
@@ -72,18 +83,17 @@ jobs:
           windeployqt --qmldir . release/MC5000-GUI.exe
           rename release MC5000-GUI
         shell: cmd
-
       - name: pack
         uses: papeloto/action-zip@v1
         with:
           files: gui/MC5000-GUI/
           dest: MC5000-GUI_Windows_x86_64.zip
-
-      - name: release
-        uses: marvinpinto/action-automatic-releases@latest
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          automatic_release_tag: "latest_windows"
-          title: "Windows Desktop App"
-          files: |
-            MC5000-GUI_Windows_x86_64.zip
+          upload_url: ${{ needs.once.outputs.upload_url }}
+          asset_path: MC5000-GUI_Windows_x86_64.zip
+          asset_name: MC5000-GUI_Windows_x86_64.zip
+          asset_content_type: application/octet-stream
