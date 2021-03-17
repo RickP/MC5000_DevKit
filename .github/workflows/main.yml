@@ -47,7 +47,8 @@ jobs:
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          title: GUI for Linux - amd64
+          automatic_release_tag: "latest"
+          title: "Binaries"
           files: |
             gui/MC5000-GUI_Linux_x86_64.AppImage
 
@@ -82,7 +83,7 @@ jobs:
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: '${{ secrets.GITHUB_TOKEN }}'
-
-          title: GUI for Windows - amd64
+          automatic_release_tag: "latest"
+          title: "Binaries"
           files: |
             MC5000-GUI_Windows_x86_64.zip
