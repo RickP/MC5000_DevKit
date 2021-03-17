@@ -129,7 +129,8 @@ jobs:
             cd gui
             qmake
             make
-            QML_SOURCES_PATHS=. linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
+            export QML_SOURCES_PATHS=.
+            linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
             appimagetool AppDir      
       - uses: actions/upload-release-asset@v1
         name: Upload release assets for arm64
