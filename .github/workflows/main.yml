@@ -55,9 +55,11 @@ jobs:
           make
         shell: bash
       - name: Make AppImage 
+        env: |
+          QML_SOURCES_PATHS: .
         run: |
           cd gui
-          QML_SOURCES_PATHS=. ./linuxdeploy-x86_64.AppImage --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
+          ./linuxdeploy-x86_64.AppImage --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
           ./appimagetool-x86_64.AppImage AppDir
         shell: bash
       - uses: actions/upload-release-asset@v1
@@ -97,6 +99,8 @@ jobs:
             --security-opt apparmor:unconfined
           # The shell to run commands with in the container
           shell: /bin/sh
+          env: |
+            QML_SOURCES_PATHS: .
           install: |
             apt-get update
             apt-get install -y --no-install-recommends build-essential qtbase5-dev qt5-default qtdeclarative5-dev \
@@ -129,7 +133,6 @@ jobs:
             cd gui
             qmake
             make
-            export QML_SOURCES_PATHS=.
             linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
             appimagetool AppDir      
       - uses: actions/upload-release-asset@v1
