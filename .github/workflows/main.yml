@@ -133,8 +133,8 @@ jobs:
             make
             QML_SOURCES_PATHS=. linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
             appimagetool AppDir
-      - name: Upload release assets
-        uses: actions/upload-release-asset@v1
+      - uses: actions/upload-release-asset@v1
+        name: Upload release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -164,13 +164,13 @@ jobs:
           windeployqt --qmldir . release/MC5000-GUI.exe
           rename release MC5000-GUI
         shell: cmd
-      - name: Zip files
-        uses: papeloto/action-zip@v1
+      - uses: papeloto/action-zip@v1
+        name: Zip files
         with:
           files: gui/MC5000-GUI/
           dest: MC5000-GUI-Windows_x86_64.zip
-      - name: Upload release assets
-        uses: actions/upload-release-asset@v1
+      - uses: actions/upload-release-asset@v1
+        name: Upload release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -203,12 +203,12 @@ jobs:
           cd ../build
           cp *.ihx ../../MC5000_firmware
       - uses: papeloto/action-zip@v1
-      - name: Zip files
+        name: Zip files
         with:
           files: MC5000_firmware
-          dest: firmware.zip   
+          dest: firmware.zip
       - uses: actions/upload-release-asset@v1
-        name: Upload release assets
+        name: Upload release assets   
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
