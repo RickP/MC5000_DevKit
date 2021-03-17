@@ -17,7 +17,7 @@ jobs:
         
       - name: Install dependencies
         run: |
-          sudo apt-get install -y libxcb*
+          sudo apt-get install -y libxcb* patchelf libgl1-mesa-dev
           cd gui
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod 755 linuxdeploy-x86_64.AppImage
@@ -37,7 +37,7 @@ jobs:
       - name: package 
         run: |
           cd gui
-          QML_SOURCES_PATHS=. ./linuxdeploy-x86_64.AppImage --plugin qt --appdir AppDir -d imagebuilder/ -e MC5000-GUI -i icons/icon.png
+          QML_SOURCES_PATHS=. ./linuxdeploy-x86_64.AppImage --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
           ./appimagetool-x86_64.AppImage AppDir
         shell: bash
 
