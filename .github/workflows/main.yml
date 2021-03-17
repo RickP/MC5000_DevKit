@@ -137,10 +137,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.once.outputs.upload_url }}
-          - if: matrix.arch == 'aarch64'
-              asset_path: gui/MC5000-GUI_Linux-aarch64.AppImage
-          - if: matrix.arch == 'armv7'
-              asset_path: gui/MC5000-GUI_Linux-armhf.AppImage
+          if: matrix.arch == 'aarch64'
+            asset_path: gui/MC5000-GUI_Linux-aarch64.AppImage
+          if: matrix.arch == 'armv7'
+            asset_path: gui/MC5000-GUI_Linux-armhf.AppImage
           asset_name: MC5000-GUI-Linux_${{ matrix.arch }}.AppImage
           asset_content_type: application/octet-stream
 
