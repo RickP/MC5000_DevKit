@@ -104,12 +104,12 @@ void SerialCommunication::upload(int mcuNum) {
     emit isProgrammedChanged();
     QByteArray output;
     if (m_codeList.length() > mcuNum && m_codeList.at(mcuNum) != "") {
-        QStringList lines = m_codeList.at(mcuNum).split('\n', Qt::SkipEmptyParts);
+        QStringList lines = m_codeList.at(mcuNum).split('\n', QString::SkipEmptyParts);
         QStringList labels;
 
 
         for (int j = 0; j < lines.size(); j++) {
-            QStringList parts = lines.at(j).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+            QStringList parts = lines.at(j).split(QRegExp("\\s+"), QString::SkipEmptyParts);
             if (parts.size() == 0) continue;
             if (parts.at(0).endsWith(LABEL_MARKER) and !labels.contains(parts.at(0))) {
                 labels.append(parts.at(0));
@@ -117,7 +117,7 @@ void SerialCommunication::upload(int mcuNum) {
         }
 
         for (int j = 0; j < lines.size(); j++) {
-            QStringList parts = lines.at(j).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+            QStringList parts = lines.at(j).split(QRegExp("\\s+"), QString::SkipEmptyParts);
             char addToCommand = 0;
             for (int k = 0; k < parts.size(); k++) {
                 QString part = parts.at(k);
