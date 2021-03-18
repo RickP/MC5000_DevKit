@@ -10,8 +10,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Test stuff
         env:
-          DEV_USER: ${{ secrets.APPLE_DEV_PASS }}
-          DEV_PW: ${{ secrets.APPLE_DEV_USER }}
+          DEV_USER: ${{ secrets.APPLE_DEV_USER }}
+          DEV_PW: ${{ secrets.APPLE_DEV_PASS }}
           DEV_CERT: ${{ secrets.APPLE_DEV_CERT }}
         run: |
           echo $DEV_CERT | base64 --decode > certificate.p12
