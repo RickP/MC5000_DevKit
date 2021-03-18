@@ -37,10 +37,11 @@ jobs:
         name: Zip gerbers
         with:
           files: pcb/fabrication/gerbers
-          dest: pcb/fabrication/MC5000_gerbers.zip
-      - name: Delete gerber sources
+          dest: MC5000_gerbers.zip
+      - name: Replace gerber dir with zipfile
         run: |
           rm -r pcb/fabrication/gerbers
+          mv MC5000_gerbers.zip pcb/fabrication/
       - uses: papeloto/action-zip@v1
         name: Make release package
         with:
