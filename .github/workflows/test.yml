@@ -6,7 +6,6 @@ jobs:
   build_gui_osx:
     name: Create MacOS GUI for x86_64
     runs-on: macos-10.15
-    needs: once
     steps:
       - uses: actions/checkout@v2
       - name: Test stuff
