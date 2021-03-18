@@ -49,6 +49,6 @@ else
 	  done
 	done
 fi
-mv *.dmg ../images
+mv MC500-GUI.dmg ../images/MC500-GUI_MacOS-x86_64.dmg
 cd ../imagebuilder
 rm -r ../build
