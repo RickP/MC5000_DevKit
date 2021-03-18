@@ -157,7 +157,7 @@ jobs:
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cd gui
           qmake
-          make
+          nmake
           windeployqt --qmldir . release/MC5000-GUI.exe
           rename release MC5000-GUI
         shell: cmd
