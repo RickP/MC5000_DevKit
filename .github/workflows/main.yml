@@ -21,7 +21,8 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            release_name: latest
+            tag_name: ${{ github.ref }}
+            release_name: Release ${{ github.ref }}
             draft: true
             prerelease: true
   
