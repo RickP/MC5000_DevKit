@@ -1,9 +1,11 @@
 name: Build_app
 
-on:
-  push:
-    tags:
-      - v*
+on: push
+
+#on:
+#  push:
+#    tags:
+#      - v*
 
 jobs:
   
@@ -137,6 +139,36 @@ jobs:
           asset_name: MC5000-GUI_Linux-arm64.AppImage
           asset_content_type: application/octet-stream
 
+  build_gui_osx:
+    name: Create MacOS GUI for x86_64
+    runs-on: macos-10.15
+    needs: once
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2.12.2
+        with:
+          version: '5.12.8'
+      - name: Compile QT app
+        run: |
+          cd gui
+          qmake
+          make
+        shell: bash
+      - name: Package app
+        run: |
+          cd gui
+          macdeployqt MC5000-GUI.app -qmldir=.. -dmg
+        shell: bash
+      - uses: actions/upload-release-asset@v1
+        name: Upload release assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.once.outputs.upload_url }}
+          asset_path: gui/MC5000-GUI.dmg
+          asset_name: MC5000-GUI_MacOS-x86_64-unsigned.dmg
+          asset_content_type: application/octet-stream
 
   build_gui_windows:
     name: Create Windows GUI for x86_64 
