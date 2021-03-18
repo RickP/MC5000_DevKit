@@ -1,0 +1,49 @@
+name: Build_kicad_test
+
+on: push
+
+jobs:
+  
+  once:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create a release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: true
+  
+  build_kicad_fabrication_files:
+    name: Make PCB fabrication files
+    runs-on: ubuntu-20.04
+    needs: once
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nerdyscout/kicad-exports@v2.2
+        with:
+          config: pcb/jlcpcb_fab_files.kibot.yaml
+          schema: 'pcb/*.sch'
+          board: 'pcb/*.kicad_pcb'
+          dir: 'pcb/fabrication'
+      - uses: papeloto/action-zip@v1
+        name: Zip files
+        with:
+          files: pcb/fabrication
+          dest: PCB_fabrication_files_for_jlcpcb.zip
+      - uses: actions/upload-release-asset@v1
+        name: Upload release assets   
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.once.outputs.upload_url }}
+          asset_path: PCB_fabrication_files_for_jlcpcb.zip
+          asset_name: PCB_fabrication_files_for_jlcpcb.zip
+          asset_content_type: application/octet-stream
