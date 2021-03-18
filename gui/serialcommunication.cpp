@@ -111,7 +111,7 @@ void SerialCommunication::upload(int mcuNum) {
         for (int j = 0; j < lines.size(); j++) {
             QStringList parts = lines.at(j).split(QRegExp("\\s+"), QString::SkipEmptyParts);
             if (parts.size() == 0) continue;
-            if (parts.at(0).endsWith(LABEL_MARKER) and !labels.contains(parts.at(0))) {
+            if (parts.at(0).endsWith(LABEL_MARKER) && !labels.contains(parts.at(0))) {
                 labels.append(parts.at(0));
             }
         }
