@@ -49,8 +49,6 @@ outputs:
             name: Designator
           - field: Footprint
             name: Package
-          - field: LCSC
-            name: LCSC
         component_aliases: [['r', 'r_small', 'res', 'resistor'], ['l', 'l_small', 'inductor'], ['c', 'c_small', 'cap', 'capacitor'], ['sw', 'switch'], ['zener', 'zenersmall'], ['d', 'diode', 'd_small']]
         fit_field: 'Variant'
         group_connectors: true
