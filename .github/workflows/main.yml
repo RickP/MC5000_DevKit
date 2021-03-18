@@ -67,8 +67,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.once.outputs.upload_url }}
-          asset_path: gui/MC5000-GUI-Linux-x86_64.AppImage
-          asset_name: MC5000-GUI-Linux_x86_64.AppImage
+          asset_path: gui/MC5000-GUI_Linux-x86_64.AppImage
+          asset_name: MC5000-GUI_Linux-x86_64.AppImage
           asset_content_type: application/octet-stream
 
   build_gui_linux_arm:
@@ -161,6 +161,7 @@ jobs:
         with:
           version: '5.12.8'
           arch: win64_mingw81
+          setup-python: 'false'
       - name: Compile QT app
         run: |
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
