@@ -35,8 +35,7 @@ jobs:
           qmake
           make
         shell: bash
-      - name: Package app 
-        env:
+      - name: Package app
         run: |
           cd gui
           macdeployqt MC5000-GUI.app -qmldir=.. -dmg
