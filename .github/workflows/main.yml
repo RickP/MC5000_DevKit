@@ -163,7 +163,7 @@ jobs:
         name: Zip files
         with:
           files: gui/MC5000-GUI/
-          dest: MC5000-GUI-Windows-x86_64.zip
+          dest: MC5000-GUI_Windows-x86_64.zip
       - uses: actions/upload-release-asset@v1
         name: Upload release assets
         env:
@@ -208,6 +208,6 @@ jobs:
         with:
           upload_url: ${{ needs.once.outputs.upload_url }}
           asset_path: firmware.zip
-          asset_name: MC5000-Padauk_PFS173_firmware.zip
+          asset_name: Padauk_PFS173_firmware.zip
           asset_content_type: application/octet-stream
     
