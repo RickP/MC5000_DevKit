@@ -1,9 +1,9 @@
 name: Build_app
 
-on: push
-#  push:
-#    tags:
-#      - v*
+on:
+  push:
+    tags:
+      - v*
 
 jobs:
   
