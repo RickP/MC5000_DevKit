@@ -71,7 +71,7 @@ jobs:
           asset_name: MC5000-GUI_Linux-x86_64.AppImage
           asset_content_type: application/octet-stream
 
-  build_gui_linux_arm:
+  build_gui_linux_arm64:
     name: Create Linux GUI for arm64
     runs-on: ubuntu-latest
     needs: once
@@ -130,8 +130,7 @@ jobs:
             linuxdeploy --plugin qt --appdir AppDir -d imagebuilder/MC5000.desktop -e MC5000-GUI -i icons/icon.png
             appimagetool AppDir      
       - uses: actions/upload-release-asset@v1
-        name: Upload release assets for arm64
-        if: matrix.arch == 'aarch64' 
+        name: Upload release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -139,16 +138,7 @@ jobs:
           asset_path: gui/MC5000-GUI_Linux-aarch64.AppImage
           asset_name: MC5000-GUI_Linux-arm64.AppImage
           asset_content_type: application/octet-stream
-      - uses: actions/upload-release-asset@v1
-        name: Upload release assets for arm32
-        if: matrix.arch == 'armv7' 
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.once.outputs.upload_url }}
-          asset_path: gui/MC5000-GUI_Linux-armhf.AppImage
-          asset_name: MC5000-GUI_Linux-arm32.AppImage
-          asset_content_type: application/octet-stream
+
 
   build_gui_windows:
     name: Create Windows GUI for x86_64 
@@ -160,8 +150,6 @@ jobs:
         uses: jurplel/install-qt-action@v2.12.2
         with:
           version: '5.12.8'
-          arch: win64_mingw81
-          setup-python: 'false'
       - name: Compile QT app
         run: |
           call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
