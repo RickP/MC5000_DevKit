@@ -1,9 +1,11 @@
-name: Build_App
+name: Build_all
 
-on:
-  push:
-    tags:
-      - v*
+on: push
+
+#on:
+#  push:
+#    tags:
+#      - v*
 
 jobs:
   
@@ -20,7 +22,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
             tag_name: ${{ github.ref }}
-            release_name: Release ${{ github.ref }}
+            release_name: latest
             draft: true
             prerelease: true
   
