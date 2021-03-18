@@ -1,11 +1,9 @@
 name: Build_App
 
-on: push
-
-#on:
-#  push:
-#    tags:
-#      - v*
+on:
+  push:
+    tags:
+      - v*
 
 jobs:
   
@@ -29,7 +27,6 @@ jobs:
   build_gui_linux_x64:
     name: Create Linux GUI for x86_64
     runs-on: ubuntu-18.04
-    if: ${{ false }}
     needs: once
     steps:
       - uses: actions/checkout@v2
@@ -75,7 +72,6 @@ jobs:
   build_gui_linux_arm64:
     name: Create Linux GUI for arm64
     runs-on: ubuntu-latest
-    if: ${{ false }}
     needs: once
     steps:
       - uses: actions/checkout@v2
@@ -179,7 +175,6 @@ jobs:
   build_firmware:
     name: Build microcontroller firmware
     runs-on: ubuntu-latest
-    if: ${{ false }}
     needs: once
     steps:
       - uses: actions/checkout@v2
