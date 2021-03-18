@@ -31,6 +31,8 @@ jobs:
         with:
           config: pcb/jlcpcb_fab_files.kibot.yaml
           dir: 'pcb/fabrication'
+          board: 'pcb/MC5000_Board.kicad_pcb'
+          schema: 'pcb/MC5000_Board.sch'
       - uses: papeloto/action-zip@v1
         name: Zip files
         with:
