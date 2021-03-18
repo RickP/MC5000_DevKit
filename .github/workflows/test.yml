@@ -30,11 +30,19 @@ jobs:
       - uses: nerdyscout/kicad-exports@v2.2
         with:
           config: pcb/jlcpcb_fab_files.kibot.yaml
-          dir: 'pcb/fabrication'
+          dir: 'pcb'
           board: 'pcb/MC5000_Board.kicad_pcb'
           schema: 'pcb/MC5000_Board.sch'
       - uses: papeloto/action-zip@v1
-        name: Zip files
+        name: Zip gerbers
+        with:
+          files: pcb/fabrication/gerbers
+          dest: pcb/fabrication/MC5000_gerbers.zip
+      - name: Delete gerber sources
+        run: |
+          rm -r pcb/fabrication/gerbers
+      - uses: papeloto/action-zip@v1
+        name: Make release package
         with:
           files: pcb/fabrication
           dest: PCB_fabrication_files_for_jlcpcb.zip
