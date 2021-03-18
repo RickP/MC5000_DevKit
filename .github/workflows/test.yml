@@ -2,6 +2,7 @@ name: test
 
 on: push
 
+jobs:
   build_gui_osx:
     name: Create MacOS GUI for x86_64
     runs-on: macos-10.15
