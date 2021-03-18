@@ -30,8 +30,6 @@ jobs:
       - uses: nerdyscout/kicad-exports@v2.2
         with:
           config: pcb/jlcpcb_fab_files.kibot.yaml
-          schema: 'pcb/*.sch'
-          board: 'pcb/*.kicad_pcb'
           dir: 'pcb/fabrication'
       - uses: papeloto/action-zip@v1
         name: Zip files
