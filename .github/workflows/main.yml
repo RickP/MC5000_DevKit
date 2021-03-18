@@ -1,9 +1,9 @@
 name: Build_app
 
-on:
-  push:
-    tags:
-      - v*
+on: push
+#  push:
+#    tags:
+#      - v*
 
 jobs:
   
@@ -238,4 +238,39 @@ jobs:
           asset_path: firmware.zip
           asset_name: Padauk_PFS173_firmware.zip
           asset_content_type: application/octet-stream
-    
+
+  build_kicad_fabrication_files:
+    name: Make PCB fabrication files
+    runs-on: ubuntu-20.04
+    needs: once
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nerdyscout/kicad-exports@v2.2
+        with:
+          config: pcb/jlcpcb_fab_files.kibot.yaml
+          dir: 'pcb'
+          board: 'pcb/MC5000_Board.kicad_pcb'
+          schema: 'pcb/MC5000_Board.sch'
+      - uses: papeloto/action-zip@v1
+        name: Zip gerbers
+        with:
+          files: pcb/fabrication/gerbers
+          dest: MC5000_gerbers.zip
+      - name: Replace gerber dir with zipfile
+        run: |
+          sudo rm -r pcb/fabrication/gerbers
+          sudo mv MC5000_gerbers.zip pcb/fabrication/
+      - uses: papeloto/action-zip@v1
+        name: Make release package
+        with:
+          files: pcb/fabrication
+          dest: PCB_fabrication_files_for_jlcpcb.zip
+      - uses: actions/upload-release-asset@v1
+        name: Upload release assets   
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.once.outputs.upload_url }}
+          asset_path: PCB_fabrication_files_for_jlcpcb.zip
+          asset_name: PCB_fabrication_files_for_jlcpcb.zip
+          asset_content_type: application/octet-stream    
