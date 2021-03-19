@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 
     engine.rootContext()->setContextProperty("serial", serial);
 
-    engine.rootContext()->setContextProperty("manualUrl", "https://github.com/RickP/Padauk_MC5000/blob/main/README.md");
+    engine.rootContext()->setContextProperty("manualUrl", "https://rickp.github.io/MC5000_DevKit/");
 
     engine.load(url);
 
