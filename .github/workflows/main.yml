@@ -177,13 +177,41 @@ jobs:
           codesign -vvv --strict --options=runtime --sign $DEV_CERT_ID MC5000-GUI.dmg
           xcrun altool -t osx -f MC5000-GUI.dmg --primary-bundle-id "org.rickp.mc5000" --notarize-app -u "$DEV_USER" -p "$DEV_PW"
         shell: bash
+      - uses: actions/upload-artifact@v2
+        name: Archive build artifact
+        with:
+          name: macos-dmg-file
+          path: gui/MC5000-GUI.dmg
+   
+  wait_for_notarization:
+    name: Wait ten minutes for notarization to complete
+    runs_on: ubuntu-latest
+    needs: build_gui_osx
+    steps:
+    - name: Sleep
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '10m'    
+          
+  staple_osx_app:
+    name: Staple notarization to MacOS GUI
+    runs-on: macos-10.15
+    needs: wait_for_notarization
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: macos-dmg-file
+      - name: Staple app
+        run: |
+          xcrun stapler staple "MC5000-GUI.dmg"
       - uses: actions/upload-release-asset@v1
         name: Upload release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.once.outputs.upload_url }}
-          asset_path: gui/MC5000-GUI.dmg
+          asset_path: MC5000-GUI.dmg
           asset_name: MC5000-GUI_MacOS-x86_64.dmg
           asset_content_type: application/octet-stream
 
@@ -220,7 +248,7 @@ jobs:
           asset_path: MC5000-GUI_Windows-x86_64.zip
           asset_name: MC5000-GUI_Windows-x86_64.zip
           asset_content_type: application/octet-stream
-          
+   
   build_firmware:
     name: Build microcontroller firmware
     runs-on: ubuntu-latest
