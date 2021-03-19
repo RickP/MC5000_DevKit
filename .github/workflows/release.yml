@@ -6,7 +6,7 @@ jobs:
 
    
   step_one:
-    name: Wait 5s
+    name: First step
     runs-on: ubuntu-latest
     outputs:
       step_one_output: "Huhu"
@@ -14,23 +14,25 @@ jobs:
     - name: Sleep
       uses: jakejarvis/wait-action@master
       with:
-        time: '5s'    
+        time: '1s'    
           
   step_two:
-    name: Wait 5s
+    name: Second step
     runs-on: ubuntu-latest
     needs: step_one
     steps:
     - name: Sleep
       uses: jakejarvis/wait-action@master
       with:
-        time: '5s'
+        time: '1s'
   
   step_three:
-    name: Wait 5s
+    name: Third step
     runs-on: ubuntu-latest
     needs: step_two
+    env:
+        STEP1_OUT: ${{ needs.step_two.needs.step_one.outputs.step_one_output }}
     steps:
     - name: Talk
       run: |
-        echo "${ needs.step_two.needs.step_one.outputs.step_one_output }"
+        echo $STEP1_OUT
