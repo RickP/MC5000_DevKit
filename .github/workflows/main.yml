@@ -184,14 +184,14 @@ jobs:
           path: gui/MC5000-GUI.dmg
    
   wait_for_notarization:
-    name: Wait ten minutes for notarization to complete
-    runs_on: ubuntu-latest
+    name: Wait five minutes for notarization to complete
+    runs-on: ubuntu-latest
     needs: build_gui_osx
     steps:
     - name: Sleep
       uses: jakejarvis/wait-action@master
       with:
-        time: '10m'    
+        time: '5m'    
           
   staple_osx_app:
     name: Staple notarization to MacOS GUI
@@ -210,7 +210,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.once.outputs.upload_url }}
+          upload_url: ${{ needs.wait_for_notarization.needs.build_gui_osx.needs.once.outputs.upload_url }}
           asset_path: MC5000-GUI.dmg
           asset_name: MC5000-GUI_MacOS-x86_64.dmg
           asset_content_type: application/octet-stream
