@@ -1,7 +1,8 @@
 name: Publish_release
 
 on:
-  release
+  release:
+    types: [published, prereleased, released]
     
 jobs:
   staple_osx_app:
