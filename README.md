@@ -1,3 +1,3 @@
-# Padauk_MC5000
-An interpreter of the Shenzhen IO assembler language for the PADAUK PFS173
+# MC5000_DevKit
+A development board that brings the Shenzhen IO game to real life. 
 
