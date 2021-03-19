@@ -186,7 +186,7 @@ jobs:
           path: gui/MC5000-GUI.dmg
    
   wait_for_notarization:
-    name: Wait five minutes for notarization to complete
+    name: Wait some minutes for notarization to complete
     runs-on: ubuntu-latest
     needs: build_gui_osx
     outputs:
@@ -195,7 +195,7 @@ jobs:
     - name: Sleep
       uses: jakejarvis/wait-action@master
       with:
-        time: '5m'    
+        time: '6m'    
           
   staple_osx_app:
     name: Staple notarization to MacOS GUI
