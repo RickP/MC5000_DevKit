@@ -20,6 +20,8 @@ jobs:
     name: Second step
     runs-on: ubuntu-latest
     needs: step_one
+    outputs:
+      step_one_output: ${{needs.step_one.outputs.step_one_output }}
     steps:
     - name: Sleep
       uses: jakejarvis/wait-action@master
@@ -31,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: step_two
     env:
-        STEP1_OUT: ${{ needs.step_two.needs.step_one.outputs.step_one_output }}
+        STEP1_OUT: ${{ needs.step_two.outputs.step_one_output }}
     steps:
     - name: Talk
       run: |
