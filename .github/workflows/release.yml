@@ -69,7 +69,7 @@ jobs:
    
   wait_for_notarization:
     name: Wait ten minutes for notarization to complete
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     needs: build_gui_osx
     steps:
     - name: Sleep
