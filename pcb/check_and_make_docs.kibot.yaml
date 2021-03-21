@@ -20,8 +20,10 @@ outputs:
     options:
       show_components: 'all'
       output: '%f-pcb.%x'
+      format: "jpg"
       style:
         board: '#023BA2'
+        copper: '#3666bf'
   
   - name: 'Print schematics'
     comment: "Print schematic (PDF)"
