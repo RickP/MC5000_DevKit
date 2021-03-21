@@ -13,12 +13,11 @@ preflight:
   ignore_unconnected: false
 
 outputs:
-  - name: 'Borad image'
+  - name: 'Board image'
     comment: "Make a nice image of the board"
     type: pcbdraw
     dir: 'docs'
     options:
-      format: 'png'
       show_components: 'all'
       output: '%f-pcb.%x'
       style:
