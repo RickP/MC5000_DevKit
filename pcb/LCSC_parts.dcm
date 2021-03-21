@@ -35,4 +35,8 @@ D Ambient light sensor
 F https://datasheet.lcsc.com/szlcsc/1809172049_Senba-Sensing-Tech-SMD3528C-50_C250859.pdf
 $ENDCMP
 #
+$CMP USB_B_Micro-Connector
+D SMT USB connector
+$ENDCMP
+#
 #End Doc Library

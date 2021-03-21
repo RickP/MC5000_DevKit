@@ -22,7 +22,7 @@ outputs:
     comment: "Print board (PDF)"
     type: pdf_pcb_print
     layers:
-      - Dwgs.User
+      - F.Cu
       - Edge.Cuts
-      - F.CrtYd
+      - F.SilkS
     dir: 'docs'  
