@@ -6,7 +6,8 @@ on:
       - 'pcb/MC5000_Board.sch'
       - 'pcb/MC5000_Board.kicad_pcb'
       - 'pcb/modules/*.sch'
-      - '.github/workflows/check_kicad.yml'
+      - 'pcb/check_and_make_docs.kibot.yaml'
+      - '.github/workflows/check_and_make_docs.yml'
   
   
 jobs:
