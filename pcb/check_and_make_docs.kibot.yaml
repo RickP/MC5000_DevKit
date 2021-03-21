@@ -19,7 +19,7 @@ outputs:
     dir: 'docs'
     options:
       show_components: 'all'
-      output: '%f-pcb.%x'
+      output: '%f-PCB.%x'
       style:
         board: '#023BA2'
         copper: '#3666bf'
