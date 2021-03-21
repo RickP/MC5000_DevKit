@@ -7,9 +7,10 @@ global:
 
 preflight:
   update_xml: true
+  run_erc: true
   run_drc: true
   check_zone_fills: true
-  ignore_unconnected: true
+  ignore_unconnected: false
 
 outputs:
   - name: 'https://jlcpcb.com/'
