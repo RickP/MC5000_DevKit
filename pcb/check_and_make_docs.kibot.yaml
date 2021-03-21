@@ -19,10 +19,10 @@ outputs:
     dir: 'docs'
     
   - name: 'print board mechanics'
-     comment: "Print board (PDF)"
-     type: pdf_pcb_print
-     layers:
-       - Dwgs.User
-       - Edge.Cuts
-       - F.CrtYd
-     dir: docs  
+    comment: "Print board (PDF)"
+    type: pdf_pcb_print
+    layers:
+      - Dwgs.User
+      - Edge.Cuts
+      - F.CrtYd
+    dir: 'docs'  
