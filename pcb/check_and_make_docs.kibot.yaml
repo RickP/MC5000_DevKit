@@ -13,6 +13,17 @@ preflight:
   ignore_unconnected: false
 
 outputs:
+  - name: 'Borad image'
+    comment: "Make a nice image of the board"
+    type: pcbdraw
+    dir: 'docs'
+    options:
+      format: 'png'
+      show_components: 'all'
+      output: '%f-pcb.%x'
+      style:
+        board: '#023BA2'
+  
   - name: 'Print schematics'
     comment: "Print schematic (PDF)"
     type: pdf_sch_print
