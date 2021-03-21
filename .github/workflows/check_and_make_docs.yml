@@ -11,7 +11,7 @@ on:
   
   
 jobs:
-  checks:
+  make_docs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -26,7 +26,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add pcb/docs
-          git commit -m "Uodate pcd docs" -a
+          git commit -m "Uodate pcb docs" -a
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
