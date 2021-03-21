@@ -1,0 +1,28 @@
+kibot:
+  version: 1
+  
+global:
+  output: '%f_rev%r-%i.%x'
+  variant: ''
+
+preflight:
+  update_xml: true
+  run_erc: true
+  run_drc: true
+  check_zone_fills: true
+  ignore_unconnected: false
+
+outputs:
+  - name: 'print schema'
+    comment: "Print schematic (PDF)"
+    type: pdf_sch_print
+    dir: 'docs'
+    
+  - name: 'print board mechanics'
+     comment: "Print board (PDF)"
+     type: pdf_pcb_print
+     layers:
+       - Dwgs.User
+       - Edge.Cuts
+       - F.CrtYd
+     dir: docs  
