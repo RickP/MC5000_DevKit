@@ -2,7 +2,7 @@ kibot:
   version: 1
   
 global:
-  output: '%f_rev%r-%i.%x'
+  output: '%f-%i.%x'
   variant: ''
 
 preflight:
@@ -13,16 +13,21 @@ preflight:
   ignore_unconnected: false
 
 outputs:
-  - name: 'print schema'
+  - name: 'Print schematics'
     comment: "Print schematic (PDF)"
     type: pdf_sch_print
     dir: 'docs'
+    options:
+      output: '%f-schematic.%x'
     
-  - name: 'print board mechanics'
+  - name: 'Print board mechanics'
     comment: "Print board (PDF)"
     type: pdf_pcb_print
+    options:
+      output: '%f-PCB.%x'
     layers:
-      - F.Cu
-      - Edge.Cuts
       - F.SilkS
+      - F.Mask
+      - F.CrtYd
+      - Edge.Cuts
     dir: 'docs'  
