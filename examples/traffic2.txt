@@ -1,0 +1,25 @@
+start:
+mov 100 p0
+teq p1 100
+- jmp start
+mov 10 acc
+loop:
+sub 1
+mov acc x1
+slp 4
+tgt acc 0
++ jmp loop
+mov 1 x0
+slp 4
+mov 0 p0
+mov x0 dat,teq x0 1
++ mov 100 p1
++ slp 5
++ mov 0 p1
++ mov 100 p0
++ slp 30
++ mov 0 p0
++ mov 100 p1
++ slp 5
++ mov 0 p1
++ mov 1 x0

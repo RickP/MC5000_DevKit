@@ -134,7 +134,11 @@ void SerialCommunication::upload(int mcuNum) {
                     } else {
                         output.append(LABEL_HEXCODE);
                         output.append(labels.lastIndexOf(part));
-                        part = parts.at(++k);
+                        if (k < parts.size()-1) {
+                            part = parts.at(++k);
+                        } else {
+                            break;
+                        }
                     }
                 }
 

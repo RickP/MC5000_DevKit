@@ -1,0 +1,26 @@
+mov 1 x0
+mov 0 p0
+slp 30
+mov 2 x0
+slp 5
+mov 0 x0
+mov 100 p0
+mov 10 acc
+count: sub 1
+mov acc x1
+tgt acc 0
+slp 3
++ jmp count
+mov 2 x0
+slp 5
+,slx x0
+mov x0 acc
+teq acc 0
++ mov 0 p0
++ mov 0 p1
+teq acc 1
++ mov 100 p0
++ mov 0 p1
+teq acc 2
++ mov 100 p1
++ mov 0 p0
