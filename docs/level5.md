@@ -11,6 +11,6 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 
 ## Hints
 
-[Cable connections](leve5_connections.md)
-[Programming hint](leve5_hint.md)
-[Programming solution](leve5_solution.md)
+- [Cable connections](leve5_connections.md)
+- [Programming hint](leve5_hint.md)
+- [Programming solution](leve5_solution.md)
