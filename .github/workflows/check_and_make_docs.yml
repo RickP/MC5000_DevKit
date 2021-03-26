@@ -2,6 +2,8 @@ name: KiCad_CI
 
 on:
   push:
+    tags-ignore:
+      - '**'
     paths:
       - 'pcb/MC5000_Board.sch'
       - 'pcb/MC5000_Board.kicad_pcb'
