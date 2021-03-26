@@ -12,7 +12,7 @@ tgt acc 0
 mov 1 x1
 slp 4
 mov 0 p1
-mov x0 dat,teq x0 1
+slx x1,teq x0 1
 + mov 100 p1
 + slp 5
 + mov 0 p1
