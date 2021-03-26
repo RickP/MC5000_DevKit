@@ -1,4 +1,5 @@
 (fp_lib_table
   (lib (name Holes)(type KiCad)(uri ${KIPRJMOD}/Holes.pretty)(options "")(descr ""))
   (lib (name LCSC_parts)(type KiCad)(uri ${KIPRJMOD}/LCSC_parts.pretty)(options "")(descr ""))
+  (lib (name Symbol)(type KiCad)(uri ${KIPRJMOD}/Symbol.pretty)(options "")(descr ""))
 )
