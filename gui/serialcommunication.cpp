@@ -1,6 +1,7 @@
 #include "serialcommunication.h"
 #include <QSerialPortInfo>
 #include <QThread>
+#include <QTimer>
 
 
 static void printHex(uint8_t byte) {
@@ -49,14 +50,16 @@ void SerialCommunication::readData()
     if (data.length() == 3 && data.at(0) == 0x7F) {
         int mcuId = data.at(1) - 0x31;
         if (data.at(2) == 1) {
+             m_uploadDone[mcuId] = true;
             if (mcuId < (m_mcuConnections-1)) {
                 upload(mcuId+1);
             }
-        } else if (++m_tries[mcuId] < UPLOAD_RETRIES) {
-            upload(mcuId);
         }
     } else if (data.length() == 6 && (data.at(5) & 0x3F) == checksum(data.right(5), 4)) {
         int mcuId = data.at(0) - 0x31;
+
+        if (!m_uploadDone.at(mcuId)) return;
+
         if (m_mcuConnections < 2) {
             m_mcuConnections = 2;
             m_codeList.empty();
@@ -93,6 +96,11 @@ void SerialCommunication::connectPort(QString port) {
 }
 
 void SerialCommunication::startUpload(QStringList codeList) {
+    for (int i=0; i < m_mcuConnections; i++) {
+        if (!m_uploadDone.at(i)) {
+            return;
+        }
+    }
     for (int i = 0; i < 3; i++) m_tries[i] = 0;
     m_codeList = codeList;
     upload();
@@ -100,7 +108,7 @@ void SerialCommunication::startUpload(QStringList codeList) {
 
 void SerialCommunication::upload(int mcuNum) {
     m_errorMessage = "";
-    m_isProgrammed[mcuNum] = false;
+    m_isProgrammed = {false, false, false, false};
     emit isProgrammedChanged();
     QByteArray output;
     if (m_codeList.length() > mcuNum && m_codeList.at(mcuNum) != "") {
@@ -205,6 +213,7 @@ void SerialCommunication::upload(int mcuNum) {
             return;
         } else {
             // header
+            m_uploadDone[mcuNum] = false;
             writeSerialByte(START_CHAR);
             writeSerialByte(0x31 + mcuNum);
             for (int x=0; x < output.length(); x++) {
@@ -212,12 +221,25 @@ void SerialCommunication::upload(int mcuNum) {
             }
             writeSerialByte(checksum(output, output.length()));
             writeSerialByte(END_CHAR);
+            QTimer::singleShot(SERIAL_DELAY * (MAX_PROGRAM_LENGTH + 10), this, &SerialCommunication::checkUpload);
             return;
         }
     } else {
         m_errorMessage = QString("No serial connection!");
         emit errorMessageChanged();
         return;
+    }
+}
+
+void SerialCommunication::checkUpload() {
+    for (int i=0; i < m_mcuConnections; i++) {
+        if (!m_uploadDone.at(i)) {
+            if (++m_tries[i] < UPLOAD_RETRIES) {
+                upload(i);
+            } else {
+                m_uploadDone[i] = true;
+            }
+        }
     }
 }
 
@@ -262,6 +284,11 @@ char* SerialCommunication::encode16BitVal(QString parameter) {
 }
 
 void SerialCommunication::updateRegisters() {
+    for (int i=0; i < m_mcuConnections; i++) {
+        if (!m_uploadDone.at(i)) {
+            return;
+        }
+    }
     if (m_mcuConnections && m_serial->isOpen()) {
         for (int i=0; i < m_mcuConnections; i++) {
             writeSerialByte(0x31+i);

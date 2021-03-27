@@ -13,13 +13,11 @@ ApplicationWindow {
     minimumHeight: 400
     visible: true
     title: qsTr("MC5000 V1.0")
-
-    property bool upload: false
     property int maxLines: 16
 
     Timer {
         interval: 100 + (50 * serial.mcuConnections)
-        running: serial.mcuConnections > 0 && !upload
+        running: serial.mcuConnections > 0
         repeat: true
         onTriggered: serial.updateRegisters()
     }
@@ -60,13 +58,11 @@ ApplicationWindow {
                     text: qsTr("Upload")
                     Layout.alignment: Qt.AlignRight
                     onClicked: {
-                        upload = true;
                         var code_strings = [];
                         for (var i=0; i < editors.count; i++) {
                             code_strings.push(editors.itemAt(i).children[0].children[1].children[1].text);
                         }
                         serial.startUpload(code_strings);
-                        upload = false;
                         messageDialog.visible = (serial.errorMessage != "");
                     }
                 }

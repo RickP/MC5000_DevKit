@@ -22,7 +22,7 @@ const char LABEL_HEXCODE = 0x10 << 2;
 const char START_CHAR = 0x7F;
 const char END_CHAR = 0x7E;
 const int SERIAL_DELAY = 8;
-const int UPLOAD_RETRIES = 10;
+const int UPLOAD_RETRIES = 15;
 const int MAX_PROGRAM_LENGTH = 74;
 
 public:
@@ -60,10 +60,13 @@ QStringList m_codeList = {};
 QList<int> m_datRegisters = {0,0,0,0,0};
 QList<int> m_accRegisters = {0,0,0,0,0};
 QList<bool> m_isProgrammed = {false, false, false, false};
+QList<bool> m_uploadDone = {true, true, true, true};
 char encode8BitVal(QString);
 char* encode16BitVal(QString);
 void writeSerialByte(char, bool debug=false);
 void upload(int mcuNum = 0);
+void checkUpload();
+
 
 const QMap<QString, char> registerEncodings = {
     {"x0", 0x40},
