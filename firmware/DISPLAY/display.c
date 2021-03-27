@@ -108,7 +108,7 @@ int main(void) {
         while (1) {
 
             // Multiplex display
-            if (++multiplex_counter > 2500) {
+            if (++multiplex_counter > 2000) {
                 i2cBegin();
                 i2cByteOut(0x40);
                 i2cByteOut(2);

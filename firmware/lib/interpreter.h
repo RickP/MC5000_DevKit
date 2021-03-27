@@ -177,13 +177,12 @@ void set_val(int16_t arg, uint8_t reg) {
     }
 }
 
-
 uint8_t run_program_line() {
     // Sleep if we need to
     if (clock_tick < sleep_until) {
         return 0;
     }
-    sleep_until = 0;
+    SLEEP(5); // Sleep a bit on every line for interrupts and com
 
     // XBus handling
     uint8_t xbus_result = xbus_handler();

@@ -19,7 +19,7 @@ uint8_t program_buf[PROGSIZE] = {0};
 uint8_t program_buf_pos = 0;
 
 typedef enum {
-        faulty_prog,
+        no_prog,
         empty_prog,
         transmission_start,
         line_prog,
@@ -27,7 +27,7 @@ typedef enum {
 } prog_state;
 
 prog_state state = empty_prog;
-prog_state prev_state;
+prog_state prev_state = no_prog;
 
 void interrupt_routine() __interrupt(0) {
         if (INTRQ & INTRQ_TM2) {  // TM2 interrupt request?
@@ -59,29 +59,6 @@ void handle_rx() {
 
         if (process_serial_rx_byte()) {
 
-#ifdef DEBUG
-                switch (state) {
-                    case empty_prog:
-                        dat_register = 1;
-                        break;
-                    case line_prog:
-                        dat_register = 2;
-                        break;
-                    case transmission_start:
-                        dat_register = 3;
-                        break;
-                    case retransmission_start:
-                        dat_register = 4;
-                        break;
-                    case faulty_prog:
-                        dat_register = 5;
-                        break;
-                    case prog_ready:
-                        dat_register = 6;
-                        break;
-                }
-#endif
-
                 if ((state == prog_ready || state == empty_prog) && rx_char == *serial_number) { // serial num char received
                         uint8_t tx_data[4];
                         putchar(serial_number[0]);
@@ -98,7 +75,7 @@ void handle_rx() {
                             putchar(checksum(tx_data, 4));
                         }
                 } else if (rx_char == START_CHAR) { // Start char received
-                        prev_state = state;
+                        if (prev_state == no_prog) prev_state = state;
                         state = transmission_start;
                 } else if (state == transmission_start) {
                         if (rx_char == *serial_number) {
@@ -108,6 +85,7 @@ void handle_rx() {
                                 reset_program();
                                 state = prev_state;
                         }
+                        prev_state = no_prog;
                 } else if (state == line_prog) {
                         if (rx_char == END_CHAR) {
                                 putchar(0x7F); // signal programming done
