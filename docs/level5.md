@@ -11,7 +11,7 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 - When the timer reaches zero the traffic light goes from red to red-yellow to green
 - After some seconds the traffic light goes back to yellow and then to red 
 
-## Hints
+## Help
 
 
 <details markdown=1><summary>Cable connections</summary>
