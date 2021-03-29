@@ -120,3 +120,9 @@ Set the digit of acc specified by the first operand to the value of the second o
 | 596  | dst 0 7.    | 597  |
 | 596  | dst 1 7     | 576  |
 | 596  | dst 2 7     | 796  |
+
+
+## Test Instructions
+
+__teq R/I R/I__
+Test if the value of the first operand (A) is equal to the value of the second operand (B).
