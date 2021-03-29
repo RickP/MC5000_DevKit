@@ -1,6 +1,6 @@
 You need a circuit board like this to play:
 
-![Cuircuit board picture](../pcb/docs/MC5000_Board-PCB.svg?raw=true "MC5000 DevKit")
+![Cuircuit board picture](https://raw.githubusercontent.com/RickP/MC5000_DevKit/7e63b4d50cb1a2df9387609572a495d9bbd958b2/pcb/docs/MC5000_Board-PCB.svg)
 
 ## Intructions
 
