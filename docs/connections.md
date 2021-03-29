@@ -14,7 +14,7 @@ They can all be used as data inputs or data outputs.
 The "Megascreen Technologies X3" display and the "Audiomaster Extreme" are XBus input devices. They are always listening. 
 The other inputs and outputs are Simple I/O devices. You use the supplied jumper cables to connect the ports.
 
-*Only connect Simple I/O to Simple I/O and XBus to XBus ports*
+__Only connect Simple I/O to Simple I/O and XBus to XBus ports!__
 
 ## Try it out
 
