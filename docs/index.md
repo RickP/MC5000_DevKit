@@ -1,6 +1,6 @@
 You need a circuit board like this to play:
 
-![Cuircuit board picture](board.jpg)
+![Circuit board picture](board.jpg)
 
 ## Intructions
 
