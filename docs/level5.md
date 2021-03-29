@@ -13,6 +13,12 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 
 ## Hints
 
-- [Cable connections](leve5_connections)
-- [Programming hint](leve5_hint)
-- [Programming solution](leve5_solution)
+<details>
+  <summary>Cable connections</summary>
+  
+  ## Heading
+  1. A numbered
+  2. list
+     * With some
+     * Sub bullets
+</details>
