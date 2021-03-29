@@ -1,5 +1,3 @@
-User manual for the MC5000 DevKit.
-
 You need a circuit board like this to play:
 
 ![Cuircuit board picture](../pcb/docs/MC5000_Board-PCB.svg?raw=true "MC5000 DevKit")
