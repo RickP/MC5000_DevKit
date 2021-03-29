@@ -13,6 +13,7 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 
 ## Hints
 
+
 <details>
   <summary>Cable connections</summary>
 
@@ -25,6 +26,7 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
   
 </details>
 
+
 <details>
   <summary>Hints</summary>
 
@@ -33,6 +35,7 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 - After sending the signal MCU1 waits for an XBus signal from MCU2 to switch back to red
   
 </details>
+
 
 <details>
   <summary>Solution</summary>
