@@ -74,3 +74,19 @@ Instruction operands are described with the following notation:
 [1] Integer values must be in the range -999 to 999.
 [2] Labels used as operands must be defined elsewhere in the program.
 
+
+## Basic Instructions
+
+__mov R/I R__
+Copy the value of the first operand into the second operand.
+
+__jmp L__
+Jump to the instruction following the specified label.
+
+__slp R/I__
+Sleep for the number of time units specified by the operand.
+
+__slx P__
+Sleep until data is available to be read on the XBus pin specified by the operand.
+
+## Arithmetic Instructions
