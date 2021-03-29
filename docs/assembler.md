@@ -64,7 +64,7 @@ Instruction operands are described with the following notation:
 
 
 | Notation | Meaning                     |
-|:--------:|:---------------------------:|
+| --------:|:--------------------------- |
 | R        | Register                    |
 | I        | Integer [1]                 |
 | R/I      | Register or integer [1]     |
@@ -72,6 +72,7 @@ Instruction operands are described with the following notation:
 | L        | Label [2]                   |
 
 [1] Integer values must be in the range -999 to 999.
+
 [2] Labels used as operands must be defined elsewhere in the program.
 
 
@@ -90,3 +91,32 @@ __slx P__
 Sleep until data is available to be read on the XBus pin specified by the operand.
 
 ## Arithmetic Instructions
+
+Registers can store integer values between -999 and 999, inclusive. If an arithmetic operation would produce a result outside this range, the closest allowed value is stored instead. For example, if acc contains the value 800 and the instruction add 400 is executed, then the value 999 will be stored in acc.
+
+__add R/I__
+Add the value of the first operand to the value of the acc register and store the result in the acc register.
+
+__sub R/I__
+Subtract the value of the first operand from the value of the acc register and store the result in the acc register.
+
+__mul R/I__
+Multiply the value of the first operand by the value of the acc register and store the result in the acc register.
+
+__not__
+If the value in acc is 0, store a value of 100 in acc. Otherwise, store a value of 0 in acc. 
+
+__dgt R/I__
+Isolate the specified digit of the value in the acc register and store the result in the acc register. 
+
+__dst R/I R/I__
+Set the digit of acc specified by the first operand to the value of the second operand. Examples of the dgt and dst instructions:
+
+| acc  | Instruction | acc’ |
+|:---- |:------------|:---- |
+| 596  | dgt 0       | 6    |
+| 596  | dgt 1.      | 9    |
+| 596  | dgt 2.      | 5    |
+| 596  | dst 0 7.    | 597  |
+| 596  | dst 1 7     | 576  |
+| 596  | dst 2 7     | 796  |
