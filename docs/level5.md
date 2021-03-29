@@ -16,9 +16,11 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 <details>
   <summary>Cable connections</summary>
   
-  ## Heading
-  1. A numbered
-  2. list
-     * With some
-     * Sub bullets
+  - MCU1-P0 -> Button1
+  - MCU1-P1 -> Red LED
+  - MCU1-X0 -> Display
+  - MCU1-X1 -> MCU2-X0
+  - MCU1-P0 -> Green LED
+  - MCU1-P1 -> Yellow LED
+  
 </details>
