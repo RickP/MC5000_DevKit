@@ -64,7 +64,7 @@ Instruction operands are described with the following notation:
 
 
 | Notation | Meaning                     |
-| --------:|:--------------------------- |
+|:--------:|:---------------------------:|
 | R        | Register                    |
 | I        | Integer [1]                 |
 | R/I      | Register or integer [1]     |
@@ -113,11 +113,11 @@ __dst R/I R/I__
 Set the digit of acc specified by the first operand to the value of the second operand. Examples of the dgt and dst instructions:
 
 | acc  | Instruction | acc’ |
-|:---- |:------------|:---- |
+|:----:|:-----------:|:----:|
 | 596  | dgt 0       | 6    |
-| 596  | dgt 1.      | 9    |
-| 596  | dgt 2.      | 5    |
-| 596  | dst 0 7.    | 597  |
+| 596  | dgt 1       | 9    |
+| 596  | dgt 2       | 5    |
+| 596  | dst 0 7     | 597  |
 | 596  | dst 1 7     | 576  |
 | 596  | dst 2 7     | 796  |
 
