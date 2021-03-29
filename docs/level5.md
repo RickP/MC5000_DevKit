@@ -24,7 +24,9 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 - MCU1-P1 -> Yellow LED
  
 </details>
+
 <p></p>
+
 <details markdown=1><summary>Hints</summary>
   
 - MCU2 should control the green and yellow LEDs when MCU1 sends an XBus signal
@@ -32,7 +34,9 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 - After sending the signal MCU1 waits for an XBus signal from MCU2 to switch back to red
  
 </details>
+
 <p></p>
+
 <details markdown=1><summary>Solution</summary>
 
 MCU1
