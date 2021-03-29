@@ -21,6 +21,6 @@ The other inputs and outputs are Simple I/O devices. You use the supplied jumper
 Connect the DevKit to yout computer via USB. Connect the "RED LED" output to the "Button 1" input. 
 If you press "Button 1" the red LED lights up. Try it with the other button and the other LEDs.
 
-!(Port markings on board)[board_port_types.jpg]
+![Port markings on board](board_port_types.jpg)
 
 Now it's time to write some [assembler code](assembler)
