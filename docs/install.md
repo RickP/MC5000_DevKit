@@ -34,4 +34,4 @@ When the app opens up you may have to choose the correct USB port. If you're not
 
 The user interface is pretty simple. You can load and save code to a text file. The button 'Manual' is just a link to this document. "Upload" writes the code you entered to the board.
 
-Now [connect some wires](connections) and write your first [assembler commands](assembler)
+Now [connect some wires](connections)
