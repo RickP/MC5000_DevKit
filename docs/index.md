@@ -4,21 +4,21 @@ You need a circuit board like this to play:
 
 ## Intructions
 
-[Installing the desktop app](install.md)
+[Installing the desktop app](install)
 
-[Making connections on the board](install.md)
+[Making connections on the board](connections)
 
-[The assembler language](install.md)
+[The assembler language](assembler)
 
 
 ## Levels
 
-[Level 1](level1.md)
+[Level 1](level1)
 
-[Level 2](level2.md)
+[Level 2](level2)
 
-[Level 3](level3.md)
+[Level 3](level3)
 
-[Level 4](level4.md)
+[Level 4](level4)
 
-[Level 5](level5.md)
+[Level 5](level5)
