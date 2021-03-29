@@ -15,7 +15,7 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 
 
 <details><summary>Cable connections</summary>
-<p>
+<p markdown=1>
   
 - MCU1-P0 -> Button1
 - MCU1-P1 -> Red LED
@@ -29,7 +29,7 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 
 
 <details><summary>Hints</summary>
-<p>
+<p markdown=1>
   
 - MCU2 should control the green and yellow LEDs when MCU1 sends an XBus signal
 - MCU1 displays the countdown in a loop and then sends the signal to MCU2
@@ -40,7 +40,7 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 
 
 <details><summary>Solution</summary>
-<p>
+<p markdown=1>
 
 MCU1
 
