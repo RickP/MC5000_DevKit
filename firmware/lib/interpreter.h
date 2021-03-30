@@ -103,7 +103,6 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
             }
         } else {
             // pin -> bit 3 defines p(1) or x(0)
-            // this misuses the xbus_data and xbus_bitcounter var!
             if (argh & 0x10) {
                 uint8_t value;
                 if (argh & 0x08) {
@@ -111,10 +110,14 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
                 } else {
                     arg = get_p0_value();
                 }
-                if (arg == PPIN_WAIT) return WAIT_FOR_VALUE;
+                if (arg == PPIN_WAIT) {
+                    current_pos -= 1; // Replay last command until value is read from ADC
+                    SLEEP(1);
+                    return WAIT_FOR_VALUE;
+                }
                 current_pos += 2;
                 value = arg;
-                arg = ((value >> 1) + (value >> 5)) - (value >> 3);
+                arg = ((value >> 1) + (value >> 5)) - (value >> 3); // divide by 2.55
                 // Compensate for analog incorrectness
                 if (arg > 100) arg = 100;
                 return arg;

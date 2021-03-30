@@ -44,9 +44,10 @@ void interrupt_routine() __interrupt(0) {
                 CLOCK_TICK;
                 INTRQ &= ~INTRQ_TM3;
         }
-        if (INTRQ & INTEN_ADC) {
+        if (INTRQ & INTRQ_ADC) {
+            adc_state = 2;
             last_adc_val = ADCR;
-            INTRQ &= ~INTEN_ADC;
+            INTRQ &= ~INTRQ_ADC;
         }
 }
 
