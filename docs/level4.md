@@ -1,6 +1,6 @@
-[<< back](index) [next level >>](level4)
+[<< back](index) [next level >>](level5)
 
-# Level 3
+# Level 4
 
 Our client Clickybright Co. is making light switches. They found out, that simple tactile buttons are way cheaper than the toggle buttons they are using right now. So they want you to make software that turns the light on with one press and off with anoter one.
 
