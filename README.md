@@ -31,18 +31,32 @@ The board uses 4 Padauk PFS173 microcontrollers. These are super cheap chinese 8
 
 The firmware for the two application controllers (a.k.a. MC5000) and the buzzer and display controller are in the subfolder 'firmware'. They are made with the [Free PDK toolchain](https://free-pdk.github.io) an open-source toolchain for many of the Padauk microcontrollers. 
 
-In order to flash the ICs you have to make or buy an Easy PDK programmer. The programmer is open hardware. I got mine assempled from amazon but you can make one yourself [production files](https://kitspace.org/boards/github.com/free-pdk/easy-pdk-programmer-hardware/).
+In order to flash the ICs you have to make or buy an Easy PDK programmer. The programmer is open hardware. I got mine assempled from amazon but you can make one yourself [production files](https://kitspace.org/boards/github.com/free-pdk/easy-pdk-programmer-hardware/). If you want to flash the firmware you need the programmer and the [easy-pdk-programmer software](https://github.com/free-pdk/easy-pdk-programmer-software). 
 
-If you juast want to flash the firmware you need the programmer and the [easy-pdk-programmer software](https://github.com/free-pdk/easy-pdk-programmer-software). Firmware binaries can be found on the [releases page](https://github.com/RickP/MC5000_DevKit/releases).
+With the SDCC compiler (use version 4.1.0!) and easypdkprog in your path just place the breakout boards on the programmer and execute the makefiles:
 
-The two MCU5000 ICs have to be flashed with different CPU-IDs:
+    cd firmware/MCU5000
+    make flash1       # Flash MCU1
+    make flash2       # Flash MCU2
+    cd ../BUZZER
+    make flash        # Flash Buzzer
+    cd ../DISPLAY
+    make flash        # Flash Display
+
+Firmware binaries can be found on the [releases page](https://github.com/RickP/MC5000_DevKit/releases).
+
+
+For binary flashing the two MCU5000 ICs have to be flashed with different CPU-IDs:
 
 MCU1: `easypdkprog -s 31 -n PFS173 write MC5000.PFS173.ihx`
+
 MCU2: `easypdkprog -s 32 -n PFS173 write MC5000.PFS173.ihx`
+
 
 The two peripheral controllers are just flashed without a cpu id:
 
 BUZZER: `easypdkprog -n PFS173 write buzzer.PFS173.ihx`
+
 DISPLAY: `easypdkprog -n PFS173 write display.PFS173.ihx`
 
 
