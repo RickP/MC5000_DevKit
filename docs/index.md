@@ -22,3 +22,5 @@ You need a circuit board like this to play:
 [Level 4](level4)
 
 [Level 5](level5)
+
+[Level 6](level6)
