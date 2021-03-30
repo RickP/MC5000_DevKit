@@ -1,7 +1,6 @@
 #include "serialcommunication.h"
 #include <QSerialPortInfo>
 #include <QThread>
-#include <QTimer>
 
 
 static void printHex(uint8_t byte) {
@@ -50,7 +49,8 @@ void SerialCommunication::readData()
     if (data.length() == 3 && data.at(0) == 0x7F) {
         int mcuId = data.at(1) - 0x31;
         if (data.at(2) == 1) {
-             m_uploadDone[mcuId] = true;
+            qDebug() << "Succeeded uploading to mcu " << mcuId+1;
+            m_uploadDone[mcuId] = true;
             if (mcuId < (m_mcuConnections-1)) {
                 upload(mcuId+1);
             }
@@ -221,7 +221,11 @@ void SerialCommunication::upload(int mcuNum) {
             }
             writeSerialByte(checksum(output, output.length()));
             writeSerialByte(END_CHAR);
-            QTimer::singleShot(SERIAL_DELAY * (MAX_PROGRAM_LENGTH + 10), this, &SerialCommunication::checkUpload);
+            m_uploadTimeout = new QTimer(this);
+            m_uploadTimeout->setInterval(SERIAL_DELAY * (output.length() + 50));
+            m_uploadTimeout->setSingleShot(true);
+            connect(m_uploadTimeout, &QTimer::timeout, this, &SerialCommunication::checkUpload);
+            m_uploadTimeout->start();
             return;
         }
     } else {
@@ -235,6 +239,7 @@ void SerialCommunication::checkUpload() {
     for (int i=0; i < m_mcuConnections; i++) {
         if (!m_uploadDone.at(i)) {
             if (++m_tries[i] < UPLOAD_RETRIES) {
+                qDebug() << "Retrying upload to mcu " << i+1;
                 upload(i);
             } else {
                 m_uploadDone[i] = true;

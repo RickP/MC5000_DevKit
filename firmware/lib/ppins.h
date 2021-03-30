@@ -18,7 +18,11 @@
 #define P1_PWM_DUTY_H PWMG1DTH
 #define P1_PWM_DUTY_L PWMG1DTL
 
+#define PPIN_WAIT 0x7FFF
+
 uint16_t sleep_nops;
+volatile uint8_t last_adc_val = 0;
+volatile uint8_t adc_state = 0;
 
 inline void setup_ppin_hardware() {
     PAC &= ~(1 << P0_PIN); // Enable P0 Pin as input
@@ -31,6 +35,8 @@ inline void setup_ppin_hardware() {
     ADCRGC = ADCRG_ADC_REF_VDD; // VCC reference for ADC
     ADCM = ADCM_CLK_SYSCLK_DIV16; // ADC divider 16
 
+    INTEN |= INTEN_ADC; // Enable ADC interrupt
+
     // Enable PWMG1 and PWMG2 for p port output
     PWMGCLK = PWMGCLK_PWMG_ENABLE | PWMGCLK_CLK_IHRC;
     PWMG1C = PWMG1C_ENABLE;
@@ -39,32 +45,44 @@ inline void setup_ppin_hardware() {
     PWMGCUBH = 0x67;
 }
 
-inline uint8_t get_p0_value() {
+inline uint16_t get_p0_value() {
+    switch (adc_state) {
+        case 1:
+            return PPIN_WAIT;
+        case 2:
+            adc_state = 0;
+            return last_adc_val;
+    }
     P0_PWM &= ~P0_PWM_ENABLE; // Disable PWM output on pin
     PAC &= ~(1 << P0_PIN); //disable GPIO output
     PAPH &= ~(1 << P0_PIN); //disable pull up
     if (!(ADCC & ADCC_ADC_ENABLE)) {
         ADCC = ADCC_ADC_ENABLE; // Enable ADC
-        sleep_nops = 0xC800;
-        for( ; sleep_nops>0; sleep_nops-- ); // wait 400 us
+        return PPIN_WAIT;
     }
+    adc_state = 1;
     ADCC = ADCC_ADC_ENABLE | P0_ADC | ADCC_ADC_CONV_START; // Start ADC
-    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish
-    return ADCR;
+    return PPIN_WAIT;
 }
 
-inline uint8_t get_p1_value() {
+inline uint16_t get_p1_value() {
+    switch (adc_state) {
+        case 1:
+            return PPIN_WAIT;
+        case 2:
+            adc_state = 0;
+            return last_adc_val;
+    }
     P1_PWM &= ~P1_PWM_ENABLE; // Disable PWM output on pin
     PAC &= ~(1 << P1_PIN); //disable GPIO output
     PAPH &= ~(1 << P1_PIN); //disable pull up
     if (!(ADCC & ADCC_ADC_ENABLE)) {
         ADCC = ADCC_ADC_ENABLE; // Enable ADC
-        sleep_nops = 0xC800;
-        for( ; sleep_nops>0; sleep_nops-- ); // wait 400 us
+        return PPIN_WAIT;
     }
+    adc_state = 1;
     ADCC = ADCC_ADC_ENABLE | P1_ADC | ADCC_ADC_CONV_START; // Start ADC
-    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish
-    return ADCR;
+    return PPIN_WAIT;
 }
 
 inline void set_p0_value(uint8_t val) {

@@ -1,4 +1,4 @@
-[<< back](index)
+[<< back](index) MORE LEVELS TO COME
 
 # Level 5
 
@@ -42,13 +42,37 @@ The customer TrafficControl Inc. wants you to create a new control mechanism for
 MCU1
 
 ```
-CODE
+start:
+mov 100 p1
+teq p0 100
+- jmp start
+mov 10 acc
+loop:
+sub 1
+mov acc x0
+slp 4
+tgt acc 0
++ jmp loop
+mov 1 x1
+slp 4
+mov 0 p1
+mov x1 dat
 ```
 
 MCU2
 
 ```
-CODE
+teq x0 1
++ mov 100 p1
++ slp 5
++ mov 0 p1
++ mov 100 p0
++ slp 30
++ mov 0 p0
++ mov 100 p1
++ slp 5
++ mov 0 p1
++ mov 0 x0
 ```
 
 </details>

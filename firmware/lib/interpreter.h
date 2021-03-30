@@ -7,7 +7,7 @@
 #include "ppins.h"
 #include "xbus.h"
 
-#define GET_RI(x) x = get_val(program[current_pos], program[current_pos+1]); if (x == XBUS_WAIT) return 0
+#define GET_RI(x) x = get_val(program[current_pos], program[current_pos+1]); if (x == WAIT_FOR_VALUE) return 0
 #define GET_R program[current_pos++]
 #define CHECK_CONDITION(x) if (command_condition != none && current_condition != command_condition) {current_pos += (uint8_t) x; break;}
 
@@ -46,6 +46,7 @@ true_or_false current_condition;
 #define CMD_DST 0x3C
 #define CMD_LBL 0x40
 
+#define WAIT_FOR_VALUE 0x7FFF
 
 void setup_interpreter_hardware() {
 
@@ -86,7 +87,7 @@ uint8_t find_label(uint8_t label) {
 // Get value for an R/I type parameter
 int16_t get_val(uint8_t argh, uint8_t argl) {
 
-    int16_t arg;
+    int16_t arg = 0;
 
     // analyze first byte
     // Bit 1 of argh defines register (1) or scalar (0)
@@ -103,18 +104,23 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
         } else {
             // pin -> bit 3 defines p(1) or x(0)
             if (argh & 0x10) {
-                current_pos += 2;
                 uint8_t value;
                 if (argh & 0x08) {
-                    xbus_bitcounter = get_p1_value();
+                    arg = get_p1_value();
                 } else {
-                    xbus_bitcounter = get_p0_value();
+                    arg = get_p0_value();
                 }
-                value = ((xbus_bitcounter >> 1) + (xbus_bitcounter >> 5)) - (xbus_bitcounter >> 3);
-                xbus_bitcounter = 0;
+                if (arg == PPIN_WAIT) {
+                    current_pos -= 1; // Replay last command until value is read from ADC
+                    SLEEP(1);
+                    return WAIT_FOR_VALUE;
+                }
+                current_pos += 2;
+                value = arg;
+                arg = ((value >> 1) + (value >> 5)) - (value >> 3); // divide by 2.55
                 // Compensate for analog incorrectness
-                if (value > 100) value = 100;
-                return value;
+                if (arg > 100) arg = 100;
+                return arg;
             } else {
                 // x pin -> bit 4 defines port num
                 if (argh & 0x08) {
@@ -122,7 +128,8 @@ int16_t get_val(uint8_t argh, uint8_t argl) {
                 } else {
                     arg = get_x0_value();
                 }
-                if (arg != XBUS_WAIT) current_pos += 2;
+                if (arg == XBUS_WAIT) return WAIT_FOR_VALUE;
+                current_pos += 2;
                 return arg;
             }
         }
@@ -182,7 +189,7 @@ uint8_t run_program_line() {
     if (clock_tick < sleep_until) {
         return 0;
     }
-    SLEEP(5); // Sleep a bit on every line for interrupts and com
+    sleep_until = 0;
 
     // XBus handling
     uint8_t xbus_result = xbus_handler();
@@ -195,7 +202,9 @@ uint8_t run_program_line() {
     }
 
     // Handle end of program buffer
-    if (current_pos >= program_size) current_pos = 0;
+    if (current_pos >= program_size) {
+        current_pos = 0;
+    }
 
     // get current command including current_condition
     uint8_t command = program[current_pos];
