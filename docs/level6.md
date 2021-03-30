@@ -1,4 +1,4 @@
-[<< back](index) MORE LEVELS TO COME
+[^ index](index) [<< prev level](level5) To be continued...
 
 # Level 6
 
