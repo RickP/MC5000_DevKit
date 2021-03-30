@@ -3,6 +3,7 @@
 #include "pdkcommon.h"
 #include "serial.h"
 #include "interpreter.h"
+#include "ppins.h"
 #include "delay.h"
 
 #define DEBUG_
@@ -44,6 +45,7 @@ void interrupt_routine() __interrupt(0) {
                 INTRQ &= ~INTRQ_TM3;
         }
         if (INTRQ & INTEN_ADC) {
+            last_adc_val = ADCR;
             INTRQ &= ~INTEN_ADC;
         }
 }

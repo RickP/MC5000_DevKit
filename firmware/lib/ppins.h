@@ -18,7 +18,10 @@
 #define P1_PWM_DUTY_H PWMG1DTH
 #define P1_PWM_DUTY_L PWMG1DTL
 
+#define PPIN_WAIT 0x7FFF
+
 uint16_t sleep_nops;
+volatile uint16_t last_adc_val = 0;
 
 inline void setup_ppin_hardware() {
     PAC &= ~(1 << P0_PIN); // Enable P0 Pin as input
@@ -39,7 +42,14 @@ inline void setup_ppin_hardware() {
     PWMGCUBH = 0x67;
 }
 
-inline uint8_t get_p0_value() {
+inline uint16_t get_p0_value() {
+    if (last_adc_val == PPIN_WAIT) {
+        return PPIN_WAIT;
+    } else if (last_adc_val) {
+        uint16_t ret = last_adc_val;
+        last_adc_val = 0;
+        return ret;
+    }
     P0_PWM &= ~P0_PWM_ENABLE; // Disable PWM output on pin
     PAC &= ~(1 << P0_PIN); //disable GPIO output
     PAPH &= ~(1 << P0_PIN); //disable pull up
@@ -49,11 +59,18 @@ inline uint8_t get_p0_value() {
         for( ; sleep_nops>0; sleep_nops-- ); // wait 400 us
     }
     ADCC = ADCC_ADC_ENABLE | P0_ADC | ADCC_ADC_CONV_START; // Start ADC
-    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish
-    return ADCR;
+    last_adc_val = PPIN_WAIT;
+    return last_adc_val;
 }
 
-inline uint8_t get_p1_value() {
+inline uint16_t get_p1_value() {
+    if (last_adc_val == PPIN_WAIT) {
+        return PPIN_WAIT;
+    } else if (last_adc_val) {
+        uint16_t ret = last_adc_val;
+        last_adc_val = 0;
+        return ret;
+    }
     P1_PWM &= ~P1_PWM_ENABLE; // Disable PWM output on pin
     PAC &= ~(1 << P1_PIN); //disable GPIO output
     PAPH &= ~(1 << P1_PIN); //disable pull up
@@ -63,8 +80,8 @@ inline uint8_t get_p1_value() {
         for( ; sleep_nops>0; sleep_nops-- ); // wait 400 us
     }
     ADCC = ADCC_ADC_ENABLE | P1_ADC | ADCC_ADC_CONV_START; // Start ADC
-    while( !(ADCC & ADCC_ADC_CONV_COMPLETE) ); //busy wait for ADC conversion to finish
-    return ADCR;
+    last_adc_val = PPIN_WAIT;
+    return last_adc_val;
 }
 
 inline void set_p0_value(uint8_t val) {
