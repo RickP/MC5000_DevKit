@@ -48,7 +48,7 @@ When an instruction is disabled by a test instruction, it will be skipped and wi
 
 Registers are used as sources and destinations for data manipulated by MC5000 instructions.
 
-__acc__ is the primary general-purpose register used for internal computation on MCxxxx family microcontrollers. All arithmetic operations implicitly use and modify the value of __acc__.
+__acc__ is the primary general-purpose register used for internal computation on MC5000 microcontrollers. All arithmetic operations implicitly use and modify the value of __acc__.
 
 __dat__ is a second register available on the MC5000. It can be used in most contexts where __acc__ is permitted.
 
@@ -132,9 +132,7 @@ __dst R/I R/I__ : Set the digit of acc specified by the first operand to the val
 
 ## Test Instructions
 
-__teq R/I R/I__
-
-Test if the value of the first operand (A) is equal to the value of the second operand (B).
+__teq R/I R/I__ : Test if the value of the first operand (A) is equal to the value of the second operand (B).
 
 | Condition            | Effect on ‘+’ Instructions | Effect on ‘-’ Instructions’ |
 |:--------------------:|:--------------------------:|:---------------------------:|
@@ -169,3 +167,5 @@ __tcp R/I R/I__ : Compare the value of the first operand (A) to the value of the
 | A is equal to B      | *Disabled*                 | *Disabled*                  |
 | A is less than B     | *Disabled*                 | Enabled                     |
 
+
+Now you should be able to solve your first [task](level1)
