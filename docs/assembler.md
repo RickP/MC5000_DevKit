@@ -78,49 +78,29 @@ Instruction operands are described with the following notation:
 
 ## Basic Instructions
 
-__mov R/I R__
+__mov R/I R__ : Copy the value of the first operand into the second operand.
 
-Copy the value of the first operand into the second operand.
+__jmp L__ : Jump to the instruction following the specified label.
 
-__jmp L__
+__slp R/I__ : Sleep for the number of time units specified by the operand.
 
-Jump to the instruction following the specified label.
-
-__slp R/I__
-
-Sleep for the number of time units specified by the operand.
-
-__slx P__
-
-Sleep until data is available to be read on the XBus pin specified by the operand.
+__slx P__ : Sleep until data is available to be read on the XBus pin specified by the operand.
 
 ## Arithmetic Instructions
 
 Registers can store integer values between -999 and 999, inclusive. If an arithmetic operation would produce a result outside this range, the closest allowed value is stored instead. For example, if acc contains the value 800 and the instruction add 400 is executed, then the value 999 will be stored in acc.
 
-__add R/I__
+__add R/I__ : Add the value of the first operand to the value of the acc register and store the result in the acc register.
 
-Add the value of the first operand to the value of the acc register and store the result in the acc register.
+__sub R/I__ : Subtract the value of the first operand from the value of the acc register and store the result in the acc register.
 
-__sub R/I__
+__mul R/I__ : Multiply the value of the first operand by the value of the acc register and store the result in the acc register.
 
-Subtract the value of the first operand from the value of the acc register and store the result in the acc register.
+__not__ : If the value in acc is 0, store a value of 100 in acc. Otherwise, store a value of 0 in acc. 
 
-__mul R/I__
+__dgt R/I__ : Isolate the specified digit of the value in the acc register and store the result in the acc register. 
 
-Multiply the value of the first operand by the value of the acc register and store the result in the acc register.
-
-__not__
-
-If the value in acc is 0, store a value of 100 in acc. Otherwise, store a value of 0 in acc. 
-
-__dgt R/I__
-
-Isolate the specified digit of the value in the acc register and store the result in the acc register. 
-
-__dst R/I R/I__
-
-Set the digit of acc specified by the first operand to the value of the second operand. Examples of the dgt and dst instructions:
+__dst R/I R/I__ : Set the digit of acc specified by the first operand to the value of the second operand. Examples of the dgt and dst instructions:
 
 | acc  | Instruction | acc’ |
 |:----:|:-----------:|:----:|
@@ -134,36 +114,28 @@ Set the digit of acc specified by the first operand to the value of the second o
 
 ## Test Instructions
 
-__teq R/I R/I__
-
-Test if the value of the first operand (A) is equal to the value of the second operand (B).
+__teq R/I R/I__ : Test if the value of the first operand (A) is equal to the value of the second operand (B).
 
 | Condition            | Effect on ‘+’ Instructions | Effect on ‘-’ Instructions’ |
 |:--------------------:|:--------------------------:|:---------------------------:|
 | A is equal to B      | Enabled                    | *Disabled*                  |
 | A is not equal to B  | *Disabled*                 | Enabled                     |
 
-__tgt R/I R/I__
-
-Test if the value of the first operand (A) is greater than the value of the second operand (B).
+__tgt R/I R/I__ : Test if the value of the first operand (A) is greater than the value of the second operand (B).
 
 | Condition               | Effect on ‘+’ Instructions | Effect on ‘-’ Instructions’ |
 |:-----------------------:|:--------------------------:|:---------------------------:|
 | A is greater than B     | Enabled                    | *Disabled*                  |
 | A is not greater than B | *Disabled*                 | Enabled                     |
 
-__tlt R/I R/I__
-
-Test if the value of the first operand (A) is less than the value of the second operand (B).
+__tlt R/I R/I__ : Test if the value of the first operand (A) is less than the value of the second operand (B).
 
 | Condition            | Effect on ‘+’ Instructions | Effect on ‘-’ Instructions’ |
 |:--------------------:|:--------------------------:|:---------------------------:|
 | A is less than B     | Enabled                    | *Disabled*                  |
 | A is not less than B | *Disabled*                 | Enabled                     |
 
-__tcp R/I R/I__
-
-Compare the value of the first operand (A) to the value of the second operand (B).
+__tcp R/I R/I__ : Compare the value of the first operand (A) to the value of the second operand (B).
 
 | Condition            | Effect on ‘+’ Instructions | Effect on ‘-’ Instructions’ |
 |:--------------------:|:--------------------------:|:---------------------------:|
