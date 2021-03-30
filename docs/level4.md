@@ -1,23 +1,22 @@
-[<< back](index) [next level >>](level5)
+[<< back](index) [next level >>](level4)
 
-# Level 4
+# Level 3
 
-Clickybright Co. liked your device a lot. Now they want a second product that switches on the light with one button and off with another. So get going!
+Our client Clickybright Co. is making light switches. They found out, that simple tactile buttons are way cheaper than the toggle buttons they are using right now. So they want you to make software that turns the light on with one press and off with anoter one.
 
 ## Specification
 
-- The red LED should turn on when button 1 is pressed
-- It should turn off when button 2 is pressed
+- Turn on the red LED when pressing button 1
+- The LED should turn off with another press of the same button
+- It should not matter how long you press the putton
 
 ## Help
 
 
 <details markdown=1><summary>Cable connections</summary>
   
-- MCU1_P0 -> Button_1
-- MCU1_P1 -> Button_2
-- MCU1_X0 -> MCU2_X0
-- MCU2_P0 -> Red LED
+- MCU1_P0 -> Button1
+- MCU1_P1 -> Red LED
  
 </details>
 
@@ -25,7 +24,8 @@ Clickybright Co. liked your device a lot. Now they want a second product that sw
 
 <details markdown=1><summary>Hints</summary>
   
-- Use both MC5000 controllers
+- Save the information about the last state of the button to a register
+- Use the NOT instruction
  
 </details>
 
@@ -36,22 +36,13 @@ Clickybright Co. liked your device a lot. Now they want a second product that sw
 MCU1
 
 ```
-teq p0 100
-- mov 0 dat
-+ teq dat 0 
-+ mov 1 dat
-+ mov 100 x0
-teq p1 100
-- mov 0 dat
-+ teq dat 0 
-+ mov 1 dat
-+ mov 0 x0
+teq p0 100 # check button
+- mov 0 dat # not pressed dat=0
++ teq dat 0 # if unpressed before
++ mov 1 dat # mark as pressed
++ not # toggle acc
+mov acc p1 # write acc to LED
 ```
 
-MCU2
-
-```
-mov x0 p0
-```
 
 </details>
