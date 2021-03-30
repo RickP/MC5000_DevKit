@@ -1,4 +1,4 @@
-[^ index](index) [<< prev level](level3) [next level >>](level5)
+[home](index) [<< prev level](level3) [next level >>](level5)
 
 # Level 4
 
