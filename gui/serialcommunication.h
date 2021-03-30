@@ -2,6 +2,7 @@
 #define SERIALCOMMUNICATION_H
 
 #include <QSerialPort>
+#include <QTimer>
 #include <QObject>
 #include <QDebug>
 #include <QMap>
@@ -51,6 +52,7 @@ void datRegistersChanged();
 void isProgrammedChanged();
 
 private:
+QTimer *m_uploadTimeout;
 QSerialPort *m_serial = nullptr;
 int m_mcuConnections = 0;
 int m_tries[3] = {0};
