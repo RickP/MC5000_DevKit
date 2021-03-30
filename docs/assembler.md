@@ -137,3 +137,37 @@ Set the digit of acc specified by the first operand to the value of the second o
 __teq R/I R/I__
 
 Test if the value of the first operand (A) is equal to the value of the second operand (B).
+
+| Condition            | Effect on ‘+’ Instructions | Effect on ‘-’ Instructions’ |
+|:--------------------:|:--------------------------:|:---------------------------:|
+| A is equal to B      | Enabled                    | *Disabled*                  |
+| A is not equal to B  | *Disabled*                 | Enabled                     |
+
+__tgt R/I R/I__
+
+Test if the value of the first operand (A) is greater than the value of the second operand (B).
+
+| Condition               | Effect on ‘+’ Instructions | Effect on ‘-’ Instructions’ |
+|:-----------------------:|:--------------------------:|:---------------------------:|
+| A is greater than B     | Enabled                    | *Disabled*                  |
+| A is not greater than B | *Disabled*                 | Enabled                     |
+
+__tlt R/I R/I__
+
+Test if the value of the first operand (A) is less than the value of the second operand (B).
+
+| Condition            | Effect on ‘+’ Instructions | Effect on ‘-’ Instructions’ |
+|:--------------------:|:--------------------------:|:---------------------------:|
+| A is less than B     | Enabled                    | *Disabled*                  |
+| A is not less than B | *Disabled*                 | Enabled                     |
+
+__tcp R/I R/I__
+
+Compare the value of the first operand (A) to the value of the second operand (B).
+
+| Condition            | Effect on ‘+’ Instructions | Effect on ‘-’ Instructions’ |
+|:--------------------:|:--------------------------:|:---------------------------:|
+| A is greater than B  | Enabled                    | *Disabled*                  |
+| A is equal to B      | *Disabled*                 | *Disabled*                  |
+| A is less than B     | *Disabled*                 | Enabled                     |
+
