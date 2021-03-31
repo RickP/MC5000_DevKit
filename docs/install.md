@@ -2,9 +2,9 @@
 
 # Install the desktop app
 
-Go to the [release page](https://github.com/RickP/MC5000_DevKit/releases) and download the latest package for your platform.
+Go to the [release page](https://github.com/RickP/MC5000_DevKit/releases), click on "Assets" on the topmost release and download the latest package for your platform (the files starting with "MC5000-GUI").
 
-See instruction for your operating system below.
+See specific instruction for your operating system below.
 
 ![GUI screenshot](gui.jpg)
 
