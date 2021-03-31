@@ -79,4 +79,4 @@ If you want the same functionality for the MacOS package on your own fork fork y
 - APPLE_DEV_PASS: An application specific password for your apple dev account
 - APPLE_DEV_CERT: Your exported developer certificate (including private key) in base64 encoding. Use the same application specific password as above for the cert.
 
-If you don't have an apple developer password you can also remove the signing part from the action. Be aware that this will makes the installation of the app for MacOS users much less nice because you will get warnings and have to explicitly allow the execution.
+If you don't have an apple developer password you can also remove the signing part from the action. Be aware that this will make the installation of the app for MacOS users much less nice because they will get warnings and have to explicitly allow the execution in the security settings.
