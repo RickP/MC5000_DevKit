@@ -71,10 +71,12 @@ The code is very simplistic with a lot of room for improvents. It's contained wi
 
 ## Github actions
 
-The releases including binary packages for four platforms and PCB fabrication files are created by github action. It also signs the MacOS app with my certificate that is stored in github secrets. Everthing is built when the repository is tagged.
+The releases including binary packages for four platforms and PCB fabrication files are created by a github action (see ".github/workflows/main.yml"). It also signs the MacOS app with my certificate that is stored in github secrets. The built is triggered when the repository is tagged.
 
 If you want the same functionality for the MacOS package on your own fork fork you have to add some secrets in "Project settings/Secrets/Repository secrets":
 
 - APPLE_DEV_USER: Your apple development account user name
 - APPLE_DEV_PASS: An application specific password for your apple dev account
 - APPLE_DEV_CERT: Your exported developer certificate (including private key) in base64 encoding. Use the same application specific password as above for the cert.
+
+If you don't have an apple developer password you can also remove the signing part from the action. Be aware that this will makes the installation of the app for MacOS users much less nice because you will get warnings and have to explicitly allow the execution.
