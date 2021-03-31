@@ -22,14 +22,16 @@ The design files are contained in the subfolder 'pcb'. The production files that
 
 Currently everything optimized for the chinese board manufacturer [JLCPB](https://jlcpcb.com). Just upload the gerbers (2 layers, 1.6mm PCB), choose "SMT Assembly" and upload the BOM and Pick&Place file when asked for it. For some reason you can have green, black, red or blue boards if you order up to 30 boards. For 50 boards they have to be green or black. If you order 50 boards each one is under 7 Euros including shipping and taxes to the EU (with the 'EuroPackage' shipping option').
 
-Please check if all components are mounted the right way around when ordering. I tried to make suer everything fits but I may not have ordered the lates iteration myself. Also it would be nice it you give me some feedback if you order these. E.g. mention me in a tweet about it (@r1ckp).
+Please check if all components are mounted the right way around when ordering. I tried to make sure everything fits but I may not have ordered the latest iteration myself. Also it would be nice it you give me some feedback if you order these. E.g. mention me in a tweet about it (@r1ckp).
 
 
 ## Microcontroller Firmware
 
 The board uses 4 Padauk PFS173 microcontrollers. These are super cheap chinese 8bit microcontrollers that cost about 8cent per piece. They have 3000 kilowords of flash ROM and 256 bytes of RAM.
 
-The firmware for the two application controllers (a.k.a. MC5000) and the buzzer and display controller are in the subfolder 'firmware'. They are made with the [Free PDK toolchain](https://free-pdk.github.io) an open-source toolchain for many of the Padauk microcontrollers. 
+The firmware for the two application controllers (a.k.a. MC5000) and the buzzer and display controller are in the subfolder 'firmware'. They are made with the [Free PDK toolchain](https://free-pdk.github.io) an open-source toolchain for many of the Padauk microcontrollers. It uses the SDCC compiler suite.
+
+The code structure may look a bit weird at first but I had to made some strange construction to trick the compiler into using as little memory as possible. I was canstantly running out of it. Make sure you use the version 4.1.0 of SDCC as it otimizes the code for the Padauk ICs much better than the 4.0.0 release.
 
 In order to flash the ICs you have to make or buy an Easy PDK programmer. The programmer is open hardware. I got mine assempled from amazon but you can make one yourself [production files](https://kitspace.org/boards/github.com/free-pdk/easy-pdk-programmer-hardware/). If you want to flash the firmware you need the programmer and the [easy-pdk-programmer software](https://github.com/free-pdk/easy-pdk-programmer-software). 
 
