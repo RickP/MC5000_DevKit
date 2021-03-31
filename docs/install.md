@@ -26,7 +26,7 @@ Download the zip file and unpack it to your disk.
 
 Unfortunately you have to install drivers for the USB->Serial chip on windows. Get them from [here](http://www.wch-ic.com/downloads/CH341SER_EXE.html) and install them. Then connect the board via USB and run the MC5000.exe in the folder. 
 
-You may have to install the C++ runtime "vc_redist.x64.exe" in the folder if it complains about something missing - but chances are high that you already have this.
+You may have to install the C++ runtime "vc_redist.x64.exe" in the application folder if windows complains about something missing - but chances are high that you already have this.
 
 # Usage
 
