@@ -9,6 +9,7 @@ Crimedingdong Inc. approached us with an idea for a new home alarm system. They 
 - Use the "Photontech i5" light sensor to detect the level of light
 - When the light level is above 50 sound an alarm with the "Audiomaster Extreme" module
 - Stop the alarm when it's getting dark again
+- Shine a flashlight (e.g. on your phone) to the light sensor to test your code
 
 ## Help
 
