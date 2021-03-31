@@ -32,6 +32,6 @@ You may have to install the C++ runtime "vc_redist.x64.exe" in the folder if it 
 
 When the app opens up you may have to choose the correct USB port. If you're not sure unplug the board, click refresh, plug it in, click refresh and choose the one that was added to the list.
 
-The user interface is pretty simple. You can load and save code to a text file. The button 'Manual' is just a link to this document. "Upload" writes the code you entered to the board.
+The user interface is pretty simple. You can load and save code to a text file. The button "Manual" is a link to this documentation. "Upload" writes the code you entered to the board.
 
 Now [connect some wires](connections)
