@@ -4,14 +4,44 @@
 #include "delay.h"
 #include "xbus.h"
 
-#define C2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV30
-#define D2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV27
-#define E2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV24
-#define F2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV22
-#define G2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV20
-#define A2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV18
-#define H2 TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV16
-
+const uint8_t tones[36] = {
+    0,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV32,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV31,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV30,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV29,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV28,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV27,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV26,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV25,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV24,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV23,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV22,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV21,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV20,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV19,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV18,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV17,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV16,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV15,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV14,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV13,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV12,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV11,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV10,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV9,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV8,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV7,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV6,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV5,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV4,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV3,
+    TM2S_PRESCALE_DIV16 | TM2S_SCALE_DIV2,
+    TM2S_PRESCALE_DIV4 | TM2S_SCALE_DIV7,
+    TM2S_PRESCALE_DIV4 | TM2S_SCALE_DIV6,
+    TM2S_PRESCALE_DIV4 | TM2S_SCALE_DIV5,
+    TM2S_PRESCALE_DIV4 | TM2S_SCALE_DIV4
+};
 
 int16_t playval = 0;
 
@@ -59,13 +89,13 @@ int main(void) {
                     uint8_t length = (playval/100)+1;
                     if (length < 10) {
                         playval -= (playval/100*100);
-                        if (playval < 1) {
-                            playval = 1;
+                        if (playval < 0) {
+                            playval = 0;
                         }
-                        if (playval > 28) {
-                            playval = 29;
+                        if (playval > 36) {
+                            playval = 35;
                         }
-                        TM2S = C2 - playval;
+                        TM2S = tones[playval];
                         SLEEP(length * SLEEP_TICKS);
                     }
                     break;
@@ -73,8 +103,6 @@ int main(void) {
                     get_x1_value();
                     break;
             }
-
-
         }
 }
 
