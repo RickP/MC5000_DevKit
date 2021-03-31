@@ -77,4 +77,4 @@ If you want the same functionality for the MacOS package on your own fork fork y
 
 - APPLE_DEV_USER: Your apple development account user name
 - APPLE_DEV_PASS: An application specific password for your apple dev account
-- APPLE_DEV_CERT: Your exported developer secret in base64 encoding. Use the same application specific password as above for the cert.
+- APPLE_DEV_CERT: Your exported developer certificate (including private key) in base64 encoding. Use the same application specific password as above for the cert.
