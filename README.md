@@ -2,7 +2,9 @@
 
 A development board that brings the [Shenzhen IO game](https://www.zachtronics.com/shenzhen-io/) to real hardware.
 
-This documentation is intended for people who want to build/extend/bugfix the hardware. If you have a board and just want to play with it you'll find the user documentation [here](https://rickp.github.io/MC5000_DevKit/).
+This documentation is intended for people who want to build/extend/bugfix the hardware. 
+
+If you have an MC5000 DevKit board and want to play with it go to the [user documentation](https://rickp.github.io/MC5000_DevKit/).
 
 
 ## Overview
