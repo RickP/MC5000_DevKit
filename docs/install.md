@@ -6,8 +6,6 @@ Go to the [release page](https://github.com/RickP/MC5000_DevKit/releases), click
 
 See specific instruction for your operating system below.
 
-![GUI screenshot](gui.jpg)
-
 ## Linux
 
 There are AppImge packages for 64bit Intel systems (x86_64) and 64bit ARM (arm64). If you have a Raspberry Pi use the Arm64 one. You need the 64 bit Raspian installed on a Pi3 or Pi4 from [here](http://downloads.raspberrypi.org/raspios_arm64/images/).
@@ -29,6 +27,8 @@ Unfortunately you have to install drivers for the USB->Serial chip on windows. G
 You may have to install the C++ runtime "vc_redist.x64.exe" in the application folder if windows complains about something missing - but chances are high that you already have this.
 
 # Usage
+
+![GUI screenshot](gui.jpg)
 
 When the app opens up you may have to choose the correct USB port. If you're not sure unplug the board, click refresh, plug it in, click refresh and choose the one that was added to the list.
 
