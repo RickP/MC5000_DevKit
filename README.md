@@ -64,6 +64,17 @@ DISPLAY: `easypdkprog -n PFS173 write display.PFS173.ihx`
 
 ## Desktop application
 
-The desktop application transpiles the code to a binary format and uplloads it to the virtual 'MC5000' controllers on the board. It's written in QT5.12 and compiled automatically into packages for Linux, MacOS and Windows. Installation instructions are part of the [user documentation](https://rickp.github.io/MC5000_DevKit/).
+The desktop application transpiles the code to a binary format and uplloads it to the virtual 'MC5000' controllers on the board. It's written in QT5 (Version 5.12.8) and compiled automatically into packages for Linux, MacOS and Windows. Installation instructions are part of the [user documentation](https://rickp.github.io/MC5000_DevKit/).
 
 The code is very simplistic with a lot of room for improvents. It's contained within the 'gui' subdirectory. The binaries can be found on the [releases page](https://github.com/RickP/MC5000_DevKit/releases).
+
+
+## Github actions
+
+The releases including binary packages for four platforms and PCB fabrication files are created by github action. It also signs the MacOS app with my certificate that is stored in github secrets. Everthing is built when the repository is tagged.
+
+If you want the same functionality for the MacOS package on your own fork fork you have to add some secrets in "Project settings/Secrets/Repository secrets":
+
+APPLE_DEV_USER: Your apple development account user name
+APPLE_DEV_PASS: An application specific password for your apple dev account
+APPLE_DEV_CERT: Your exported developer secret in base64 encoding. Use the same application specific password as above for the cert.
