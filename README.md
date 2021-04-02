@@ -29,7 +29,7 @@ Please check if all components are mounted the right way around when ordering. I
 
 ## Microcontroller Firmware
 
-The board uses 4 Padauk PFS173 microcontrollers. These are super cheap chinese 8bit microcontrollers that cost about 8cent per piece. They have 3000 kilowords of flash ROM and 256 bytes of RAM.
+The board uses 4 Padauk PFS173 microcontrollers. These are super cheap chinese 8bit microcontrollers that cost about 8cent per piece. They have 3 kilowords of flash ROM and 256 bytes of RAM.
 
 The firmware for the two application controllers (a.k.a. MC5000) and the buzzer and display controller are in the subfolder 'firmware'. They are made with the [Free PDK toolchain](https://free-pdk.github.io) an open-source toolchain for many of the Padauk microcontrollers. It uses the SDCC compiler suite.
 
