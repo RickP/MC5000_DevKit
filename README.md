@@ -29,15 +29,15 @@ Please check if all components are mounted the right way around when ordering. I
 
 ## Microcontroller Firmware
 
-The board uses 4 Padauk PFS173 microcontrollers. These are super cheap chinese 8bit microcontrollers that cost about 8cent per piece. They have 3000 kilowords of flash ROM and 256 bytes of RAM.
+The board uses 4 Padauk PFS173 microcontrollers. These are super cheap chinese 8bit microcontrollers that cost about 8cent per piece. They have 3 kilowords of flash ROM and 256 bytes of RAM.
 
 The firmware for the two application controllers (a.k.a. MC5000) and the buzzer and display controller are in the subfolder 'firmware'. They are made with the [Free PDK toolchain](https://free-pdk.github.io) an open-source toolchain for many of the Padauk microcontrollers. It uses the SDCC compiler suite.
 
-The code structure may look a bit weird at first but I had to made some strange construction to trick the compiler into using as little memory as possible. I was canstantly running out of it. Make sure you use the version 4.1.0 of SDCC as it otimizes the code for the Padauk ICs much better than the 4.0.0 release.
+The code structure may look a bit weird at first but I had to made some strange constructions to trick the compiler into using as little memory as possible as I was constantly running out of it. **Make sure you use the version 4.1.0 of SDCC as it otimizes the code for the Padauk ICs much better than the 4.0.0 release.**
 
 In order to flash the ICs you have to make or buy an Easy PDK programmer. The programmer is open hardware. I got mine assempled from amazon but you can make one yourself [production files](https://kitspace.org/boards/github.com/free-pdk/easy-pdk-programmer-hardware/). If you want to flash the firmware you need the programmer and the [easy-pdk-programmer software](https://github.com/free-pdk/easy-pdk-programmer-software). 
 
-With the SDCC compiler (use version 4.1.0!) and easypdkprog in your path just place the breakout boards on the programmer and execute the makefiles:
+With the SDCC compiler and easypdkprog in your path just place the breakout boards on the programmer and execute the makefiles:
 
     cd firmware/MCU5000
     make flash1       # Flash MCU1
@@ -66,9 +66,11 @@ DISPLAY: `easypdkprog -n PFS173 write display.PFS173.ihx`
 
 ## Desktop application
 
-The desktop application transpiles the code to a binary format and uplloads it to the virtual 'MC5000' controllers on the board. It's written in QT5 (Version 5.12.8) and compiled automatically into packages for Linux, MacOS and Windows. Installation instructions are part of the [user documentation](https://rickp.github.io/MC5000_DevKit/).
+The desktop application parses the code to a binary format and uploads it to the virtual 'MC5000' controllers on the board. It's written in QT5 (Version 5.12.8) and compiled automatically into packages for Linux, MacOS and Windows. Installation instructions are part of the [user documentation](https://rickp.github.io/MC5000_DevKit/).
 
 The code is very simplistic with a lot of room for improvents. It's contained within the 'gui' subdirectory. The binaries can be found on the [releases page](https://github.com/RickP/MC5000_DevKit/releases).
+
+**Currently there's a bug that prevents the rudimantary code error checking for MCU2!**
 
 
 ## Github actions

@@ -5,7 +5,7 @@
 
 ## Program Structure
 
-Each line of an MCxxxx program must have the following structure:
+Each line of an MC5000 program must have the following structure:
 
     LABEL CONDITION INSTRUCTION COMMENT
 
@@ -37,9 +37,9 @@ Labels must appear first on a line, and are followed by a colon (“__:__”). L
 
 ## Conditional Execution
 
-All instructions in the MCxxxx programming language are capable of conditional execution. 
+All instructions in the MC5000 programming language are capable of conditional execution. 
 
-Prefixing an in- struction with a “__+__” or “__-__” symbol will cause that instruction to be enabled or disabled by test instructions. 
+Prefixing an instruction with a “__+__” or “__-__” symbol will cause that instruction to be enabled or disabled by test instructions. 
 
 When an instruction is disabled by a test instruction, it will be skipped and will not consume power. Instructions with no prefix are never disabled and always execute normally. All conditional instructions start in a disabled state. A test instruction must be executed to enable conditional instructions.
 

@@ -2,11 +2,9 @@
 
 # Install the desktop app
 
-Go to the [release page](https://github.com/RickP/MC5000_DevKit/releases) and download the latest package for your platform.
+Go to the [release page](https://github.com/RickP/MC5000_DevKit/releases), click on "Assets" on the topmost release and download the latest package for your platform (the files starting with "MC5000-GUI").
 
-See instruction for your operating system below.
-
-![GUI screenshot](gui.jpg)
+See specific instruction for your operating system below.
 
 ## Linux
 
@@ -26,12 +24,14 @@ Download the zip file and unpack it to your disk.
 
 Unfortunately you have to install drivers for the USB->Serial chip on windows. Get them from [here](http://www.wch-ic.com/downloads/CH341SER_EXE.html) and install them. Then connect the board via USB and run the MC5000.exe in the folder. 
 
-You may have to install the C++ runtime "vc_redist.x64.exe" in the folder if it complains about something missing - but chances are high that you already have this.
+You may have to install the C++ runtime "vc_redist.x64.exe" in the application folder if windows complains about something missing - but chances are high that you already have this.
 
 # Usage
 
+![GUI screenshot](gui.jpg)
+
 When the app opens up you may have to choose the correct USB port. If you're not sure unplug the board, click refresh, plug it in, click refresh and choose the one that was added to the list.
 
-The user interface is pretty simple. You can load and save code to a text file. The button 'Manual' is just a link to this document. "Upload" writes the code you entered to the board.
+The user interface is pretty simple. You can load and save code to a text file. The button "Manual" is a link to this documentation. "Upload" writes the code you entered to the board.
 
 Now [connect some wires](connections)
