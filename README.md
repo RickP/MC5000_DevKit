@@ -6,6 +6,7 @@ This documentation is intended for people who want to build/extend/bugfix the ha
 
 If you have an MC5000 DevKit board and want to play with it go to the [user documentation](https://rickp.github.io/MC5000_DevKit/).
 
+**I'm planning to order some ready-to-use boards if there are enough people interested. Drop me a message (pannen at gmail dot com) if you're interested in getting one or more**
 
 ## Overview
 
