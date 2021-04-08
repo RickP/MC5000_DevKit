@@ -30,7 +30,7 @@
 #define XBUS1_RX 0x80
 #define XBUS1_GOT_DATA 0x90
 
-#define XBUS_BITTIME 18U
+#define XBUS_BITTIME 22U
 #define XBUS_DELAY XBUS_BITTIME/2U
 
 uint16_t xbus_data = 0;
