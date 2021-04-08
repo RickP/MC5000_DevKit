@@ -52,6 +52,7 @@ void datRegistersChanged();
 void isProgrammedChanged();
 
 private:
+const int m_serialBaudRate = 19200;
 QTimer *m_uploadTimeout;
 QSerialPort *m_serial = nullptr;
 int m_mcuConnections = 0;

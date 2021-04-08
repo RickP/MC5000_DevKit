@@ -86,7 +86,7 @@ void SerialCommunication::readData()
 void SerialCommunication::connectPort(QString port) {
     m_serial->close();
     m_serial->setPortName(port);
-    m_serial->setBaudRate(19200);
+    m_serial->setBaudRate(m_serialBaudRate);
     m_serial->open(QIODevice::ReadWrite);
 
     if (!m_serial->isOpen()) return;
