@@ -12,19 +12,19 @@ There are AppImge packages for 64bit Intel systems (x86_64) and 64bit ARM (arm64
 
 The AppImage needs to be made executable after download. [This](https://docs.appimage.org/introduction/quickstart.html#ref-quickstart) explains how to do it.
 
-The App should run on any recent Linux (Ubuntu 18.04 and up) without any drivers. If the board is not recognized as an usb-to-serial device install the driver from http://www.wch-ic.com/search?q=CH340&t=downloads
+The App should run on any recent Linux (Ubuntu 18.04 and up) without any drivers. If the board is not recognized as an usb-to-serial device install the driver from [here](http://www.wch-ic.com/search?q=CH340&t=downloads)
 
 ## MacOS
 
 Just download the dmg and move the app to your Applications directory. Click on it to start. MacOS Catalina and up have the USB driver included. It's intel only but runs just fine on an M1 Mac.
 
-If the board is not recognized as an usb-to-serial device install the driver from http://www.wch-ic.com/search?q=CH340&t=downloads
+If the board is not recognized as an usb-to-serial device install the driver from [here](http://www.wch-ic.com/search?q=CH340&t=downloads)
 
 ## Windows
 
 Download the zip file and unpack it to your disk. 
 
-Unfortunately you have to install drivers for the USB->Serial chip on windows. Get them from [here](http://www.wch-ic.com/downloads/CH341SER_EXE.html) and install them. Then connect the board via USB and run the MC5000.exe in the folder. 
+Unfortunately you have to install drivers for the USB->Serial chip on windows. Get them from [here](http://www.wch-ic.com/search?q=CH340&t=downloads) and install them. Then connect the board via USB and run the MC5000.exe in the folder. 
 
 You may have to install the C++ runtime "vc_redist.x64.exe" in the application folder if windows complains about something missing - but chances are high that you already have this.
 
