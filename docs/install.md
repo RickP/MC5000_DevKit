@@ -12,11 +12,13 @@ There are AppImge packages for 64bit Intel systems (x86_64) and 64bit ARM (arm64
 
 The AppImage needs to be made executable after download. [This](https://docs.appimage.org/introduction/quickstart.html#ref-quickstart) explains how to do it.
 
-The App should run on any recent Linux (Ubuntu 18.04 and up) without any drivers.
+The App should run on any recent Linux (Ubuntu 18.04 and up) without any drivers. If the board is not recognized as an usb-to-serial device install the driver from http://www.wch-ic.com/search?q=CH340&t=downloads
 
 ## MacOS
 
 Just download the dmg and move the app to your Applications directory. Click on it to start. MacOS Catalina and up have the USB driver included. It's intel only but runs just fine on an M1 Mac.
+
+If the board is not recognized as an usb-to-serial device install the driver from http://www.wch-ic.com/search?q=CH340&t=downloads
 
 ## Windows
 
